@@ -1,5 +1,5 @@
 #include "type/type_registry.hpp"
-#include "object/struct_type.hpp"
+#include "object/object_type.hpp"
 #include "base/basic.hpp"
 #include <map>
 
