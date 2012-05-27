@@ -3,7 +3,7 @@
 #define SERIALIZE_HPP_37QGG4TA
 
 #include "serialization/archive.hpp"
-#include "object/struct_type.hpp"
+#include "object/object_type.hpp"
 
 namespace falling {
 	

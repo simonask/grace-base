@@ -2,7 +2,7 @@
 #include "serialization/archive_node.hpp"
 #include "type/type_registry.hpp"
 #include "object/composite_type.hpp"
-#include "object/struct_type.hpp"
+#include "object/object_type.hpp"
 #include "object/universe.hpp"
 #include <memory>
 
