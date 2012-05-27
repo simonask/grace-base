@@ -47,6 +47,7 @@ public:
 	}
 	
 	// Same as 'maybe_if', but with FP terminology a la Scala.
+#if HAS_LAMBDAS
 	template <typename Functor>
 	auto map(Functor functor)
 	-> typename MaybeIfImpl<Maybe<T>, decltype(functor(infer_value_type()))>::ResultType {
@@ -57,6 +58,7 @@ public:
 	-> typename MaybeIfImpl<const Maybe<T>, decltype(functor(infer_value_type()))>::ResultType {
 		return MaybeIfImpl<const Maybe<T>, decltype(functor(infer_value_type()))>::maybe_if(*this, functor);
 	}
+#endif
 private:
 	template <typename M, typename ReturnType> friend struct MaybeIfImpl;
 	
@@ -276,7 +278,16 @@ auto maybe_if(M& m, Functor function)
 
 template <typename OutputStream, typename T>
 OutputStream& operator<<(OutputStream& os, const Maybe<T>& m) {
-	maybe_if(m, [&](const T& it) { os << it; }).otherwise([&]() { os << "(none)"; });
+	struct Print {
+		OutputStream& os;
+		Print(OutputStream& os) : os(os) {}
+		void operator()(const T& it) const { os << it; }
+	};
+	struct Otherwise {
+		OutputStream& os;
+		void operator()() const { os << "(none)"; }
+	};
+	maybe_if(m, Print(os)).otherwise(Otherwise(os));
 	return os;
 }
 

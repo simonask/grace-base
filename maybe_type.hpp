@@ -31,9 +31,17 @@ void MaybeType<T>::deserialize(Maybe<T>& m, const ArchiveNode& node, IUniverse& 
 
 template <typename T>
 void MaybeType<T>::serialize(const Maybe<T>& m, ArchiveNode& node, IUniverse& universe) const {
-	m.map([&](const T& it) {
-		inner_type()->serialize(reinterpret_cast<const byte*>(&it), node, universe);
-	});
+	struct Serialize {
+		const Type* inner_type;
+		ArchiveNode& node;
+		IUniverse& universe;
+		Serialize(const Type* inner_type, ArchiveNode& node, IUniverse& universe) : inner_type(inner_type), node(node), universe(universe) {}
+		void operator()(const T& it) {
+			inner_type->serialize(reinterpret_cast<const byte*>(&it), node, universe);
+		};
+	};
+	
+	maybe_if(m, Serialize(inner_type(), node, universe));
 }
 
 template <typename T>
