@@ -9,6 +9,8 @@
 #include <memory>
 #include <type_traits>
 
+namespace falling {
+
 typedef signed char int8;
 typedef short int16;
 typedef int int32;
@@ -74,5 +76,7 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 }
 
 #define ASSERT(X) do{ if (!(X)) { fprintf(stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); __asm__ __volatile__("int3\n"); } } while(0)
+
+}
 
 #endif /* end of include guard: BASIC_HPP_S0NRU03V */

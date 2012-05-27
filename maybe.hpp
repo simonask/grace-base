@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <new>
 
+namespace falling {
+
 template <typename M, typename ReturnType> struct MaybeIfImpl;
 
 template <typename T>
@@ -276,6 +278,8 @@ template <typename OutputStream, typename T>
 OutputStream& operator<<(OutputStream& os, const Maybe<T>& m) {
 	maybe_if(m, [&](const T& it) { os << it; }).otherwise([&]() { os << "(none)"; });
 	return os;
+}
+
 }
 
 #endif /* end of include guard: MAYBE_HPP_8R2MUT0P */

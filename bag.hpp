@@ -4,6 +4,8 @@
 
 #include "base/array.hpp"
 
+namespace falling {
+
 class BagMemoryHandler {
 public:
 	byte* allocate();
@@ -112,5 +114,7 @@ private:
 	Bag<T> bag_;
 	Container elements_;
 };
+
+}
 
 #endif /* end of include guard: BAG_HPP_LRAVL9CJ */

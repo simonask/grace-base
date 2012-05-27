@@ -2,6 +2,8 @@
 #include "base/maybe.hpp"
 #include "serialization/archive_node.hpp"
 
+namespace falling {
+
 std::string build_maybe_type_name(const Type* inner_type);
 
 template <typename T>
@@ -41,3 +43,5 @@ struct BuildTypeInfo<Maybe<T>> {
 		return &type;
 	}
 };
+
+}

@@ -5,6 +5,7 @@
 #include "type/type.hpp"
 #include "serialization/archive_node.hpp"
 
+namespace falling {
 
 struct ArrayType : DerivedType {
 public:
@@ -75,6 +76,8 @@ void VariableLengthArrayType<T>::serialize(const T& obj, ArchiveNode& node, IUni
 		ArchiveNode& element = node.array_push();
 		get_type<ElementType>()->serialize(reinterpret_cast<const byte*>(&it), element, universe);
 	}
+}
+
 }
 
 #endif /* end of include guard: ARRAY_TYPE_HPP_JIO2A6YN */

@@ -2,6 +2,8 @@
 
 #include <sys/mman.h>
 
+namespace falling {
+
 BagMemoryHandler::PageHeader* BagMemoryHandler::allocate_page() {
 	static const size_t PageSize = 4096;
 	size_t sz = element_size_;
@@ -56,4 +58,6 @@ void BagMemoryHandler::clear() {
 	}
 	current_ = nullptr;
 	head_ = nullptr;
+}
+
 }

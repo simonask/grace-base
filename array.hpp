@@ -6,11 +6,13 @@
 
 #if defined(USE_STD_VECTOR)
 #include <vector>
+namespace falling {
 template <typename T> using Array = std::vector<T>;
+}
 #else
 
-template <typename T>
-class Array;
+
+namespace falling {
 
 template <typename T>
 class Array {
@@ -164,6 +166,8 @@ Array<T>::iterator Array<T>::erase(Array<T>::iterator it) {
 	ASSERT(it >= begin() && it < end());
 	
 }*/
+
+}
 
 #endif // if defined(USE_STD_VECTOR)
 
