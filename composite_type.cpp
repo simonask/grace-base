@@ -104,7 +104,6 @@ void CompositeType::construct(byte* place, IUniverse& universe) const {
 }
 
 void CompositeType::destruct(byte* place, IUniverse& universe) const {
-	Object* obj = reinterpret_cast<Object*>(place);
 	size_t offset = base_type()->size();
 	for (auto aspect: aspects_) { // TODO: Consider doing this backwards?
 		aspect->destruct(place + offset, universe);
@@ -122,7 +121,7 @@ void CompositeType::deserialize(byte* place, const ArchiveNode& node, IUniverse&
 	if (aspect_array.is_array()) {
 		size_t offset = base_type()->size();
 		size_t sz = aspect_array.array_size();
-		for (size_t i = 0; i < aspect_array.array_size(); ++i) {
+		for (size_t i = 0; i < sz; ++i) {
 			const ArchiveNode& aspect_node = aspect_array[i];
 			aspects_[i]->deserialize(place + offset, aspect_node, universe);
 			Object* subobject = reinterpret_cast<Object*>(place + offset);
