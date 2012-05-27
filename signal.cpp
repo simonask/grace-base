@@ -1,5 +1,5 @@
 #include "object/signal.hpp"
-#include "object/struct_type.hpp"
+#include "object/object_type.hpp"
 #include <sstream>
 
 namespace falling {

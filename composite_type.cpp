@@ -1,5 +1,5 @@
 #include "object/composite_type.hpp"
-#include "object/struct_type.hpp"
+#include "object/object_type.hpp"
 
 namespace falling {
 
