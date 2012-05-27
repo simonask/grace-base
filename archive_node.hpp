@@ -9,6 +9,8 @@
 #include "serialization/archive_node_type.hpp"
 #include "type/type.hpp"
 
+namespace falling {
+
 struct Archive;
 struct DeserializeReferenceBase;
 struct SerializeReferenceBase;
@@ -308,6 +310,8 @@ private:
 template <typename T>
 void ArchiveNode::register_signal_for_deserialization(T* signal, std::string receiver, std::string slot) const {
 	register_signal_for_deserialization_impl(new DeserializeSignal<T>(signal, std::move(receiver), std::move(slot)));
+}
+
 }
 
 #endif /* end of include guard: ARCHIVE_NODE_HPP_EP8GSONT */

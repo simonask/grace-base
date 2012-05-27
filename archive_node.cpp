@@ -3,6 +3,8 @@
 #include "object/universe.hpp"
 #include "object/objectptr.hpp"
 
+namespace falling {
+
 ArchiveNode& ArchiveNode::array_push() {
 	if (type() != Type::Array) {
 		clear(Type::Array);
@@ -79,4 +81,6 @@ Object* DeserializeSignalBase::get_object(const IUniverse& universe) const {
 const SlotAttributeBase* DeserializeSignalBase::get_slot(Object* object) const {
 	const DerivedType* type = get_type(object);
 	return type->get_slot_by_name(slot_id_);
+}
+
 }

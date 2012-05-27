@@ -6,6 +6,8 @@
 #include "object/universe.hpp"
 #include <memory>
 
+namespace falling {
+
 namespace {
 	const DerivedType* get_type_from_map(const ArchiveNode& node, std::string& out_error);
 	
@@ -76,4 +78,6 @@ ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
 	type->deserialize(reinterpret_cast<byte*>(ptr.get()), node, universe);
 	
 	return ptr;
+}
+
 }

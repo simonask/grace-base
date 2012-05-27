@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-
+namespace falling {
 struct JSONArchive;
 
 struct JSONArchiveNode : ArchiveNode {
@@ -36,5 +36,6 @@ private:
 };
 
 inline JSONArchiveNode::JSONArchiveNode(JSONArchive& archive, ArchiveNode::Type t) : ArchiveNode(archive, t) {}
+}
 
 #endif /* end of include guard: JSON_ARCHIVE_HPP_4OX35IUJ */

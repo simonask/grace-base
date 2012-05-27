@@ -1,5 +1,7 @@
 #include "serialization/json_archive.hpp"
 
+namespace falling {
+
 JSONArchive::JSONArchive() : root_(nullptr) {
 	empty_ = make_internal();
 }
@@ -111,3 +113,4 @@ void JSONArchiveNode::write(std::ostream& os, bool print_inline, int indent) con
 	}
 }
 
+}

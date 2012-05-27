@@ -10,6 +10,8 @@
 
 #include <string>
 
+namespace falling {
+
 struct DeserializeReferenceBase;
 struct SerializeReferenceBase;
 struct DeserializeSignalBase;
@@ -40,5 +42,7 @@ private:
 	Array<SerializeReferenceBase*> serialize_references;
 	Array<DeserializeSignalBase*> deserialize_signals;
 };
+
+}
 
 #endif /* end of include guard: ARCHIVE_HPP_A0L9H8RE */

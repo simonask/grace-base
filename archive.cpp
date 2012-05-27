@@ -9,8 +9,10 @@
 #include "object/universe.hpp"
 #include "serialization/deserialize_object.hpp"
 
+namespace falling {
+
 void Archive::serialize(ObjectPtr<> object, IUniverse& universe) {
-	::serialize(*object, root(), universe);
+	falling::serialize(*object, root(), universe);
 	for (auto ref: serialize_references) {
 		ref->perform(universe);
 	}
@@ -90,4 +92,6 @@ ObjectPtr<> Archive::deserialize(IUniverse& universe) {
 		return ptr;
 	}
 	return nullptr;
+}
+
 }
