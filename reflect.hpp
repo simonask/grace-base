@@ -22,7 +22,7 @@ struct ObjectTypeBuilder {
 	Self& super(const ObjectTypeBase* t) { super_ = t; return *this; }
 	
 	void check_attribute_name_(const std::string& name) {
-		const auto reserved_names = {"class", "aspects"};
+		const char* reserved_names[] = {"class", "aspects"};
 		for (auto it: reserved_names) {
 			if (name == it) {
 				fprintf(stderr, "The attribute name '%s' is reserved.\n", name.c_str());
