@@ -6,6 +6,8 @@
 #include "object/object.hpp"
 #include "type/reference_type.hpp"
 
+namespace falling {
+
 template <typename T = Object, typename Enable = void>
 struct ObjectPtr;
 
@@ -71,6 +73,8 @@ template <typename OutputStream, typename T>
 OutputStream& operator<<(OutputStream& os, const ObjectPtr<T>& ptr) {
 	os << '(' << ptr.type()->name() << "*)" << ptr.get();
 	return os;
+}
+
 }
 
 #endif /* end of include guard: OBJECTPTR_HPP_WICLN6JL */

@@ -6,6 +6,8 @@
 #include "object/objectptr.hpp"
 #include "base/array_type.hpp"
 
+namespace falling {
+
 struct ChildList : Array<ObjectPtr<>> {
 	ChildList() {}
 	ChildList(const ChildList&) = delete;
@@ -27,5 +29,7 @@ struct BuildTypeInfo<ChildList> {
 		return type;
 	}
 };
+
+}
 
 #endif /* end of include guard: CHILD_LIST_HPP_B25F8VH4 */

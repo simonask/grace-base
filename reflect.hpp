@@ -8,6 +8,8 @@
 #include "object/signal.hpp"
 #include <algorithm>
 
+namespace falling {
+
 template <typename T>
 struct ObjectTypeBuilder {
 	typedef ObjectTypeBuilder<T> Self;
@@ -84,6 +86,8 @@ const ObjectTypeBase* TYPE::build_type_info__() { \
 	} builder__; \
 	static const auto t = builder__.build__(); \
 	return &t; \
+}
+
 }
 
 #endif /* end of include guard: REFLECT_HPP_WJBCX95G */

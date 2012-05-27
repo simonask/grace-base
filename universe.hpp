@@ -4,10 +4,10 @@
 
 #include <string>
 #include <map>
-
-
 #include "object/object.hpp"
 #include "object/objectptr.hpp"
+
+namespace falling {
 
 struct DerivedType;
 
@@ -50,5 +50,7 @@ private:
 	ObjectPtr<> root_;
 	std::string empty_id_;
 };
+
+}
 
 #endif /* end of include guard: UNIVERSE_HPP_VHU9428R */

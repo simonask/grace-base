@@ -9,6 +9,8 @@
 #include "type/attribute.hpp"
 #include "object/signal.hpp"
 
+namespace falling {
+
 struct SlotAttributeBase;
 template <typename T> struct SlotForObject;
 
@@ -119,6 +121,8 @@ template <typename T, typename R, typename... Args>
 const SlotAttributeBase* MemberSlotInvoker<T,R,Args...>::slot() const {
 	const ObjectTypeBase* type = get_type<T>();
 	return type->find_slot_for_method(member_);
+}
+
 }
 
 #endif /* end of include guard: STRUCT_TYPE_HPP_PTB31EJN */

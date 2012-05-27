@@ -11,6 +11,8 @@
 #include <sstream>
 #include <iostream> // TODO: Get rid of.
 
+namespace falling {
+
 struct SlotAttributeBase;
 struct Object;
 struct ObjectTypeBase;
@@ -236,6 +238,8 @@ void SignalType<Args...>::serialize(const Signal<Args...>& signal, ArchiveNode& 
 			signal_connection["slot"] = slot->name();
 		}
 	}
+}
+
 }
 
 #endif /* end of include guard: SIGNAL_HPP_IVWSWZJM */

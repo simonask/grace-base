@@ -1,6 +1,8 @@
 #include "object/struct_type.hpp"
 #include "object/composite_type.hpp"
 
+namespace falling {
+
 const ObjectTypeBase* ObjectTypeBase::super() const {
 	if (super_ != nullptr) return super_;
 	const ObjectTypeBase* object_type = get_type<Object>();
@@ -22,4 +24,6 @@ Object* ObjectTypeBase::cast(const DerivedType* to, Object* o) const {
 	}
 	
 	return nullptr;
+}
+
 }

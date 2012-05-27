@@ -2,6 +2,8 @@
 #include "serialization/deserialize_object.hpp"
 #include "serialization/serialize.hpp"
 
+namespace falling {
+
 void ChildListType::deserialize(ChildList& list, const ArchiveNode& node, IUniverse& universe) const {
 	if (node.is_array()) {
 		for (size_t i = 0; i < node.array_size(); ++i) {
@@ -17,6 +19,8 @@ void ChildListType::deserialize(ChildList& list, const ArchiveNode& node, IUnive
 void ChildListType::serialize(const ChildList& list, ArchiveNode& node, IUniverse& universe) const {
 	for (auto& child: list) {
 		ArchiveNode& child_node = node.array_push();
-		::serialize(*child, child_node, universe);
+		falling::serialize(*child, child_node, universe);
 	}
+}
+
 }

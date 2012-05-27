@@ -4,6 +4,8 @@
 
 #include "base/basic.hpp"
 
+namespace falling {
+
 struct IUniverse;
 struct Type;
 struct DerivedType;
@@ -91,6 +93,8 @@ inline const DerivedType* get_type(Object* object) {
 
 inline const DerivedType* get_type(const Object* object) {
 	return object->object_type();
+}
+
 }
 
 #endif /* end of include guard: OBJECT_HPP_P40DARL9 */

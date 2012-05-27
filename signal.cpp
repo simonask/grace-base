@@ -2,6 +2,8 @@
 #include "object/struct_type.hpp"
 #include <sstream>
 
+namespace falling {
+
 std::string SignalTypeBase::build_signal_name(const Array<const Type*>& signature) {
 	std::stringstream ss;
 	ss << "Signal<";
@@ -13,4 +15,6 @@ std::string SignalTypeBase::build_signal_name(const Array<const Type*>& signatur
 	}
 	ss << ">";
 	return ss.str();
+}
+
 }

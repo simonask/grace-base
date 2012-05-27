@@ -7,6 +7,8 @@
 #include "base/array.hpp"
 #include <new>
 
+namespace falling {
+
 struct CompositeType : DerivedType {
 	CompositeType(std::string name, const ObjectTypeBase* base_type = nullptr);
 	
@@ -49,6 +51,8 @@ inline size_t CompositeType::offset_of_element(size_t idx) const {
 	}
 	ASSERT(false); // unreachable
 	return SIZE_T_MAX;
+}
+
 }
 
 #endif /* end of include guard: COMPOSITE_TYPE_HPP_K5R3HGBW */

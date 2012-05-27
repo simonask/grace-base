@@ -3,6 +3,8 @@
 
 #include <iomanip>
 
+namespace falling {
+
 ObjectPtr<> TestUniverse::create_root(const DerivedType* type, std::string id) {
 	clear();
 	root_ = create_object(type, std::move(id));
@@ -82,4 +84,6 @@ void TestUniverse::clear() {
 	object_map_.clear();
 	reverse_object_map_.clear();
 	memory_map_.clear();
+}
+
 }

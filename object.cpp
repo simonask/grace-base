@@ -2,6 +2,8 @@
 #include "object/reflect.hpp"
 #include "object/universe.hpp"
 
+namespace falling {
+
 Object* Object::find_parent() {
 	Object* object = this;
 	if (object->offset_ != 0) {
@@ -51,3 +53,5 @@ BEGIN_TYPE_INFO(Object)
 	property(&Object::object_id, &Object::set_object_id, "id", "The unique ID for this object.h");
 	// property(&Object::id_, "ID", "The unique ID for this Object.");
 END_TYPE_INFO()
+
+}

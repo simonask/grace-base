@@ -1,6 +1,8 @@
 #include "object/composite_type.hpp"
 #include "object/struct_type.hpp"
 
+namespace falling {
+
 CompositeType::CompositeType(std::string name, const ObjectTypeBase* base_type) : base_type_(base_type), name_(std::move(name)), frozen_(false) {
 	size_ = this->base_type()->size();
 }
@@ -144,4 +146,6 @@ void CompositeType::serialize(const byte* place, ArchiveNode& node, IUniverse& u
 		offset += aspect->size();
 	}
 	ASSERT(offset == size_);
+}
+
 }
