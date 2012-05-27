@@ -5,6 +5,8 @@
 #include "type/type.hpp"
 #include "serialization/archive_node.hpp"
 
+namespace falling {
+
 struct ReferenceType : Type {
 	ReferenceType(std::string name) : name_(std::move(name)) {}
 	
@@ -39,6 +41,8 @@ void ReferenceTypeImpl<T>::deserialize(T& ptr, const ArchiveNode& node, IUnivers
 template <typename T>
 void ReferenceTypeImpl<T>::serialize(const T& ptr, ArchiveNode& node, IUniverse&) const {
 	node.register_reference_for_serialization(ptr);
+}
+
 }
 
 #endif /* end of include guard: REFERENCE_TYPE_HPP_EAHSMBCU */

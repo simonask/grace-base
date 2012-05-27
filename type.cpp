@@ -2,6 +2,8 @@
 #include "serialization/archive_node.hpp"
 #include <map>
 
+namespace falling {
+
 #define DEFINE_SIMPLE_TYPE(T, IS_FLOAT, IS_SIGNED) template <> const Type* build_type_info<T>() { \
 	if (IS_FLOAT) { \
 		static const FloatType type(#T, sizeof(T)); \
@@ -224,4 +226,6 @@ const StringType* StringType::get() {
 const std::string& StringType::name() const {
 	static const std::string name = "std::string";
 	return name;
+}
+
 }

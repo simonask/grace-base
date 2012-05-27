@@ -3,6 +3,8 @@
 #include "base/basic.hpp"
 #include <map>
 
+namespace falling {
+
 struct TypeRegistry::Impl {
 	std::map<std::string, const ObjectTypeBase*> type_map;
 };
@@ -18,4 +20,6 @@ void TypeRegistry::add(const ObjectTypeBase* type) {
 
 const ObjectTypeBase* TypeRegistry::get(const std::string& name) {
 	return find_or(impl()->type_map, name, nullptr);
+}
+
 }

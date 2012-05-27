@@ -11,6 +11,9 @@
 #include <algorithm>
 #include <limits.h>
 
+
+namespace falling {
+	
 struct ArchiveNode;
 struct IUniverse;
 struct SlotAttributeBase;
@@ -256,6 +259,8 @@ template <typename Head, typename Next, typename... Rest>
 void build_signature(Array<const Type*>& signature) {
 	signature.push_back(get_type<Head>());
 	build_signature<Next, Rest...>(signature);
+}
+
 }
 
 #endif /* end of include guard: TYPE_HPP_ZXLGBWRF */

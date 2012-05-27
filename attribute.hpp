@@ -6,6 +6,8 @@
 #include "type/type.hpp"
 #include "serialization/archive.hpp"
 
+namespace falling {
+
 struct AttributeBase {
 	AttributeBase(std::string name, std::string description) : name_(std::move(name)), description_(std::move(description)) {}
 	virtual ~AttributeBase() {}
@@ -105,5 +107,7 @@ struct MethodAttribute : AttributeForObjectOfType<ObjectType, MemberType, Getter
 	GetterPointer getter_;
 	SetterPointer setter_;
 };
+
+}
 
 #endif /* end of include guard: ATTRIBUTE_HPP_FFQKLYB6 */

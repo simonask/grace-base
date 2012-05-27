@@ -5,6 +5,8 @@
 #include "object/object.hpp"
 #include <string>
 
+namespace falling {
+
 class TypeRegistry {
 public:
 	template <typename T>
@@ -23,5 +25,6 @@ void TypeRegistry::add() {
 	add(get_type<T>());
 }
 
+}
 
 #endif /* end of include guard: TYPE_REGISTRY_HPP_LPQGF8DT */
