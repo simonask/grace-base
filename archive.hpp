@@ -24,13 +24,14 @@ struct Archive {
 	virtual ArchiveNode& root() = 0;
 	virtual const ArchiveNode& root() const = 0;
 	virtual void write(std::ostream& os) const = 0;
+	virtual bool read(const byte* begin, const byte* end, std::string& out_error) = 0;
 	virtual const ArchiveNode& operator[](const std::string& key) const = 0;
 	virtual ArchiveNode& operator[](const std::string& key) = 0;
 	virtual ArchiveNode* make(NodeType type = NodeType::Empty) = 0;
 	virtual const ArchiveNode& empty() const = 0;
 	
 	void serialize(ObjectPtr<> object, IUniverse& universe);
-	ObjectPtr<> deserialize(IUniverse& universe);
+	bool deserialize(IUniverse& universe, std::string& out_error);
 	
 	void register_reference_for_deserialization(DeserializeReferenceBase* ref) { deserialize_references.push_back(ref); }
 	void register_reference_for_serialization(SerializeReferenceBase* ref) { serialize_references.push_back(ref); }

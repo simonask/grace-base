@@ -112,5 +112,10 @@ void JSONArchiveNode::write(std::ostream& os, bool print_inline, int indent) con
 		case ArchiveNodeType::String: print_string(os, string_value); break;
 	}
 }
+	
+bool JSONArchive::read(const byte* begin, const byte* end, std::string& out_error) {
+	out_error = "JSONArchive::read not implemented.";
+	return false;
+}
 
 }
