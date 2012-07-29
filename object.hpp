@@ -26,6 +26,8 @@ struct Object {
 	Object() : type_(nullptr), offset_(0), universe_(nullptr) {}
 	virtual ~Object() {}
 	
+	virtual void initialize() {} // Called after all other objects have been instantiated and deserialized.
+	
 	Object* find_parent();
 	const Object* find_parent() const;
 	Object* find_topmost_object();
