@@ -61,6 +61,19 @@ template <typename U>
 struct IsMoveAssignableNonRef {
 	static const bool Value = std::is_move_assignable<typename RemoveConstRef<U>::Type>::value;
 };
+	
+	template <typename T> struct IsFloatingPoint;
+	template <> struct IsFloatingPoint<float32> { enum { Value = true }; };
+	template <> struct IsFloatingPoint<float64> { enum { Value = true }; };
+	template <typename T> struct IsFloatingPoint { enum { Value = false }; };
+	
+
+	template <typename T> struct IsSigned;
+	template <> struct IsSigned<uint8> {  enum { Value = false }; };
+	template <> struct IsSigned<uint16> { enum { Value = false }; };
+	template <> struct IsSigned<uint32> { enum { Value = false }; };
+	template <> struct IsSigned<uint64> { enum { Value = false }; };
+	template <typename T> struct IsSigned { enum { Value = true }; };
 
 template <typename T>
 void destruct(T* ptr) {
