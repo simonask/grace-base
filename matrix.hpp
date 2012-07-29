@@ -24,9 +24,14 @@ namespace falling {
 		TMatrix(const TMatrix<ElementType, N, M>&) = default;
 		TMatrix(TMatrix<ElementType, N, M>&&) = default;
 		
+		size_t height() const { return M; }
+		size_t width() const { return N; }
+		
 		Row row_at(size_t idx) const;
 		void set_row(size_t idx, Row row);
+		
 		Column column_at(size_t idx) const;
+		void set_column(size_t idx, Column col);
 		
 		// Convenience
 		static TMatrix<ElementType,N,M> identity();
@@ -59,6 +64,14 @@ namespace falling {
 			result[i] = rows_[i][idx];
 		}
 		return result;
+	}
+	
+	template <typename T, size_t N, size_t M>
+	void TMatrix<T,N,M>::set_column(size_t idx, Column col) {
+		ASSERT(idx < N);
+		for (size_t i = 0; i < N; ++i) {
+			rows_[i][idx] = col[i];
+		}
 	}
 	
 	template <typename T, size_t N, size_t M>
