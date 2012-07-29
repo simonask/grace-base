@@ -1,5 +1,6 @@
 #include "object/signal.hpp"
 #include "object/object_type.hpp"
+#include "base/log.hpp"
 #include <sstream>
 
 namespace falling {
@@ -16,5 +17,12 @@ std::string SignalTypeBase::build_signal_name(const Array<const Type*>& signatur
 	ss << ">";
 	return ss.str();
 }
+	
+	void SignalTypeBase::report_invalid_signal_connection_warning() {
+		Warning() << "Invalid signal connection.";
+	}
 
+	void SignalTypeBase::report_non_map_signal_connection_warning() {
+		Warning() << "Non-map signal connection node. Did you forget to write a scene upgrader?";
+	}
 }

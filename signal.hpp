@@ -8,8 +8,6 @@
 #include "serialization/archive_node.hpp"
 
 #include <functional>
-#include <sstream>
-#include <iostream> // TODO: Get rid of.
 
 namespace falling {
 
@@ -72,6 +70,11 @@ public:
 	virtual const Array<const Type*>& signature() const = 0;
 protected:
 	static std::string build_signal_name(const Array<const Type*>& signature);
+	
+	// Signals are used by the logging system, so we can't invoke the logging system
+	// directly for warnings. :-(
+	static void report_invalid_signal_connection_warning();
+	static void report_non_map_signal_connection_warning();
 };
 
 template <typename... Args>
@@ -299,10 +302,10 @@ void SignalType<Args...>::deserialize(Signal<Args...>& signal, const ArchiveNode
 				if (receiver_node.get(receiver) && slot_node.get(slot)) {
 					node.register_signal_for_deserialization(&signal, receiver, slot);
 				} else {
-					std::cerr << "WARNING: Invalid signal connection.";
+					this->report_invalid_signal_connection_warning();
 				}
 			} else {
-				std::cerr << "WARNING: Non-map signal connection node. Did you forget to write a scene upgrader?\n";
+				this->report_non_map_signal_connection_warning();
 			}
 		}
 	}
