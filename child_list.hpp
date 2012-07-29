@@ -11,9 +11,10 @@ namespace falling {
 
 struct ChildList : Array<ObjectPtr<>> {
 	ChildList() {}
-	ChildList(const ChildList&) = delete;
+	ChildList(const ChildList&) = default;
 	ChildList(ChildList&& other) = default;
 	ChildList& operator=(ChildList&& other) = default;
+	ChildList& operator=(const ChildList& other) = default;
 };
 
 struct ChildListType : VariableLengthArrayType<ChildList> {
