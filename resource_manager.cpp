@@ -11,7 +11,8 @@
 #include "io/resource_loader.hpp"
 
 #include <string>
-#include <fstream>
+
+#include "io/file_stream.hpp"
 
 namespace falling {
 	struct ResourceManager::Impl {
@@ -51,8 +52,7 @@ namespace falling {
 		// TODO: Consider derived resources.
 		
 		std::string path = path_for_resource(rid);
-		std::ifstream f;
-		f.open(path);
+		InputFileStream f = InputFileStream::open(path);
 		if (f.is_open()) {
 			Resource* resource = loader->allocate();
 			resource->id_ = rid;

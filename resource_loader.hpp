@@ -9,12 +9,14 @@
 #ifndef falling_resource_loader_hpp
 #define falling_resource_loader_hpp
 
+#include "io/input_stream.hpp"
+
 namespace falling {
 	class ResourceLoaderBase {
 	public:
 		virtual Resource* allocate() = 0;
 		virtual void free(Resource*) = 0;
-		virtual bool load_resource(Resource* resource, std::istream& input) = 0;
+		virtual bool load_resource(Resource* resource, InputStream& input) = 0;
 	};
 	
 	template <typename T>
@@ -23,9 +25,9 @@ namespace falling {
 		virtual ~ResourceLoader() {}
 		Resource* allocate() override { return new T; }
 		void free(Resource* resource) override { delete resource; }
-		virtual bool load_resource(T& resource, std::istream& input) = 0;
+		virtual bool load_resource(T& resource, InputStream& input) = 0;
 	private:
-		bool load_resource(Resource* resource, std::istream& input) override {
+		bool load_resource(Resource* resource, InputStream& input) override {
 			return load_resource(*(T*)resource, input);
 		}
 	};

@@ -6,4 +6,8 @@
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#include <iostream>
+#include "io/memory_stream.hpp"
+
+namespace falling {
+	
+}
