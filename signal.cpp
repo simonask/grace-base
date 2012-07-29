@@ -1,12 +1,12 @@
 #include "object/signal.hpp"
 #include "object/object_type.hpp"
 #include "base/log.hpp"
-#include <sstream>
+#include "io/string_stream.hpp"
 
 namespace falling {
 
 std::string SignalTypeBase::build_signal_name(const Array<const Type*>& signature) {
-	std::stringstream ss;
+	StringStream ss;
 	ss << "Signal<";
 	for (size_t i = 0; i < signature.size(); ++i) {
 		ss << signature[i]->name();

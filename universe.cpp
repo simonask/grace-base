@@ -2,6 +2,7 @@
 #include "object/object_type.hpp"
 
 #include <iomanip>
+#include <sstream>
 
 namespace falling {
 
@@ -52,8 +53,8 @@ bool BasicUniverse::rename_object(ObjectPtr<> object, std::string new_id) {
 		
 		// increment n and try the name until we find one that's available
 		do {
-			std::stringstream create_new_name;
-			create_new_name << base_name << std::setw(2) << std::setfill('0') << n;
+			StringStream create_new_name;
+			create_new_name << base_name << format("%02d", n);
 			new_name = std::move(create_new_name.str());
 		} while (object_map_.find(new_name) != object_map_.end());
 		
