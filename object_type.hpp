@@ -8,6 +8,7 @@
 #include <new>
 #include "type/attribute.hpp"
 #include "object/signal.hpp"
+#include "object/universe.hpp"
 
 namespace falling {
 
@@ -85,6 +86,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 
 	Array<AttributeForObject<T>*> properties_;
 	Array<SlotForObject<T>*> slots_;
+	Array<std::string> categories_;
 	bool is_abstract_;
 };
 
@@ -96,6 +98,10 @@ void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& u
 	
 	for (auto& property: properties_) {
 		property->deserialize_attribute(&object, node[property->name()], universe);
+	}
+	
+	for (auto category: categories_) {
+		universe.register_object_for_category(ObjectPtr<T>(&object), category);
 	}
 }
 

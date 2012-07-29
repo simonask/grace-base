@@ -6,6 +6,8 @@
 #include <map>
 #include "object/object.hpp"
 #include "object/objectptr.hpp"
+#include "base/array_ref.hpp"
+#include "base/log.hpp"
 
 namespace falling {
 
@@ -28,7 +30,73 @@ struct IUniverse {
 		ASSERT(ptr != nullptr); // create_object did not create an instance of T.
 		return ptr;
 	}
+	
+	template <typename T>
+	void register_object_for_category(ObjectPtr<T> object, const std::string& category_name);
+	template <typename T>
+	void unregister_object_from_all_categories(ObjectPtr<T> object);
+	template <typename T>
+	ArrayRef<ObjectPtr<T>> objects_for_category(const std::string& category_name);
+	
+private:
+	struct ObjectCategoryBase;
+	template <typename T> struct ObjectCategory;
+	
+	typedef std::map<std::string, std::unique_ptr<ObjectCategoryBase>> CategoryForNameMap;
+	typedef std::map<const ObjectTypeBase*, CategoryForNameMap> CategoriesForTypeMap;
+	CategoriesForTypeMap categories;
 };
+	
+	struct IUniverse::ObjectCategoryBase {
+		virtual ~ObjectCategoryBase() {}
+	};
+	
+	template <typename T>
+	struct IUniverse::ObjectCategory : ObjectCategoryBase {
+		Array<ObjectPtr<T>> objects;
+	};
+	
+	template <typename T>
+	void IUniverse::register_object_for_category(ObjectPtr<T> object, const std::string &category_name) {
+		const ObjectTypeBase* type = get_type<T>();
+		auto categories_for_type_it = categories.find(type);
+		if (categories_for_type_it == categories.end()) {
+			auto pair = categories.emplace(type);
+			categories_for_type_it = pair.first;
+		}
+		
+		CategoryForNameMap& map = categories_for_type_it->second;
+		auto category_for_name_it = map.find(category_name);
+		if (category_for_name_it == map.end()) {
+			category_for_name_it = map.emplace(category_name, std::unique_ptr<ObjectCategoryBase>(new ObjectCategory<T>())).first;
+		}
+		
+		ObjectCategoryBase* category_base = category_for_name_it->second.get();
+		auto category = dynamic_cast<ObjectCategory<T>*>(category_base);
+		if (category == nullptr) {
+			Error() << "Category '" << category_name << "' has been initialized with a wrong type.";
+		} else {
+			category->objects.push_back(object);
+		}
+	}
+	
+	template <typename T>
+	void IUniverse::unregister_object_from_all_categories(ObjectPtr<T> object) {
+		// TODO!!
+	}
+	
+	template <typename T>
+	ArrayRef<ObjectPtr<T>> IUniverse::objects_for_category(const std::string &category_name) {
+		auto it1 = categories.find(get_type<T>());
+		if (it1 != categories.end()) {
+			auto it2 = it1->second.find(category_name);
+			if (it2 != it1->second.end()) {
+				auto category = dynamic_cast<ObjectCategory<T>*>(it2->second.get());
+				return category->objects;
+			}
+		}
+		return ArrayRef<ObjectPtr<T>>();
+	}
 
 struct BasicUniverse : IUniverse {
 	ObjectPtr<> create_object(const DerivedType* type, std::string) override;
