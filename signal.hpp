@@ -193,6 +193,7 @@ template <typename T>
 struct SlotForObject {
 	virtual ~SlotForObject() {}
 	virtual const std::string& slot_name() const = 0;
+	virtual bool invoke_with_serialized_arguments(T* object, const ArchiveNode& arguments, IUniverse&) const = 0;
 };
 
 template <typename... Args>
@@ -224,6 +225,35 @@ bool Signal<Args...>::connect(ObjectPtr<> ptr, const SlotAttributeBase* slot) {
 	invokers_.push_back(invoker);
 	return true;
 }
+	
+template <size_t Idx, typename... Args>
+bool
+deserialize_element(std::tuple<Args...>& tuple, const ArchiveNode& serialized_arguments, IUniverse& universe) {
+	const ArchiveNode& value = serialized_arguments[Idx];
+	typedef typename std::tuple_element<Idx, std::tuple<Args...>>::type ElementType;
+	auto type = get_type<ElementType>();
+	ElementType& element = std::get<Idx>(tuple);
+	type->deserialize(reinterpret_cast<byte*>(&element), value, universe);
+	return true; // TODO: Consider this.
+}
+
+template <size_t Idx, typename... Args>
+typename std::enable_if<(Idx < sizeof...(Args)), bool>::type
+deserialize_elements(std::tuple<Args...>& tuple, const ArchiveNode& serialized_arguments, IUniverse& universe) {
+	return deserialize_element<Idx, Args...>(tuple, serialized_arguments, universe) &&
+	deserialize_elements<Idx+1>(tuple, serialized_arguments, universe);
+}
+
+template <size_t Idx, typename... Args>
+typename std::enable_if<(Idx == sizeof...(Args)), bool>::type
+deserialize_elements(std::tuple<Args...>& tuple, const ArchiveNode&, IUniverse&) {
+	return true;
+}
+
+template <typename... Args>
+bool deserialize_all(std::tuple<Args...>& tuple, const ArchiveNode& serialized_arguments, IUniverse& universe) {
+	return deserialize_elements<0>(tuple, serialized_arguments, universe);
+}
 
 template <typename T, typename R, typename... Args>
 struct SlotAttribute : SlotForObject<T>, SlotWithSignature<Args...> {
@@ -239,6 +269,18 @@ struct SlotAttribute : SlotForObject<T>, SlotWithSignature<Args...> {
 		ObjectPtr<T> ptr = aspect_cast<T>(base_ptr);
 		if (ptr == nullptr) return nullptr;
 		return new MemberSlotInvoker<T, R, Args...>(ptr.get(), function_);
+	}
+	
+	bool invoke_with_serialized_arguments(T* object, const ArchiveNode& serialized_arguments, IUniverse& universe) const {
+		std::tuple<Args...> arguments;
+		if (sizeof...(Args) != 0) {
+			if (!serialized_arguments.is_array() || serialized_arguments.array_size() < sizeof...(Args))
+				return false;
+			if (!deserialize_all(arguments, serialized_arguments, universe))
+				return false;
+		}
+		apply_tuple_to_member(object, function_, std::move(arguments));
+		return true;
 	}
 	
 	const std::string& slot_name() const { return this->name(); }
