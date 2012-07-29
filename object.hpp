@@ -42,14 +42,12 @@ struct Object {
 	const DerivedType* object_type() const { return type_; }
 	void set_object_type__(const DerivedType* t) { type_ = t; }
 	size_t object_offset() const { return offset_; }
-	void set_object_offset__(size_t o) { offset_ = o; }
-protected:
-	void operator delete(void* ptr) {}
-	void* operator new(size_t) { return nullptr; }
+	void set_object_offset__(uint32 o) { offset_ = o; }
+
 private:
 	const DerivedType* type_;
-	size_t offset_; // offset within composite
 	IUniverse* universe_;
+	uint32 offset_; // offset within composite
 	uint32 universe_data_;
 };
 
