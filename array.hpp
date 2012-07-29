@@ -122,8 +122,12 @@ void Array<T>::push_back(T element) {
 template <typename T>
 void Array<T>::reserve(size_t new_size) {
 	if (new_size > alloc_size_) {
-		uint32 req_size = alloc_size_ ? alloc_size_ : 1;
-		while (req_size < new_size) req_size *= 2;
+		size_t req_size = alloc_size_ ? alloc_size_ : 1;
+		if (new_size > 0x2000) { // Allocate precisely as much as needed when above 8K
+			req_size = new_size;
+		} else {
+			while (req_size < new_size) req_size *= 2;
+		}
 		byte* p = new byte[sizeof(T)*req_size];
 		for (uint32 i = 0; i < size_; ++i) {
 			new(p+sizeof(T)*i) T(std::move(data_[i]));
@@ -131,7 +135,7 @@ void Array<T>::reserve(size_t new_size) {
 		}
 		delete[] reinterpret_cast<byte*>(data_);
 		data_ = reinterpret_cast<T*>(p);
-		alloc_size_ = req_size;
+		alloc_size_ = (uint32)req_size;
 	}
 }
 
