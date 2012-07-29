@@ -6,4 +6,12 @@
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#include "spatial_object.h"
+#include "object/spatial_object.hpp"
+#include "type/vector_type.hpp"
+#include "object/reflect.hpp"
+
+namespace falling {
+	BEGIN_TYPE_INFO(SpatialObject)
+	property(&SpatialObject::position, "position", "World Position");
+	END_TYPE_INFO()
+}

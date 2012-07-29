@@ -9,6 +9,17 @@
 #ifndef falling_spatial_object_hpp
 #define falling_spatial_object_hpp
 
+#include "object/object.hpp"
+#include "base/vector.hpp"
 
+namespace falling {
+	class SpatialObject : public Object {
+		REFLECT;
+	public:
+		vec2 position;
+		vec2 size;
+		vec4 bounds; // x, y, w, h
+	};
+}
 
 #endif
