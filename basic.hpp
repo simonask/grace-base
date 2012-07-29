@@ -37,6 +37,18 @@ public:
 	static const bool Value = (sizeof(f<T>(0)) == sizeof(MatchedReturnType)); 
 };
 
+#define FORWARD_TO_MEMBER(METHOD_NAME, MEMBER, MEMBER_TYPE) \
+template <typename ForwardType_ = MEMBER_TYPE, typename... ForwardArgs_> \
+auto METHOD_NAME(ForwardArgs_&&... args) -> decltype(ForwardType_().METHOD_NAME(std::forward<ForwardArgs_>(args)...)) { \
+return MEMBER.METHOD_NAME(std::forward<ForwardArgs_>(args)...); \
+}
+	
+#define FORWARD_TO_MEMBER_CONST(METHOD_NAME, MEMBER, MEMBER_TYPE) \
+template <typename ForwardType_ = MEMBER_TYPE, typename... ForwardArgs_> \
+auto METHOD_NAME(ForwardArgs_&&... args) const -> decltype(((const ForwardType_)ForwardType_()).METHOD_NAME(std::forward<ForwardArgs_>(args)...)) { \
+return MEMBER.METHOD_NAME(std::forward<ForwardArgs_>(args)...); \
+}
+
 template <typename T>
 struct RemoveConstRef {
 	typedef typename std::remove_const<typename std::remove_reference<T>::type>::type Type;
