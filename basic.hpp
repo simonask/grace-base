@@ -79,6 +79,20 @@ template <typename T>
 void destruct(T* ptr) {
 	ptr->~T();
 }
+	
+	template <typename T, typename... Args>
+	inline void construct_range(T* begin, T* end, Args&&... args) {
+		for (T* p = begin; p != end; ++p) {
+			new(p) T(std::forward<Args>(args)...);
+		}
+	}
+	
+	template <typename T>
+	inline void destruct_range(T* begin, T* end) {
+		for (T* p = begin; p != end; ++p) {
+			p->~T();
+		}
+	}
 
 template <typename Container, typename Key, typename DefaultValue>
 auto find_or(Container& container, const Key& key, const DefaultValue& default_value)
