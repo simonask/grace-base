@@ -18,6 +18,9 @@ namespace falling {
 	class MemoryStream : public InputStream {
 	public:
 		MemoryStream(const byte* begin, const byte* end) : begin_(begin), end_(end), current_(begin) {}
+		// MemoryStream is safe to copy, because it doesn't own its data.
+		MemoryStream(MemoryStream&& other) = default;
+		MemoryStream& operator=(const MemoryStream& other) = default;
 		
 		// InputStream API
 		bool is_readable() const override { return current_ < end_; }
@@ -61,18 +64,19 @@ namespace falling {
 		MemoryBufferStream& operator=(MemoryBufferStream&& other) = default;
 		
 		// InputStream API
-		bool is_readable() const override;
-		size_t read(byte* buffer, size_t max) override;
-		size_t tell_read() const override;
-		bool seek_read(size_t pos) override;
+		bool is_readable() const final;
+		size_t read(byte* buffer, size_t max) final;
+		size_t tell_read() const final;
+		bool seek_read(size_t pos) final;
 		
 		// OutputStream API
-		bool is_writable() const override;
-		size_t write(const byte* buffer, size_t max);
-		size_t tell_write() const override;
-		bool seek_write(size_t pos) override;
+		bool is_writable() const final;
+		size_t write(const byte* buffer, size_t max) final;
+		size_t tell_write() const final;
+		bool seek_write(size_t pos) final;
 		
 		// MemoryBufferStream API
+		void clear();
 		size_t size() const { return buffer_.size(); }
 		size_t data_available() const { return buffer_.end() - read_pos_; }
 		
@@ -80,9 +84,21 @@ namespace falling {
 		void insert(InputIterator begin, InputIterator end) {
 			size_t rp = read_pos_ - buffer_.begin();
 			size_t wp = write_pos_ - buffer_.begin();
-			buffer_.insert(begin, end);
+			buffer_.insert(write_pos_, begin, end);
 			read_pos_ = buffer_.begin() + rp;
 			write_pos_ = buffer_.begin() + wp;
+			write_pos_ += end - begin;
+		}
+		
+		template <typename OutputIterator>
+		size_t copy_to(OutputIterator begin, OutputIterator end) const {
+			size_t output_len = end - begin;
+			size_t input_len = buffer_.size();
+			size_t len = output_len < input_len ? output_len : input_len;
+			auto i0 = buffer_.begin();
+			auto i1 = i0 + len;
+			std::copy(i0, i1, begin);
+			return len;
 		}
 	private:
 		typedef typename std::deque<byte>::iterator Position;
@@ -124,7 +140,9 @@ namespace falling {
 		size_t bytes_until_end = buffer_.end() - write_pos_;
 		ssize_t enlarge_by = (ssize_t)n - (ssize_t)bytes_until_end;
 		if (enlarge_by > 0) {
+			size_t wp = tell_write();
 			buffer_.resize(buffer_.size() + enlarge_by);
+			seek_write(wp);
 		}
 		size_t i = 0;
 		for (auto it = write_pos_; i < n; ++i, ++it) {
@@ -144,6 +162,11 @@ namespace falling {
 		}
 		write_pos_ = buffer_.begin() + pos;
 		return true;
+	}
+	
+	inline void MemoryBufferStream::clear() {
+		buffer_.clear();
+		read_pos_ = write_pos_ = buffer_.begin();
 	}
 }
 
