@@ -9,6 +9,39 @@
 #ifndef falling_resource_hpp
 #define falling_resource_hpp
 
+#include "base/basic.hpp"
+#include "object/object.hpp"
 
+#include <string>
+
+namespace falling {
+	typedef std::string ResourceID;
+	
+	class ResourceLoaderBase;
+	
+	class Resource {
+	public:
+		Resource() : refcount_(0), loader_(nullptr) {}
+		virtual ~Resource() {}
+		
+		const ResourceID& resource_id() const { return id_; }
+		void retain();
+		void release();
+		int64 refcount() { return refcount_; }
+	private:
+		ResourceID id_;
+		int64 refcount_;
+		ResourceLoaderBase* loader_;
+		friend class ResourceManager;
+	};
+	
+	inline void Resource::retain() {
+		++refcount_;
+	}
+	
+	inline void Resource::release() {
+		--refcount_;
+	}
+}
 
 #endif
