@@ -1,4 +1,5 @@
 #include "base/bag.hpp"
+#include "base/vector.hpp"
 
 #include <sys/mman.h>
 
@@ -58,6 +59,7 @@ void BagMemoryHandler::clear() {
 	}
 	current_ = nullptr;
 	head_ = nullptr;
+	free_list_ = nullptr;
 }
 
 }
