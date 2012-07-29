@@ -50,12 +50,12 @@ public:
 #if HAS_LAMBDAS
 	template <typename Functor>
 	auto map(Functor functor)
-	-> typename MaybeIfImpl<Maybe<T>, decltype(functor(infer_value_type()))>::ResultType {
+	-> typename MaybeIfImpl<Maybe<T>, decltype(functor(*((T*)nullptr)))>::ResultType {
 		return MaybeIfImpl<Maybe<T>, decltype(functor(infer_value_type()))>::maybe_if(*this, functor);
 	}
 	template <typename Functor>
 	auto map(Functor functor) const
-	-> typename MaybeIfImpl<const Maybe<T>, decltype(functor(infer_value_type()))>::ResultType {
+	-> typename MaybeIfImpl<const Maybe<T>, decltype(functor(*((const T*)nullptr)))>::ResultType {
 		return MaybeIfImpl<const Maybe<T>, decltype(functor(infer_value_type()))>::maybe_if(*this, functor);
 	}
 #endif
