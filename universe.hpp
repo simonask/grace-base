@@ -18,6 +18,7 @@ struct IUniverse {
 	virtual const std::string& get_id(ObjectPtr<const Object> object) const = 0;
 	virtual bool rename_object(ObjectPtr<> object, std::string new_id) = 0;
 	virtual ObjectPtr<> root() const = 0;
+	virtual void set_root(ObjectPtr<> root) = 0;
 	virtual ~IUniverse() {}
 	
 	template <typename T>
@@ -38,6 +39,10 @@ struct BasicUniverse : IUniverse {
 	const std::string& get_id(ObjectPtr<const Object> object) const override;
 	bool rename_object(ObjectPtr<> object, std::string) override;
 	ObjectPtr<> root() const override { return root_; }
+	void set_root(ObjectPtr<> r) {
+		ASSERT(r != nullptr && r->universe() == this);
+		root_ = r;
+	}
 	
 	BasicUniverse() : root_(nullptr) {}
 	~BasicUniverse() { clear(); }
