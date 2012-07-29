@@ -337,6 +337,47 @@ namespace falling {
 		return simd::shuffle<X_, Y_>(vec.m);
 	}
 	
+	template <typename T>
+	TVector<T,4> rotate_right1(TVector<T,4> vec) {
+		return shuffle<W,X,Y,Z>(vec);
+	}
+	
+	template <size_t I, typename T>
+	TVector<T,4> rotate_right(TVector<T,4> vec) {
+		for (size_t i = 0; i < I; ++i) {
+			vec = rotate_right1(vec);
+		}
+		return vec;
+	}
+	
+	template <typename T>
+	TVector<T,4> rotate_left1(TVector<T,4> vec) {
+		return shuffle<Y,Z,W,X>(vec);
+	}
+	
+	template <size_t I, typename T>
+	TVector<T,4> rotate_left(TVector<T,4> vec) {
+		for (size_t i = 0; i < I; ++i) {
+			vec = rotate_left1(vec);
+		}
+		return vec;
+	}
+	
+	template <typename T>
+	TVector<T,4> shift_right1(TVector<T,4> vec) {
+		vec = rotate_right1(vec);
+		vec.x = 0;
+		return vec;
+	}
+	
+	template <size_t I, typename T>
+	TVector<T,4> shift_right(TVector<T,4> vec) {
+		for (size_t i = 0; i < I; ++i) {
+			vec = shift_right1(vec);
+		}
+		return vec;
+	}
+	
 	template <Axis A_, typename T>
 	TVector<T, 4> splat(TVector<T, 4> vec) {
 		return shuffle<A_, A_, A_, A_>(vec);
