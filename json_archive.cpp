@@ -22,27 +22,31 @@ const ArchiveNode& JSONArchive::root() const {
 	return *root_;
 }
 
-void JSONArchive::write(std::ostream& os) const {
+void JSONArchive::write(OutputStream& oss) const {
+	FormattedStream os(oss);
 	os << "{ \"root\": ";
 	if (root_ != nullptr)
 		root_->write(os, false, 1);
 	os << "\n}\n";
 }
 
-static void print_indentation(std::ostream& os, int level) {
+static void print_indentation(OutputStream& oss, int level) {
+	FormattedStream os(oss);
 	for (int i = 0; i < level; ++i) {
 		os << "  ";
 	}
 }
 
-static void print_string(std::ostream& os, const std::string& str) {
+static void print_string(OutputStream& oss, const std::string& str) {
+	FormattedStream os(oss);
 	// TODO: Escape
 	os << '"';
 	os << str;
 	os << '"';
 }
 
-void JSONArchiveNode::write(std::ostream& os, bool print_inline, int indent) const {
+void JSONArchiveNode::write(OutputStream& oss, bool print_inline, int indent) const {
+	FormattedStream os(oss);
 	switch (type()) {
 		case ArchiveNodeType::Empty: os << "null"; break;
 		case ArchiveNodeType::Array: {

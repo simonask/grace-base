@@ -13,8 +13,8 @@ struct JSONArchive;
 
 struct JSONArchiveNode : ArchiveNode {
 	JSONArchiveNode(JSONArchive& archive, ArchiveNodeType::Type t = ArchiveNodeType::Empty);
-	void write(std::ostream& os) const { write(os, false, 0); }
-	void write(std::ostream& os, bool print_inline, int indent) const;
+	void write(OutputStream& os) const { write(os, false, 0); }
+	void write(OutputStream& os, bool print_inline, int indent) const;
 	bool read(const byte*& p, const byte* end, std::string& out_error);
 };
 
@@ -22,7 +22,7 @@ struct JSONArchive : Archive {
 	JSONArchive();
 	ArchiveNode& root() override;
 	const ArchiveNode& root() const override;
-	void write(std::ostream& os) const override;
+	void write(OutputStream& os) const override;
 	size_t read(const byte* begin, const byte* end, std::string& out_error) override;
 	ArchiveNode* make(ArchiveNode::Type t = ArchiveNodeType::Empty) override { return make_internal(t); }
 	

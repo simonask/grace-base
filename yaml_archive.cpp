@@ -165,12 +165,12 @@ namespace falling {
 		
 		struct YAMLEmitterState {
 			const YAMLArchive& archive;
-			std::ostream& os;
+			OutputStream& os;
 			yaml_emitter_t* emitter;
-			YAMLEmitterState(const YAMLArchive& archive, std::ostream& os, yaml_emitter_t* emitter) : archive(archive), os(os), emitter(emitter) {}
+			YAMLEmitterState(const YAMLArchive& archive, OutputStream& os, yaml_emitter_t* emitter) : archive(archive), os(os), emitter(emitter) {}
 			
 			int emit(const byte* buffer, size_t sz) {
-				os.write((const char*)buffer, sz);
+				os.write(buffer, sz);
 				return 1;
 			}
 			
@@ -195,7 +195,7 @@ namespace falling {
 						break;
 					}
 					case ArchiveNodeType::Float: {
-						std::stringstream ss;
+						StringStream ss;
 						float64 value;
 						node->get(value);
 						ss << value;
@@ -203,7 +203,7 @@ namespace falling {
 						break;
 					}
 					case ArchiveNodeType::Integer: {
-						std::stringstream ss;
+						StringStream ss;
 						int64 value;
 						node->get(value);
 						ss << value;
@@ -270,7 +270,7 @@ namespace falling {
 		clear();
 	}
 	
-	void YAMLArchive::write(std::ostream& os) const {
+	void YAMLArchive::write(OutputStream& os) const {
 		yaml_emitter_t emitter;
 		yaml_emitter_initialize(&emitter);
 		YAMLEmitterState emitter_state(*this, os, &emitter);
@@ -317,7 +317,7 @@ namespace falling {
 		yaml_event_t event;
 		do {
 			if (yaml_parser_parse(&parser, &event) == 0) {
-				std::stringstream ss;
+				StringStream ss;
 				ss << "libyaml: Error " << parser.error << " (" << parser.problem << ") at ";
 				ss << "line " << parser.problem_mark.line << ", column " << parser.problem_mark.column << ".";
 				out_error = ss.str();

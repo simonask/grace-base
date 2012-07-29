@@ -26,7 +26,7 @@ struct Archive {
 	virtual ~Archive() {}
 	virtual ArchiveNode& root() = 0;
 	virtual const ArchiveNode& root() const = 0;
-	virtual void write(std::ostream& os) const = 0;
+	virtual void write(OutputStream& os) const = 0;
 	virtual size_t read(const byte* begin, const byte* end, std::string& out_error) = 0;
 	size_t read_stream(InputFileStream& input, std::string& out_error);
 	virtual ArchiveNode* make(NodeType type = NodeType::Empty) = 0;

@@ -11,21 +11,21 @@
 
 namespace falling {
 	namespace {
-		void write_byte(std::ostream& os, byte b) {
-			os << b;
+		void write_byte(OutputStream& os, byte b) {
+			os.write(&b, 1);
 		}
 		
 		template <typename T>
-		void write_bytes(std::ostream& os, const T* value) {
+		void write_bytes(OutputStream& os, const T* value) {
 			auto ptr = reinterpret_cast<const byte*>(value);
 			for (auto p = ptr; p < ptr+sizeof(T); ++p) {
 				write_byte(os, *p);
 			}
 		}
 		
-		void write_bytes(std::ostream& os, const char* begin, size_t len) {
+		void write_bytes(OutputStream& os, const char* begin, size_t len) {
 			for (auto p = begin; p < begin+len; ++p) {
-				os << *p;
+				write_byte(os, *p);
 			}
 		}
 		
@@ -41,7 +41,7 @@ namespace falling {
 		}
 	}
 	
-	void BinaryArchiveNode::write(std::ostream& os) const {
+	void BinaryArchiveNode::write(OutputStream& os) const {
 		ArchiveNodeType::Type t = type();
 		ASSERT(t <= UINT8_MAX);
 		write_byte(os, (byte)t);
@@ -171,13 +171,13 @@ namespace falling {
 		clear();
 	}
 	
-	void BinaryArchive::write(std::ostream &os) const {
-		std::stringstream ss;
+	void BinaryArchive::write(OutputStream &os) const {
+		StringStream ss;
 		root_.write(ss);
 		std::string data = ss.str();
 		uint32 stream_length = (uint32)data.size();
 		write_bytes(os, &stream_length);
-		os << std::move(data);
+		FormattedStream(os) << data;
 	}
 	
 	size_t BinaryArchive::read(const byte* begin, const byte* end, std::string& out_error) {
