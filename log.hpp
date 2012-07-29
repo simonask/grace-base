@@ -9,7 +9,7 @@
 #ifndef falling_log_hpp
 #define falling_log_hpp
 
-#include <sstream>
+#include "io/string_stream.hpp"
 
 #include "object/signal.hpp"
 
@@ -43,7 +43,7 @@ namespace falling {
 		
 		bool initialized = false;
 		LogLevel level;
-		std::stringstream ss;
+		StringStream ss;
 	};
 	
 	
