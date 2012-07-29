@@ -3,8 +3,9 @@
 #define CHILD_LIST_HPP_B25F8VH4
 
 #include "base/array.hpp"
+#include "type/array_type.hpp"
 #include "object/objectptr.hpp"
-#include "base/array_type.hpp"
+#include "object/object_type.hpp"
 
 namespace falling {
 
