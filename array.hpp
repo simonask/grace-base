@@ -3,6 +3,7 @@
 #define ARRAY_HPP_6MM1YKSV
 
 #include "base/basic.hpp"
+#include "base/array_ref.hpp"
 
 #if defined(USE_STD_VECTOR)
 #include <vector>
@@ -20,17 +21,26 @@ public:
 	Array() : data_(nullptr), size_(0), alloc_size_(0) {}
 	Array(const Array<T>& other);
 	Array(Array<T>&& other);
+	explicit Array(ArrayRef<T> array); // TODO!
 	~Array();
 	Array<T>& operator=(const Array<T>& other);
 	Array<T>& operator=(Array<T>&& other);
 	
-	T& operator[](uint32 idx);
-	const T& operator[](uint32 idx) const;
+	operator ArrayRef<T>() {
+		return ArrayRef<T>(data_, data_ + size_);
+	}
+	
+	operator ArrayRef<const T>() const {
+		return ArrayRef<const T>(data_, data_ + size_);
+	}
+	
+	T& operator[](size_t idx);
+	const T& operator[](size_t idx) const;
 	
 	uint32 size() const { return size_; }
 	void push_back(T element);
-	void reserve(uint32);
-	void resize(uint32, T fill = T());
+	void reserve(size_t);
+	void resize(size_t, T fill = T());
 	void clear(bool deallocate = true);
 	
 	template <typename InputIterator>
@@ -92,13 +102,13 @@ Array<T>& Array<T>::operator=(Array<T>&& other) {
 }
 
 template <typename T>
-T& Array<T>::operator[](uint32 idx) {
+T& Array<T>::operator[](size_t idx) {
 	ASSERT(idx < size_);
 	return data_[idx];
 }
 
 template <typename T>
-const T& Array<T>::operator[](uint32 idx) const {
+const T& Array<T>::operator[](size_t idx) const {
 	ASSERT(idx < size_);
 	return data_[idx];
 }
@@ -110,7 +120,7 @@ void Array<T>::push_back(T element) {
 }
 
 template <typename T>
-void Array<T>::reserve(uint32 new_size) {
+void Array<T>::reserve(size_t new_size) {
 	if (new_size > alloc_size_) {
 		uint32 req_size = alloc_size_ ? alloc_size_ : 1;
 		while (req_size < new_size) req_size *= 2;
@@ -126,7 +136,7 @@ void Array<T>::reserve(uint32 new_size) {
 }
 
 template <typename T>
-void Array<T>::resize(uint32 new_size, T x) {
+void Array<T>::resize(size_t new_size, T x) {
 	reserve(new_size);
 	while (size_ < new_size) push_back(x);
 }
