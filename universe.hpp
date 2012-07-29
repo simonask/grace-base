@@ -21,6 +21,7 @@ struct IUniverse {
 	virtual bool rename_object(ObjectPtr<> object, std::string new_id) = 0;
 	virtual ObjectPtr<> root() const = 0;
 	virtual void set_root(ObjectPtr<> root) = 0;
+	virtual void initialize_all() = 0;
 	virtual ~IUniverse() {}
 	
 	template <typename T>
@@ -111,6 +112,7 @@ struct BasicUniverse : IUniverse {
 		ASSERT(r != nullptr && r->universe() == this);
 		root_ = r;
 	}
+	void initialize_all();
 	
 	BasicUniverse() : root_(nullptr) {}
 	~BasicUniverse() { clear(); }

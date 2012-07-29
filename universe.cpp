@@ -74,6 +74,12 @@ const std::string& BasicUniverse::get_id(ObjectPtr<const Object> object) const {
 	}
 	return empty_id_;
 }
+	
+void BasicUniverse::initialize_all() {
+	for (auto pair: object_map_) {
+		pair.second->initialize();
+	}
+}
 
 void BasicUniverse::clear() {
 	for (auto object: memory_map_) {
