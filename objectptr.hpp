@@ -24,7 +24,7 @@ struct ObjectPtr/*<T, typename std::enable_if<IsDerivedFromObject<T>::Value>::ty
 	template <typename U>
 	ObjectPtr<T>& operator=(U* other) { ptr_ = other; return *this; }
 	template <typename U>
-	ObjectPtr<T>& operator=(ObjectPtr<U> other) { ptr_ = other.ptr_; return *this; }
+	ObjectPtr<T>& operator=(ObjectPtr<U> other) { ptr_ = other.get(); return *this; }
 	ObjectPtr<T>& operator=(const ObjectPtr<T>& other) { ptr_ = other.ptr_; return *this; }
 	template <typename U>
 	bool operator==(ObjectPtr<U> other) const { ptr_ == other.ptr_; }
