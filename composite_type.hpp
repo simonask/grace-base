@@ -13,15 +13,18 @@ struct CompositeType : DerivedType {
 	CompositeType(std::string name, const ObjectTypeBase* base_type = nullptr);
 	
 	const ObjectTypeBase* base_type() const;
+	size_t base_size() const;
 	void add_aspect(const DerivedType* aspect);
 	void freeze() { frozen_ = true; }
+	size_t num_aspects() const { return aspects_.size(); }
+	Object* get_aspect_in_object(Object* object, size_t idx) const;
 	
 	// Type interface
 	void construct(byte* place, IUniverse&) const override;
 	void destruct(byte* place, IUniverse&) const override;
 	void deserialize(byte* place, const ArchiveNode& node, IUniverse&) const override;
 	void serialize(const byte* place, ArchiveNode& node, IUniverse&) const override;
-	const std::string& name() const override { return name_; }
+	std::string name() const override { return name_; }
 	size_t size() const override { return size_; }
 	
 	// DerivedType interface
@@ -44,13 +47,20 @@ private:
 };
 
 inline size_t CompositeType::offset_of_element(size_t idx) const {
-	size_t offset = sizeof(Object);
+	size_t offset = base_size();
 	for (size_t i = 0; i < aspects_.size(); ++i) {
 		if (i == idx) return offset;
 		offset += aspects_[i]->size();
 	}
 	ASSERT(false); // unreachable
 	return SIZE_T_MAX;
+}
+	
+inline Object* CompositeType::get_aspect_in_object(Object *object, size_t idx) const {
+	ASSERT(object->object_type() == this);
+	byte* memory = reinterpret_cast<byte*>(object);
+	size_t offset = offset_of_element(idx);
+	return reinterpret_cast<Object*>(memory + offset);
 }
 
 }

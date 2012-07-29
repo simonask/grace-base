@@ -6,6 +6,10 @@ namespace falling {
 CompositeType::CompositeType(std::string name, const ObjectTypeBase* base_type) : base_type_(base_type), name_(std::move(name)), frozen_(false) {
 	size_ = this->base_type()->size();
 }
+	
+size_t CompositeType::base_size() const {
+	return base_type()->size();
+}
 
 void CompositeType::add_aspect(const DerivedType* aspect) {
 	ASSERT(!frozen_);
@@ -96,7 +100,7 @@ void CompositeType::construct(byte* place, IUniverse& universe) const {
 	for (auto aspect: aspects_) {
 		aspect->construct(place + offset, universe);
 		Object* subobject = reinterpret_cast<Object*>(place + offset);
-		subobject->set_object_offset__(offset);
+		subobject->set_object_offset__((uint32)offset);
 		subobject->set_object_id(aspect->name()); // might be renamed later by deserialization
 		offset += aspect->size();
 	}
@@ -125,7 +129,7 @@ void CompositeType::deserialize(byte* place, const ArchiveNode& node, IUniverse&
 			const ArchiveNode& aspect_node = aspect_array[i];
 			aspects_[i]->deserialize(place + offset, aspect_node, universe);
 			Object* subobject = reinterpret_cast<Object*>(place + offset);
-			subobject->set_object_offset__(offset);
+			subobject->set_object_offset__((uint32)offset);
 			offset += aspects_[i]->size();
 		}
 		ASSERT(offset == size_);

@@ -15,7 +15,7 @@ struct SlotAttributeBase;
 template <typename T> struct SlotForObject;
 
 struct ObjectTypeBase : DerivedType {
-	const std::string& name() const override { return name_; }
+	std::string name() const override { return name_; }
 	const std::string& description() const { return description_; }
 	Object* cast(const DerivedType* to, Object* o) const override;
 	const ObjectTypeBase* super() const;
@@ -37,7 +37,7 @@ struct ObjectTypeBase : DerivedType {
 		}
 		return nullptr;
 	}
-protected:
+	
 	ObjectTypeBase(const ObjectTypeBase* super, std::string name, std::string description) : super_(super), name_(std::move(name)), description_(std::move(description)) {}
 	
 	const ObjectTypeBase* super_;
@@ -55,18 +55,11 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 		p->set_universe__(&universe);
 	}
 	
-	void set_properties(Array<AttributeForObject<T>*> properties) {
-		properties_ = std::move(properties);
-	}
-	void set_slots(Array<SlotForObject<T>*> slots) {
-		slots_ = std::move(slots);
-	}
-	
 	Array<const AttributeBase*> attributes() const {
 		Array<const AttributeBase*> result;
-		result.resize(properties_.size());
-		for (auto& it: properties_) {
-			result.push_back(dynamic_cast<const AttributeBase*>(it));
+		result.reserve(properties_.size());
+		for (auto it: properties_) {
+			result.push_back(it);
 		}
 		return result;
 	}
@@ -89,7 +82,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 		}
 		return nullptr;
 	}
-protected:
+
 	Array<AttributeForObject<T>*> properties_;
 	Array<SlotForObject<T>*> slots_;
 	bool is_abstract_;
@@ -102,7 +95,7 @@ void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& u
 	if (s) s->deserialize(reinterpret_cast<byte*>(&object), node, universe);
 	
 	for (auto& property: properties_) {
-		property->deserialize_attribute(&object, node[property->attribute_name()], universe);
+		property->deserialize_attribute(&object, node[property->name()], universe);
 	}
 }
 
@@ -112,7 +105,7 @@ void ObjectType<T>::serialize(const T& object, ArchiveNode& node, IUniverse& uni
 	if (s) s->serialize(reinterpret_cast<const byte*>(&object), node, universe);
 	
 	for (auto& property: properties_) {
-		property->serialize_attribute(&object, node[property->attribute_name()], universe);
+		property->serialize_attribute(&object, node[property->name()], universe);
 	}
 	node["class"] = this->name();
 }
