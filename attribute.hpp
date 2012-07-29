@@ -21,31 +21,29 @@ protected:
 };
 
 template <typename T>
-struct Attribute : AttributeBase {
-	Attribute(std::string name, std::string description) : AttributeBase(std::move(name), std::move(description)) {}
-	const Type* type() const override { return get_type<T>(); }
+struct Attribute {
+	virtual ~Attribute() {}
+	virtual bool get_polymorphic(Object* object, T& out_value) const = 0;
+	virtual bool const_get_polymorphic(const Object* object, T const*& out_pointer) const = 0;
+	virtual bool set_polymorphic(Object* object, const T& in_value) const = 0;
 };
 
 template <typename T>
-struct AttributeForObject {
+struct AttributeForObject : AttributeBase {
+	AttributeForObject(std::string name, std::string description) : AttributeBase(std::move(name), std::move(description)) {}
 	virtual ~AttributeForObject() {}
-	virtual const Type* attribute_type() const = 0;
-	virtual const std::string& attribute_name() const = 0;
-	virtual const std::string& attribute_description() const = 0;
 	virtual bool deserialize_attribute(T* object, const ArchiveNode&, IUniverse&) const = 0;
 	virtual bool serialize_attribute(const T* object, ArchiveNode&, IUniverse&) const = 0;
 };
 
 template <typename ObjectType, typename MemberType, typename GetterType = MemberType>
 struct AttributeForObjectOfType : AttributeForObject<ObjectType>, Attribute<MemberType> {
-	AttributeForObjectOfType(std::string name, std::string description) : Attribute<MemberType>(name, description) {}
+	AttributeForObjectOfType(std::string name, std::string description) : AttributeForObject<ObjectType>(name, description) {}
 	
 	virtual GetterType get(const ObjectType&) const = 0;
 	virtual void set(ObjectType&, MemberType value) const = 0;
 	
-	const Type* attribute_type() const { return get_type<MemberType>(); }
-	const std::string& attribute_name() const { return this->name_; }
-	const std::string& attribute_description() const { return this->description_; }
+	const Type* type() const { return get_type<MemberType>(); }
 	
 	bool deserialize_attribute(ObjectType* object, const ArchiveNode& node, IUniverse& universe) const {
 		MemberType value;
@@ -58,6 +56,33 @@ struct AttributeForObjectOfType : AttributeForObject<ObjectType>, Attribute<Memb
 		GetterType value = get(*object);
 		this->type()->serialize(reinterpret_cast<const byte*>(&value), node, universe);
 		return true; // eh...
+	}
+	
+	bool get_polymorphic(Object* object, MemberType& out_value) const {
+		const ObjectType* o = dynamic_cast<const ObjectType*>(object);
+		if (o != nullptr) {
+			out_value = get(*o);
+			return true;
+		}
+		return false;
+	}
+	
+	bool set_polymorphic(Object* object, const MemberType& in_value) const {
+		ObjectType* o = dynamic_cast<ObjectType*>(object);
+		if (o != nullptr) {
+			set(*o, in_value);
+			return true;
+		}
+		return false;
+	}
+	
+	bool const_get_polymorphic(const Object* object, const MemberType*& out_pointer) const {
+		const ObjectType* o = dynamic_cast<const ObjectType*>(object);
+		if (o != nullptr) {
+			out_pointer = &get(*o);
+			return true;
+		}
+		return false;
 	}
 };
 
