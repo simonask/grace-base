@@ -102,6 +102,39 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 	return default_value;
 }
 
+
+	template <size_t...> struct Indices {};
+	template <size_t N, size_t... S> struct MakeIndices : MakeIndices<N-1, N-1, S...> {};
+	template <size_t... S> struct MakeIndices<0, S...> {
+		typedef Indices<S...> Type;
+	};
+	
+	template <typename T, typename FunctionType, typename... Args>
+	struct ApplyTupleToMember {
+		T* object;
+		FunctionType function;
+		ApplyTupleToMember(T* object, FunctionType function) : object(object), function(function) {}
+		inline void operator()(std::tuple<Args...> args) const
+		{
+			
+		}
+	};
+	
+	template <typename T, typename FunctionType, typename... Args, size_t... I>
+	auto apply_tuple_to_member_impl(T* object, FunctionType function, std::tuple<Args...> args, Indices<I...> i)
+	-> decltype((object->*function)(std::get<I>(args)...))
+	{
+		return (object->*function)(std::get<I>(args)...);
+	}
+	
+	template <typename T, typename FunctionType, typename... Args>
+	auto apply_tuple_to_member(T* object, FunctionType function, std::tuple<Args...> args)
+	-> decltype(apply_tuple_to_member_impl(object, function, std::move(args), typename MakeIndices<sizeof...(Args)>::Type()))
+	{
+		typedef typename MakeIndices<sizeof...(Args)>::Type Indices;
+		return apply_tuple_to_member_impl(object, function, std::move(args), Indices());
+	}
+	
 #define ASSERT(X) do{ if (!(X)) { fprintf(stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); __asm__ __volatile__("int3\n"); } } while(0)
 
 
