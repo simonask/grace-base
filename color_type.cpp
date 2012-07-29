@@ -13,15 +13,13 @@ namespace falling {
 	
 	void ColorType::deserialize(Color& color, const ArchiveNode& node, IUniverse&) const {
 		if (node.is_map()) {
-			auto& r = node["r"];
-			auto& g = node["g"];
-			auto& b = node["b"];
-			if (r.get(color.red()) && g.get(color.green()) && b.get(color.blue())) {
-				auto& a = node["a"];
-				a.get(color.alpha());
-				// Success!
-				return;
+			node["r"].get(color.red());
+			node["g"].get(color.green());
+			node["b"].get(color.blue());
+			if (!node["a"].get(color.alpha())) {
+				color.alpha() = 1.f;
 			}
+			return;
 		}
 		color = Color::Pink;
 	}
