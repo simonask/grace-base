@@ -52,7 +52,7 @@ namespace falling {
 	template <typename T, size_t N>
 	struct BuildTypeInfo<TVector<T,N>> {
 		static const VectorTypeImpl<T,N>* build_vector_type() {
-			std::stringstream ss;
+			StringStream ss;
 			if (!IsFloatingPoint<T>::Value) {
 				if (IsSigned<T>::Value) {
 					ss << 'i';

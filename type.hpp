@@ -8,7 +8,7 @@
 #include "base/vector.hpp"
 #include <string>
 #include <map>
-#include <sstream>
+#include "io/string_stream.hpp"
 #include <algorithm>
 #include <limits.h>
 
@@ -221,13 +221,13 @@ template <typename T> const Type* build_type_info() {
 }
 
 template <typename Last = void>
-void append_type_names(std::ostream& os) {
+void append_type_names(FormattedStream& os) {
 	const Type* t = get_type<Last>();
 	os << t->name();
 }
 
 template <typename Head, typename Next, typename... Rest>
-void append_type_names(std::ostream& os) {
+void append_type_names(FormattedStream& os) {
 	const Type* t = get_type<Head>();
 	os << t->name();
 	os << ", ";
@@ -236,7 +236,7 @@ void append_type_names(std::ostream& os) {
 
 template <typename... Args>
 std::string get_signature_description() {
-	std::stringstream ss;
+	StringStream ss;
 	ss << '(';
 	append_type_names<Args...>(ss);
 	ss << ')';
