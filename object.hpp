@@ -33,6 +33,8 @@ struct Object {
 	
 	IUniverse* universe() const { return universe_; }
 	void set_universe__(IUniverse* universe) { universe_ = universe; }
+	uint32 universe_data__() const { return universe_data_; }
+	void set_universe_data__(uint32 data) { universe_data_ = data; }
 	
 	const std::string& object_id() const;
 	bool set_object_id(std::string new_id);
@@ -48,6 +50,7 @@ private:
 	const DerivedType* type_;
 	size_t offset_; // offset within composite
 	IUniverse* universe_;
+	uint32 universe_data_;
 };
 
 template <typename T>
