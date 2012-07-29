@@ -25,6 +25,7 @@ struct ArchiveNode {
 	bool is_empty() const { return type_ == Type::Empty; }
 	bool is_array() const { return type_ == Type::Array; }
 	bool is_map() const { return type_ == Type::Map; }
+	bool is_scalar() const { return !is_map() && !is_array(); }
 	Type type() const { return type_; }
 	
 	bool get(float32&) const;
@@ -59,6 +60,12 @@ struct ArchiveNode {
 	ArchiveNode& array_push();
 	size_t array_size() const { return array_.size(); }
 	
+	const std::map<std::string, ArchiveNode*>& internal_map() const { return map_; }
+	std::map<std::string, ArchiveNode*>& internal_map() { return map_; }
+	const std::string& internal_string() const { return string_value; }
+	const Array<ArchiveNode*>& internal_array() const { return array_; }
+	Array<ArchiveNode*>& internal_array() { return array_; }
+	
 	template <typename T>
 	ArchiveNode& operator=(T value) {
 		this->set(value);
@@ -66,7 +73,6 @@ struct ArchiveNode {
 	}
 	
 	virtual ~ArchiveNode() {}
-	virtual void write(std::ostream& os) const = 0;
 	
 	template <typename T>
 	void register_reference_for_deserialization(T& reference) const;
@@ -91,6 +97,8 @@ protected:
 	void clear(ArchiveNodeType::Type new_node_type);
 	template <typename T, typename U>
 	bool get_value(T& v, Type value_type, const U& value) const;
+	template <typename T>
+	bool get_number(T& v) const;
 	
 	void register_reference_for_deserialization_impl(DeserializeReferenceBase* ref) const;
 	void register_reference_for_serialization_impl(SerializeReferenceBase* ref);
@@ -159,45 +167,57 @@ bool ArchiveNode::get_value(T& out_value, ArchiveNodeType::Type value_type, cons
 	}
 	return false;
 }
+	
+template <typename T>
+bool ArchiveNode::get_number(T& out_value) const {
+	if (type_ == Type::Integer) {
+		out_value = (T)integer_value;
+		return true;
+	} else if (type_ == Type::Float) {
+		out_value = (T)float_value;
+		return true;
+	}
+	return false;
+}
 
 inline bool ArchiveNode::get(float32& v) const {
-	return get_value(v, Type::Float, float_value);
+	return get_number(v);
 }
 
 inline bool ArchiveNode::get(float64& v) const {
-	return get_value(v, Type::Float, float_value);
+	return get_number(v);
 }
 
 inline bool ArchiveNode::get(int8& v) const {
-	return get_value(v, Type::Integer, integer_value);
+	return get_number(v);
 }
 
 inline bool ArchiveNode::get(int16& v) const {
-	return get_value(v, Type::Integer, integer_value);
+	return get_number(v);
 }
 
 inline bool ArchiveNode::get(int32& v) const {
-	return get_value(v, Type::Integer, integer_value);
+	return get_number(v);
 }
 
 inline bool ArchiveNode::get(int64& v) const {
-	return get_value(v, Type::Integer, integer_value);
+	return get_number(v);
 }
 
 inline bool ArchiveNode::get(uint8& v) const {
-	return get_value(v, Type::Integer, integer_value);
+	return get_number(v);
 }
 
 inline bool ArchiveNode::get(uint16& v) const {
-	return get_value(v, Type::Integer, integer_value);
+	return get_number(v);
 }
 
 inline bool ArchiveNode::get(uint32& v) const {
-	return get_value(v, Type::Integer, integer_value);
+	return get_number(v);
 }
 
 inline bool ArchiveNode::get(uint64& v) const {
-	return get_value(v, Type::Integer, integer_value);
+	return get_number(v);
 }
 
 inline bool ArchiveNode::get(std::string& s) const {

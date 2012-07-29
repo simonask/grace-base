@@ -29,14 +29,6 @@ void JSONArchive::write(std::ostream& os) const {
 	os << "\n}\n";
 }
 
-const ArchiveNode& JSONArchive::operator[](const std::string& key) const {
-	return root()[key];
-}
-
-ArchiveNode& JSONArchive::operator[](const std::string& key) {
-	return root()[key];
-}
-
 static void print_indentation(std::ostream& os, int level) {
 	for (int i = 0; i < level; ++i) {
 		os << "  ";
@@ -113,9 +105,14 @@ void JSONArchiveNode::write(std::ostream& os, bool print_inline, int indent) con
 	}
 }
 	
-bool JSONArchive::read(const byte* begin, const byte* end, std::string& out_error) {
-	out_error = "JSONArchive::read not implemented.";
+bool JSONArchiveNode::read(const byte *&p, const byte *end, std::string &out_error) {
+	out_error = "JSONArchive::read not implemented yet.";
 	return false;
+}
+	
+size_t JSONArchive::read(const byte* begin, const byte* end, std::string& out_error) {
+	out_error = "JSONArchive::read not implemented.";
+	return 0;
 }
 
 }

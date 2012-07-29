@@ -29,7 +29,19 @@ bool Archive::deserialize(IUniverse& universe, std::string& out_error) {
 		it->perform(universe);
 	}
 	
+	universe.set_root(ptr);
+	
+	universe.initialize_all();
+	
 	return true;
 }
+	
+	ArchiveNode& Archive::operator[](const std::string& key) {
+		return root()[key];
+	}
+	
+	const ArchiveNode& Archive::operator[](const std::string& key) const {
+		return root()[key];
+	}
 
 }
