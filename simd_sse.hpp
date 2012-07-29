@@ -82,13 +82,16 @@ namespace falling {
 #endif
 		}
 		
-		fvec4 sqrt(fvec4 vec) {
+		inline fvec4 sqrt(fvec4 vec) {
 			return _mm_sqrt_ps(vec);
 		}
 		
 		
 		inline fvec2 hadd2(fvec2 v) {
-			return (fvec2){v[0] + v[1], v[0] + v[1]};
+			fvec2 r;
+			r[0] = v[0] + v[1];
+			r[1] = r[0];
+			return r;
 		}
 		
 		
