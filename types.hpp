@@ -9,6 +9,10 @@
 #ifndef falling_types_hpp
 #define falling_types_hpp
 
-
+#include "type/array_type.hpp"
+#include "type/maybe_type.hpp"
+#include "type/color_type.hpp"
+#include "type/vector_type.hpp"
+#include "type/reference_type.hpp"
 
 #endif
