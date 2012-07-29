@@ -35,9 +35,21 @@ template <typename... Args>
 class Signal {
 public:
 	template <typename Receiver, typename R>
-	void connect(Receiver* object, R(Receiver::*)(Args...));
+	typename std::enable_if<HasReflection<Receiver>::Value>::type
+	connect(Receiver* object, R(Receiver::*)(Args...));
+		
 	template <typename Receiver, typename R>
-	void connect(const Receiver* object, R(Receiver::*)(Args...) const);
+	typename std::enable_if<HasReflection<Receiver>::Value>::type
+	connect(const Receiver* object, R(Receiver::*)(Args...) const);
+	
+	template <typename Receiver, typename R>
+	typename std::enable_if<!HasReflection<Receiver>::Value>::type
+	connect(Receiver* object, R(Receiver::*)(Args...));
+	
+	template <typename Receiver, typename R>
+	typename std::enable_if<!HasReflection<Receiver>::Value>::type
+	connect(const Receiver* object, R(Receiver::*)(Args...) const);
+	
 	template <typename Receiver, typename R>
 	void connect(ObjectPtr<Receiver> object, R(Receiver::*method)(Args...)) { connect(object.get(), method); }
 	template <typename Receiver, typename R>
@@ -97,11 +109,32 @@ struct MemberSlotInvoker : SlotInvoker<Args...> {
 		(object_->*member_)(std::forward<Args>(args)...);
 	}
 	
-	Object* receiver() const { return object_; }
+	Object* receiver() const {
+		if (std::is_convertible<T*, Object*>::value) {
+			return (Object*)object_;
+		}
+		return nullptr;
+	}
 	
-	const SlotAttributeBase* slot() const; 
+	const SlotAttributeBase* slot() const;
 	
 	MemberSlotInvoker(T* object, FunctionType member) : object_(object), member_(member) {}
+};
+	
+template <typename T, typename R, typename... Args>
+struct BareObjectSlotInvoker : SlotInvoker<Args...> {
+	typedef R(T::*FunctionType)(Args...);
+	T* object_;
+	FunctionType member_;
+	
+	void invoke(Args... args) const {
+		(object_->*member_)(std::forward<Args>(args)...);
+	}
+	
+	Object* receiver() const { return nullptr; }
+	const SlotAttributeBase* slot() const { return nullptr; }
+	
+	BareObjectSlotInvoker(T* object, FunctionType member) : object_(object), member_(member) {}
 };
 
 template <typename R, typename... Args>
@@ -124,8 +157,16 @@ void Signal<Args...>::invoke(Args... args) const {
 
 template <typename... Args>
 template <typename Receiver, typename R>
-void Signal<Args...>::connect(Receiver* object, R(Receiver::*member)(Args...)) {
+typename std::enable_if<HasReflection<Receiver>::Value>::type
+Signal<Args...>::connect(Receiver* object, R(Receiver::*member)(Args...)) {
 	invokers_.push_back(new MemberSlotInvoker<Receiver, R, Args...>(object, member));
+}
+	
+template <typename... Args>
+template <typename Receiver, typename R>
+typename std::enable_if<!HasReflection<Receiver>::Value>::type
+Signal<Args...>::connect(Receiver* object, R(Receiver::*member)(Args...)) {
+	invokers_.push_back(new BareObjectSlotInvoker<Receiver, R, Args...>(object, member));
 }
 
 template <typename... Args>
