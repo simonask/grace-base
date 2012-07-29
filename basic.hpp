@@ -135,6 +135,17 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 		return apply_tuple_to_member_impl(object, function, std::move(args), Indices());
 	}
 	
+	
+	template <typename T>
+	constexpr T round_up_impl(T val, T boundary, T rest) {
+		return rest != 0 ? val + (boundary - rest) : val;
+	}
+	
+	template <typename T>
+	constexpr T round_up(T val, T boundary) {
+		return round_up_impl(val, boundary, val % boundary);
+	}
+
 #define ASSERT(X) do{ if (!(X)) { fprintf(stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); __asm__ __volatile__("int3\n"); } } while(0)
 
 
