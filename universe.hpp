@@ -29,7 +29,7 @@ struct IUniverse {
 	}
 };
 
-struct TestUniverse : IUniverse {
+struct BasicUniverse : IUniverse {
 	ObjectPtr<> create_object(const DerivedType* type, std::string) override;
 	ObjectPtr<> create_root(const DerivedType* type, std::string) override;
 	ObjectPtr<> get_object(const std::string& id) const override {
@@ -39,17 +39,18 @@ struct TestUniverse : IUniverse {
 	bool rename_object(ObjectPtr<> object, std::string) override;
 	ObjectPtr<> root() const override { return root_; }
 	
-	TestUniverse() : root_(nullptr) {}
-	~TestUniverse() { clear(); }
-private:
+	BasicUniverse() : root_(nullptr) {}
+	~BasicUniverse() { clear(); }
 	void clear();
-	
+private:
 	std::map<std::string, ObjectPtr<>> object_map_;
 	std::map<ObjectPtr<const Object>, std::string> reverse_object_map_;
 	Array<Object*> memory_map_;
 	ObjectPtr<> root_;
 	std::string empty_id_;
 };
+	
+typedef BasicUniverse TestUniverse;
 
 }
 

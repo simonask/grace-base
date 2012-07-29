@@ -5,13 +5,13 @@
 
 namespace falling {
 
-ObjectPtr<> TestUniverse::create_root(const DerivedType* type, std::string id) {
+ObjectPtr<> BasicUniverse::create_root(const DerivedType* type, std::string id) {
 	clear();
 	root_ = create_object(type, std::move(id));
 	return root_;
 }
 
-ObjectPtr<> TestUniverse::create_object(const DerivedType* type, std::string id) {
+ObjectPtr<> BasicUniverse::create_object(const DerivedType* type, std::string id) {
 	size_t sz = type->size();
 	byte* memory = new byte[sz];
 	type->construct(memory, *this);
@@ -21,7 +21,7 @@ ObjectPtr<> TestUniverse::create_object(const DerivedType* type, std::string id)
 	return object;
 }
 
-bool TestUniverse::rename_object(ObjectPtr<> object, std::string new_id) {
+bool BasicUniverse::rename_object(ObjectPtr<> object, std::string new_id) {
 	ASSERT(object->universe() == this);
 	
 	// erase old name from database
@@ -67,7 +67,7 @@ bool TestUniverse::rename_object(ObjectPtr<> object, std::string new_id) {
 	return renamed_exact;
 }
 
-const std::string& TestUniverse::get_id(ObjectPtr<const Object> object) const {
+const std::string& BasicUniverse::get_id(ObjectPtr<const Object> object) const {
 	auto it = reverse_object_map_.find(object);
 	if (it != reverse_object_map_.end()) {
 		return it->second;
@@ -75,7 +75,7 @@ const std::string& TestUniverse::get_id(ObjectPtr<const Object> object) const {
 	return empty_id_;
 }
 
-void TestUniverse::clear() {
+void BasicUniverse::clear() {
 	for (auto object: memory_map_) {
 		const DerivedType* type = object->object_type();
 		type->destruct(reinterpret_cast<byte*>(object), *this);
