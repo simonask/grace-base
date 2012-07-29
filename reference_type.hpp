@@ -12,7 +12,7 @@ struct ReferenceType : Type {
 	
 	virtual const Type* pointee_type() const = 0;
 	
-	const std::string& name() const override { return name_; }
+	std::string name() const override { return name_; }
 protected:
 	static std::string build_reference_type_name(std::string base_name, const Type* pointee);
 private:

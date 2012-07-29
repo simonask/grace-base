@@ -6,11 +6,11 @@ namespace falling {
 
 #define DEFINE_SIMPLE_TYPE(T, IS_FLOAT, IS_SIGNED) template <> const Type* build_type_info<T>() { \
 	if (IS_FLOAT) { \
-		static const FloatType type(#T, sizeof(T)); \
-		return &type; \
+		static const auto type = new FloatType(#T, sizeof(T)); \
+		return type; \
 	} else { \
-		static const IntegerType type(#T, sizeof(T), IS_SIGNED); \
-		return &type; \
+		static const auto type = new IntegerType(#T, sizeof(T), IS_SIGNED); \
+		return type; \
 	} \
 }
 
@@ -198,7 +198,7 @@ void* FloatType::cast(const SimpleType* to, void* memory) const {
 	return nullptr;
 }
 
-const std::string VoidType::Name = "void";
+const char VoidType::Name[] = "void";
 
 const VoidType* VoidType::get() {
 	static const VoidType p;
@@ -223,9 +223,8 @@ const StringType* StringType::get() {
 	return &type;
 }
 
-const std::string& StringType::name() const {
-	static const std::string name = "std::string";
-	return name;
+std::string StringType::name() const {
+	return "std::string";
 }
 
 }

@@ -5,6 +5,7 @@
 #include "base/basic.hpp"
 #include "base/array.hpp"
 #include "object/object.hpp"
+#include "base/vector.hpp"
 #include <string>
 #include <map>
 #include <sstream>
@@ -24,7 +25,7 @@ struct Type {
 	virtual void construct(byte* place, IUniverse&) const = 0;
 	virtual void destruct(byte* place, IUniverse&) const = 0;
 	
-	virtual const std::string& name() const = 0;
+	virtual std::string name() const = 0;
 	virtual size_t size() const = 0;
 	virtual bool is_abstract() const { return false; }
 protected:
@@ -65,8 +66,8 @@ struct VoidType : Type {
 	void serialize(const byte*, ArchiveNode&, IUniverse&) const override {}
 	virtual void construct(byte*, IUniverse&) const override {}
 	virtual void destruct(byte*, IUniverse&) const override {}
-	static const std::string Name;
-	const std::string& name() const override { return Name; }
+	static const char Name[];
+	std::string name() const override { return Name; }
 	size_t size() const override { return 0; }
 	bool is_abstract() const override { return true; }
 private:
@@ -75,7 +76,7 @@ private:
 
 struct SimpleType : Type {
 	SimpleType(std::string name, size_t width, size_t component_width, bool is_float, bool is_signed) : name_(std::move(name)), width_(width), component_width_(component_width), is_float_(is_float), is_signed_(is_signed) {}
-	const std::string& name() const override { return name_; }
+	std::string name() const override { return name_; }
 	void construct(byte* place, IUniverse&) const { std::fill(place, place + size(), 0); }
 	void destruct(byte*, IUniverse&) const {}
 	
@@ -127,20 +128,13 @@ struct FloatType : SimpleType {
 	void* cast(const SimpleType* to, void* o) const;
 };
 
-struct VectorType : SimpleType {
-	VectorType(std::string name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(name, width, component_width, is_float, is_signed) {}
-	void deserialize(byte*, const ArchiveNode&, IUniverse&) const override;
-	void serialize(const byte*, ArchiveNode&, IUniverse&) const override;
-	void* cast(const SimpleType* to, void* o) const;
-};
-
 struct StringType : TypeFor<std::string> {
 	static const StringType* get();
 	
 	void deserialize(std::string& place, const ArchiveNode&, IUniverse&) const override;
 	void serialize(const std::string& place, ArchiveNode&, IUniverse&) const override;
 	
-	const std::string& name() const override;
+	std::string name() const override;
 	size_t size() const override { return sizeof(std::string); }
 };
 
@@ -226,19 +220,18 @@ template <typename T> const Type* build_type_info() {
 	return BuildTypeInfo<T>::build();
 }
 
+template <typename Last = void>
+void append_type_names(std::ostream& os) {
+	const Type* t = get_type<Last>();
+	os << t->name();
+}
 
 template <typename Head, typename Next, typename... Rest>
 void append_type_names(std::ostream& os) {
 	const Type* t = get_type<Head>();
 	os << t->name();
 	os << ", ";
-	append_type_names<Next, Rest...>();
-}
-
-template <typename Last = void>
-void append_type_names(std::ostream& os) {
-	const Type* t = get_type<Last>();
-	os << t->name();
+	append_type_names<Next, Rest...>(os);
 }
 
 template <typename... Args>
