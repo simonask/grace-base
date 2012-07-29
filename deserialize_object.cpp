@@ -54,25 +54,25 @@ namespace {
 
 ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
 	if (!node.is_map()) {
-		std::cerr << "Expected object, got non-map.\n";
+		Error() << "Expected object, got non-map.";
 		return nullptr;
 	}
 	
 	std::string error;
 	const DerivedType* type = get_type_from_map(node, error);
 	if (type == nullptr) {
-		std::cerr << "ERROR: " << error << '\n';
+		Error() << error;
 		return nullptr;
 	}
 	
 	std::string id;
 	if (!node["id"].get(id)) {
-		std::cerr << "WARNING: Object without id.\n";
+		Warning() << "Object without id.";
 	}
 	
 	ObjectPtr<> ptr = universe.create_object(type, id);
 	if (ptr->object_id() != id) {
-		std::cerr << "WARNING: Object '" << id << "' was renamed to '" << ptr->object_id() << "' because of a collision.\n";
+		Warning() << "Object '" << id << "' was renamed to '" << ptr->object_id() << "' because of a collision.\n";
 	}
 	
 	type->deserialize(reinterpret_cast<byte*>(ptr.get()), node, universe);

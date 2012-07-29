@@ -10,7 +10,8 @@
 #include "base/stack_array.hpp"
 
 #include <string>
-#include <istream>
+#include "io/input_stream.hpp"
+#include "io/file_stream.hpp"
 
 namespace falling {
 
@@ -27,7 +28,7 @@ struct Archive {
 	virtual const ArchiveNode& root() const = 0;
 	virtual void write(std::ostream& os) const = 0;
 	virtual size_t read(const byte* begin, const byte* end, std::string& out_error) = 0;
-	size_t read_stream(std::istream& input, std::string& out_error);
+	size_t read_stream(InputFileStream& input, std::string& out_error);
 	virtual ArchiveNode* make(NodeType type = NodeType::Empty) = 0;
 	virtual const ArchiveNode& empty() const = 0;
 	
@@ -49,12 +50,10 @@ private:
 };
 	
 	// TODO: Rewrite serializers with streams as primary read API.
-	inline size_t Archive::read_stream(std::istream &input, std::string &out_error) {
-		input.seekg(0, std::ios::end);
-		size_t length = input.tellg();
-		input.seekg(0, std::ios::beg);
+	inline size_t Archive::read_stream(InputFileStream &input, std::string &out_error) {
+		size_t length = input.file_size();
 		DEFINE_STACK_ARRAY(byte, buffer, length);
-		input.read((char*)buffer.begin(), length);
+		input.read(buffer.begin(), length);
 		return this->read(buffer.begin(), buffer.end(), out_error);
 	}
 
