@@ -48,35 +48,115 @@ namespace falling {
 	template <typename T, size_t N>
 	struct VectorCrosser;
 	
-	template <typename ElementType, size_t N>
-	struct TVector {
-		typedef ElementType ComponentType;
-		typedef TVector<ElementType, N> Self;
+	template <typename ElementType, size_t N> struct VectorDataDefinition {
 		typedef internal::GetVectorType<ElementType, N> GetVectorType;
 		typedef typename GetVectorType::Type Type;
 		typedef typename GetVectorType::MaskType MaskType;
+	};
+	
+	template <typename ElementType, size_t N> struct VectorData;
+	template <typename T> struct VectorData<T, 1> {
+		typedef internal::GetVectorType<T, 1> GetVectorType;
+		typedef typename GetVectorType::Type Type;
+		typedef typename GetVectorType::MaskType MaskType;
+		
+		union {
+			Type m;
+			MaskType mask;
+			T v[1];
+			struct {
+				T x;
+			};
+		};
+	};
+	template <typename T> struct VectorData<T, 2> {
+		typedef internal::GetVectorType<T, 2> GetVectorType;
+		typedef typename GetVectorType::Type Type;
+		typedef typename GetVectorType::MaskType MaskType;
+		
+		union {
+			Type m;
+			MaskType mask;
+			T v[2];
+			struct {
+				T x;
+				T y;
+			};
+		};
+	};
+	template <typename T> struct VectorData<T, 3> {
+		typedef internal::GetVectorType<T, 3> GetVectorType;
+		typedef typename GetVectorType::Type Type;
+		typedef typename GetVectorType::MaskType MaskType;
+		
+		union {
+			Type m;
+			MaskType mask;
+			T v[3];
+			struct {
+				T x;
+				T y;
+				T z;
+			};
+		};
+	};
+	template <typename T> struct VectorData<T, 4> {
+		typedef internal::GetVectorType<T, 4> GetVectorType;
+		typedef typename GetVectorType::Type Type;
+		typedef typename GetVectorType::MaskType MaskType;
+		
+		union {
+			Type m;
+			MaskType mask;
+			T v[4];
+			struct {
+				T x;
+				T y;
+				T z;
+				T w;
+			};
+		};
+	};
+	template <typename T, size_t N> struct VectorData {
+		typedef internal::GetVectorType<T, N> GetVectorType;
+		typedef typename GetVectorType::Type Type;
+		typedef typename GetVectorType::MaskType MaskType;
+		
+		union {
+			Type m;
+			MaskType mask;
+			T v[N];
+		};
+	};
+	
+	template <typename ElementType, size_t N>
+	struct TVector : VectorData<ElementType, N> {
+		typedef internal::GetVectorType<ElementType, N> GetVectorType;
+		typedef typename GetVectorType::Type Type;
+		typedef typename GetVectorType::MaskType MaskType;
+		typedef ElementType ComponentType;
+		typedef TVector<ElementType, N> Self;
+		
 		typedef TVector<MaskType, N> ComparisonResult;
-		
-		
 		
 		// Array-like interface
 		
 		typedef ElementType* iterator;
 		typedef const ElementType* const_iterator;
-		iterator begin() { return v; }
-		iterator end()   { return v + N; }
-		const_iterator begin() const { return v; }
-		const_iterator end() const   { return v + N; }
+		iterator begin() { return this->v; }
+		iterator end()   { return this->v + N; }
+		const_iterator begin() const { return this->v; }
+		const_iterator end() const   { return this->v + N; }
 		size_t size() const { return N; }
 		
 		ElementType& operator[](size_t idx) {
 			ASSERT(idx < N);
-			return v[idx];
+			return this->v[idx];
 		}
 		
 		const ElementType& operator[](size_t idx) const {
 			ASSERT(idx < N);
-			return v[idx];
+			return this->v[idx];
 		}
 		
 		
@@ -85,61 +165,61 @@ namespace falling {
 		TVector() {}
 		explicit TVector(const ElementType* elements) { simd::unaligned_load(this->m, elements); }
 		explicit TVector(ElementType elements[N])     { simd::unaligned_load(this->m, elements); }
-		TVector(const Self& other) : m(other.m) {}
-		explicit TVector(Type repr) { m = repr; }
+		TVector(const Self& other) { this->m = other.m; }
+		TVector(Type repr) { this->m = repr; }
 		
 		
 		template <typename Enable = void>
-		explicit constexpr TVector(ElementType x, typename std::enable_if<N == 1, Enable*>::type = nullptr) : m(Type{x}) {}
+		explicit TVector(ElementType x, typename std::enable_if<N == 1, Enable*>::type = nullptr) { this->m = Type{x}; }
 		template <typename Enable = void>
-		constexpr TVector(ElementType x, ElementType y, typename std::enable_if<N == 2, Enable*>::type = nullptr) : m(Type{x, y}) {}
+		TVector(ElementType x, ElementType y, typename std::enable_if<N == 2, Enable*>::type = nullptr) { this->m = Type{x, y}; }
 		template <typename Enable = void>
-		constexpr TVector(ElementType x, ElementType y, ElementType z, typename std::enable_if<N == 3, Enable*>::type = nullptr) : m(Type{x, y, z}) {}
+		TVector(ElementType x, ElementType y, ElementType z, typename std::enable_if<N == 3, Enable*>::type = nullptr) { this->m = Type{x, y, z}; }
 		template <typename Enable = void>
-		constexpr TVector(ElementType x, ElementType y, ElementType z, ElementType w, typename std::enable_if<N == 4, Enable*>::type = nullptr) : m(Type{x, y, z, w}) {}
+		TVector(ElementType x, ElementType y, ElementType z, ElementType w, typename std::enable_if<N == 4, Enable*>::type = nullptr) { this->m = Type{x, y, z, w}; }
 		
-		Self& operator=(Self other) { m = other.m; return *this; }
+		Self& operator=(Self other) { this->m = other.m; return *this; }
 		
 		
 		
 		// Comparison
 		
-		ComparisonResult operator<(const Self& other) const { return simd::cmp_lt(m, other.m); }
-		ComparisonResult operator<=(const Self& other) const { return simd::cmp_lte(m, other.m); }
-		ComparisonResult operator>(const Self& other) const { return simd::cmp_gt(m, other.m); }
-		ComparisonResult operator>=(const Self& other) const { return simd::cmp_gte(m, other.m); }
+		ComparisonResult operator<(const Self& other) const { return simd::cmp_lt(this->m, other.m); }
+		ComparisonResult operator<=(const Self& other) const { return simd::cmp_lte(this->m, other.m); }
+		ComparisonResult operator>(const Self& other) const { return simd::cmp_gt(this->m, other.m); }
+		ComparisonResult operator>=(const Self& other) const { return simd::cmp_gte(this->m, other.m); }
 		
 		template <typename T = ElementType>
 		typename std::enable_if<!IsFloatingPoint<T>::Value, ComparisonResult>::type
-		operator==(const Self& other) const { return simd::cmp_eq(m, other.m); }
+		operator==(const Self& other) const { return simd::cmp_eq(this->m, other.m); }
 		
 		template <typename T = ElementType>
 		typename std::enable_if<!IsFloatingPoint<T>::Value, ComparisonResult>::type
-		operator!=(const Self& other) const { return simd::cmp_neq(m, other.m); }
+		operator!=(const Self& other) const { return simd::cmp_neq(this->m, other.m); }
 		
 		
 		
 		// Arithmetic
 		
-		Self& operator+=(Self other) { m += other.m; return *this; }
-		Self operator+(Self other) { return Self(m + other.m); }
-		Self& operator-=(Self other) { m -= other.m; return *this; }
-		Self operator-(Self other) { return Self(m - other.m); }
-		Self& operator*=(Self other) { m *= other.m; return *this; }
-		Self operator*(Self other) { return Self(m * other.m); }
-		Self& operator/=(Self other) { m /= other.m; return *this; }
-		Self operator/(Self other) { return Self(m / other.m); }
+		Self& operator+=(Self other) { this->m += other.m; return *this; }
+		Self operator+(Self other) { return Self(this->m + other.m); }
+		Self& operator-=(Self other) { this->m -= other.m; return *this; }
+		Self operator-(Self other) { return Self(this->m - other.m); }
+		Self& operator*=(Self other) { this->m *= other.m; return *this; }
+		Self operator*(Self other) { return Self(this->m * other.m); }
+		Self& operator/=(Self other) { this->m /= other.m; return *this; }
+		Self operator/(Self other) { return Self(this->m / other.m); }
 		
 		
 		// Masking
 		
-		MaskType operator&(MaskType msk) const { return mask & msk; }
-		MaskType operator|(MaskType msk) const { return mask | msk; }
-		MaskType operator^(MaskType msk) const { return mask ^ msk; }
-		MaskType operator~() const { return ~mask; }
-		Self& operator&=(MaskType  msk) { mask &= msk; return *this; }
-		Self& operator|=(MaskType msk) { mask |= msk; return *this; }
-		Self& operator^=(MaskType msk) { mask ^= msk; return *this; }
+		MaskType operator&(MaskType msk) const { return this->mask & msk; }
+		MaskType operator|(MaskType msk) const { return this->mask | msk; }
+		MaskType operator^(MaskType msk) const { return this->mask ^ msk; }
+		MaskType operator~() const { return ~this->mask; }
+		Self& operator&=(MaskType  msk) { this->mask &= msk; return *this; }
+		Self& operator|=(MaskType msk) { this->mask |= msk; return *this; }
+		Self& operator^=(MaskType msk) { this->mask ^= msk; return *this; }
 		
 
 		// Convenience
@@ -154,16 +234,6 @@ namespace falling {
 		static constexpr Self zero() { return replicate(0); }
 		static constexpr Self one() { return replicate(1); }
 		static constexpr Self two() { return replicate(2); }
-		
-		
-		// Data
-		
-		union {
-			Type m;
-			MaskType mask;
-			ElementType v[N];
-		};
-		
 		
 		// Geometry
 		
