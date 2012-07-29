@@ -45,16 +45,12 @@ namespace falling {
 		template <> struct GetVectorType<float64, 4> { typedef flvec4 Type; typedef ulvec4 MaskType; };
 	}
 	
-	template <typename T> struct IsFloatingPoint;
-	template <> struct IsFloatingPoint<float32> { static const bool Value = true; };
-	template <> struct IsFloatingPoint<float64> { static const bool Value = true; };
-	template <typename T> struct IsFloatingPoint { static const bool Value = false; };
-	
 	template <typename T, size_t N>
 	struct VectorCrosser;
 	
 	template <typename ElementType, size_t N>
 	struct TVector {
+		typedef ElementType ComponentType;
 		typedef TVector<ElementType, N> Self;
 		typedef internal::GetVectorType<ElementType, N> GetVectorType;
 		typedef typename GetVectorType::Type Type;
@@ -64,18 +60,6 @@ namespace falling {
 		
 		
 		// Array-like interface
-		
-		template <size_t Index>
-		constexpr typename std::enable_if<(Index < N), ElementType>::type&
-		get() {
-			return v[Index];
-		}
-		
-		template <size_t Index>
-		constexpr typename std::enable_if<(Index < N), ElementType>::type
-		get() const {
-			return v[Index];
-		}
 		
 		typedef ElementType* iterator;
 		typedef const ElementType* const_iterator;
@@ -98,13 +82,22 @@ namespace falling {
 		
 		// Constructors
 		
+		TVector() {}
 		explicit TVector(const ElementType* elements) { simd::unaligned_load(this->m, elements); }
-		explicit TVector(ElementType elements[N])   { simd::unaligned_load(this->m, elements); }
-		TVector(const Self& other) { m = other.m; }
+		explicit TVector(ElementType elements[N])     { simd::unaligned_load(this->m, elements); }
+		TVector(const Self& other) : m(other.m) {}
+		explicit TVector(Type repr) { m = repr; }
 		
-		explicit TVector(ElementType repl)            { simd::replicate(m, repl); }
-		template <typename T = Type>
-		TVector(typename std::enable_if<!std::is_same<T, ElementType>::value, T>::type repr) { m = repr; }
+		
+		template <typename Enable = void>
+		explicit constexpr TVector(ElementType x, typename std::enable_if<N == 1, Enable*>::type = nullptr) : m(Type{x}) {}
+		template <typename Enable = void>
+		constexpr TVector(ElementType x, ElementType y, typename std::enable_if<N == 2, Enable*>::type = nullptr) : m(Type{x, y}) {}
+		template <typename Enable = void>
+		constexpr TVector(ElementType x, ElementType y, ElementType z, typename std::enable_if<N == 3, Enable*>::type = nullptr) : m(Type{x, y, z}) {}
+		template <typename Enable = void>
+		constexpr TVector(ElementType x, ElementType y, ElementType z, ElementType w, typename std::enable_if<N == 4, Enable*>::type = nullptr) : m(Type{x, y, z, w}) {}
+		
 		Self& operator=(Self other) { m = other.m; return *this; }
 		
 		
@@ -150,10 +143,17 @@ namespace falling {
 		
 
 		// Convenience
+		static TVector<ElementType, N> replicate(ElementType value) {
+			Self v;
+			for (size_t i = 0; i < N; ++i) {
+				v[i] = value;
+			}
+			return v;
+		}
 		
-		static constexpr Self zero() { return Self(ElementType(0)); }
-		static constexpr Self one() { return Self(ElementType(1)); }
-		static constexpr Self two() { return Self(ElementType(2)); }
+		static constexpr Self zero() { return replicate(0); }
+		static constexpr Self one() { return replicate(1); }
+		static constexpr Self two() { return replicate(2); }
 		
 		
 		// Data
@@ -177,6 +177,16 @@ namespace falling {
 		}
 	};
 	
+	// Tuple-like interface
+	template <size_t Idx, typename T, size_t N>
+	T& get(TVector<T,N>& vector) {
+		return vector.v[Idx];
+	}
+	template <size_t Idx, typename T, size_t N>
+	constexpr T get(const TVector<T,N>& vector) {
+		return vector.v[Idx];
+	}
+	
 	using vec4 = TVector<float32, 4>;
 	using vec3 = TVector<float32, 3>;
 	using vec2 = TVector<float32, 2>;
@@ -196,9 +206,29 @@ namespace falling {
 	inline vec3 sumv(vec3 vec) { return vec3(simd::hadd3(vec.m)); }
 	inline vec4 sumv(vec4 vec) { return vec4(simd::hadd4(vec.m)); }
 	
-	vec4 sqrt(vec4 vec) {
+	inline vec4 sqrt(vec4 vec) {
 		return vec4(simd::sqrt(vec.m));
 	}
+	
+	template <typename ElementType, size_t VectorSize>
+	struct AssignVectorElements {
+		typedef TVector<ElementType, VectorSize> Vector;
+		
+		template <size_t Idx>
+		static typename std::enable_if<Idx == VectorSize>::type // If you hit this error, you tried to instantiate a vector with the wrong number of constructor arguments. :)
+		assign_element(Vector&) {}
+		
+		template <size_t Idx, typename... Rest>
+		static void assign_element(Vector& vector, ElementType element, Rest&&... rest) {
+			get<Idx>(vector) = element;
+			assign_element<Idx+1>(vector, std::forward<Rest>(rest)...);
+		}
+		
+		template <typename... Elements>
+		static void assign(Vector& vector, Elements&&... elements) {
+			assign_element<0>(vector, std::forward<Elements>(elements)...);
+		}
+	};
 	
 	template <typename T, size_t N>
 	TVector<T,N> TVector<T,N>::normalized() const {
@@ -213,7 +243,7 @@ namespace falling {
 	
 	template <typename T, size_t N>
 	T TVector<T,N>::length() const {
-		return lengthv().get<0>();
+		return get<0>(lengthv());
 	}
 	
 	template <typename T, size_t N>
@@ -222,19 +252,34 @@ namespace falling {
 		return sumv(product);
 	}
 	
-	template <size_t X_, size_t Y_, size_t Z_, size_t W_, typename T>
+	template <Axis X_, Axis Y_, Axis Z_, Axis W_, typename T>
 	TVector<T, 4> shuffle(TVector<T, 4> vec) {
 		return simd::shuffle<X_, Y_, Z_, W_>(vec.m);
 	}
 	
-	template <size_t X_, size_t Y_, size_t Z_, typename T>
+	template <Axis X_, Axis Y_, Axis Z_, typename T>
 	TVector<T, 3> shuffle(TVector<T, 3> vec) {
 		return simd::shuffle<X_, Y_, Z_, W>(vec.m);
 	}
 	
-	template <size_t X_, size_t Y_, typename T>
+	template <Axis X_, Axis Y_, typename T>
 	TVector<T, 2> shuffle(TVector<T, 2> vec) {
 		return simd::shuffle<X_, Y_>(vec.m);
+	}
+	
+	template <Axis A_, typename T>
+	TVector<T, 4> splat(TVector<T, 4> vec) {
+		return shuffle<A_, A_, A_, A_>(vec);
+	}
+	
+	template <Axis A_, typename T>
+	TVector<T, 3> splat(TVector<T, 3> vec) {
+		return shuffle<A_, A_, A_>(vec);
+	}
+	
+	template <Axis A_, typename T>
+	TVector<T, 2> splat(TVector<T, 2> vec) {
+		return shuffle<A_, A_>(vec);
 	}
 	
 	template <typename T> struct VectorCrosser<T,3> {
