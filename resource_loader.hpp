@@ -10,8 +10,10 @@
 #define falling_resource_loader_hpp
 
 #include "io/input_stream.hpp"
+#include "io/resource.hpp"
 
 namespace falling {
+	
 	class ResourceLoaderBase {
 	public:
 		virtual Resource* allocate() = 0;
@@ -25,10 +27,10 @@ namespace falling {
 		virtual ~ResourceLoader() {}
 		Resource* allocate() override { return new T; }
 		void free(Resource* resource) override { delete resource; }
-		virtual bool load_resource(T& resource, InputStream& input) = 0;
+		virtual bool load(T& resource, InputStream& input) = 0;
 	private:
 		bool load_resource(Resource* resource, InputStream& input) override {
-			return load_resource(*(T*)resource, input);
+			return load(*(T*)resource, input);
 		}
 	};
 };
