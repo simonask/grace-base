@@ -8,11 +8,11 @@
 
 namespace falling {
 
-template <typename T = Object, typename Enable = void>
-struct ObjectPtr;
+/*template <typename T = Object, typename Enable = void>
+struct ObjectPtr;*/
 
-template <typename T>
-struct ObjectPtr<T, typename std::enable_if<IsDerivedFromObject<T>::Value>::type> {
+template <typename T = Object>
+struct ObjectPtr/*<T, typename std::enable_if<IsDerivedFromObject<T>::Value>::type>*/ {
 	typedef T PointeeType;
 	
 	ObjectPtr() : ptr_(nullptr) {}
