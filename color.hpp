@@ -10,7 +10,6 @@
 #define falling_color_hpp
 
 #include "base/vector.hpp"
-#include <initializer_list>
 
 namespace falling {
 	struct Color {
@@ -19,7 +18,7 @@ namespace falling {
 		typedef ColorComponents::ComponentType ComponentType;
 		
 		Color() {}
-		constexpr Color(ComponentType r, ComponentType g, ComponentType b, ComponentType a = 1.0) : components_(r, g, b, a) {}
+		Color(ComponentType r, ComponentType g, ComponentType b, ComponentType a = 1.0) : components_(r, g, b, a) {}
 		Color(const Color& other) = default;
 		explicit Color(ColorComponents components) : components_(components) {}
 		Color& operator=(const Color&) = default;
