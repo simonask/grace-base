@@ -25,13 +25,19 @@ namespace falling {
 		return *reinterpret_cast<const Impl*>(impl_data_);
 	}
 	
-	FileStreamBase::FileStreamBase() {
+	FileStreamBase::FileStreamBase() : synchronize_(false) {
 		impl().fp = nullptr;
 	}
 	
 	FileStreamBase::FileStreamBase(FileStreamBase&& other) {
 		impl().fp = other.impl().fp;
 		other.impl().fp = nullptr;
+	}
+	
+	FileStreamBase::~FileStreamBase() {
+		if (impl().fp != stdout && impl().fp != stderr && impl().fp != stdin) {
+			close();
+		}
 	}
 	
 	FileStreamBase& FileStreamBase::operator=(FileStreamBase&& other) {
@@ -89,6 +95,11 @@ namespace falling {
 	
 	InputFileStream InputFileStream::open(std::string path) {
 		FILE* fp = fopen(path.c_str(), "r");
+		return wrap_file_pointer(fp);
+	}
+	
+	InputFileStream InputFileStream::wrap_file_pointer(void *os_fp) {
+		FILE* fp = (FILE*)os_fp;
 		InputFileStream fs;
 		fs.impl().fp = fp;
 		return fs;
@@ -116,6 +127,11 @@ namespace falling {
 	OutputFileStream OutputFileStream::open(std::string path, FileWriteMode mode) {
 		const char* m = mode == FileWriteMode::Truncate ? "w" : "a";
 		FILE* fp = fopen(path.c_str(), m);
+		return wrap_file_pointer(fp);
+	}
+	
+	OutputFileStream OutputFileStream::wrap_file_pointer(void *os_fp) {
+		FILE* fp = (FILE*)os_fp;
 		OutputFileStream fs;
 		fs.impl().fp = fp;
 		return fs;
@@ -127,7 +143,11 @@ namespace falling {
 	
 	size_t OutputFileStream::write(const byte* buffer, size_t n) {
 		if (is_open()) {
-			return fwrite(buffer, 1, n, impl().fp);
+			auto r = fwrite(buffer, 1, n, impl().fp);
+			if (synchronize_) {
+				fflush(impl().fp);
+			}
+			return r;
 		}
 		return 0;
 	}

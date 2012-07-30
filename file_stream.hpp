@@ -22,7 +22,7 @@ namespace falling {
 	class FileStreamBase {
 	public:
 		// FileStream API
-		~FileStreamBase() { this->close(); }
+		~FileStreamBase();
 		FileStreamBase& operator=(FileStreamBase&& other);
 		const std::string& path() const { return path_; }
 		void close();
@@ -32,6 +32,8 @@ namespace falling {
 		bool seek(size_t pos);
 		void seek_end();
 		size_t file_size();
+		bool sync() const { return synchronize_; }
+		void set_sync(bool b) { synchronize_ = b; }
 		
 		// Public for a static_assert, not for external use.
 		static const size_t ImplSize = sizeof(void*);
@@ -44,11 +46,14 @@ namespace falling {
 		Impl& impl();
 		const Impl& impl() const;
 		std::string path_;
+		bool synchronize_;
 	};
 		
 	class InputFileStream : public InputStream, public FileStreamBase {
 	public:
 		static InputFileStream open(std::string path);
+		static InputFileStream wrap_file_pointer(void* os_fp);
+		InputFileStream() {}
 		InputFileStream(InputFileStream&& other) = default;
 		InputFileStream& operator=(InputFileStream&& other) = default;
 		
@@ -57,13 +62,13 @@ namespace falling {
 		size_t read(byte* buffer, size_t n) override;
 		size_t tell_read() const override;
 		bool seek_read(size_t pos) override;
-	private:
-		InputFileStream() {}
 	};
 		
 	class OutputFileStream : public OutputStream, public FileStreamBase {
 	public:
 		static OutputFileStream open(std::string path, FileWriteMode mode = FileWriteMode::Truncate);
+		static OutputFileStream wrap_file_pointer(void* os_fp);
+		OutputFileStream() {}
 		OutputFileStream(OutputFileStream&& other) = default;
 		OutputFileStream& operator=(OutputFileStream&& other) = default;
 		
@@ -72,8 +77,6 @@ namespace falling {
 		size_t write(const byte* buffer, size_t n) override;
 		size_t tell_write() const override;
 		bool seek_write(size_t pos) override;
-	private:
-		OutputFileStream() {}
 	};
 }
 
