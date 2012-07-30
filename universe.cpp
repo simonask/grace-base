@@ -1,7 +1,7 @@
 #include "object/universe.hpp"
 #include "object/object_type.hpp"
+#include "io/formatters.hpp"
 
-#include <iomanip>
 #include <sstream>
 
 namespace falling {
