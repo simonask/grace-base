@@ -7,6 +7,7 @@
 //
 
 #include "io/formatted_stream.hpp"
+#include "io/formatters.hpp"
 
 namespace falling {
 	void FormattedStream::write_formatted(const std::string& str) {
@@ -58,6 +59,6 @@ namespace falling {
 	}
 	
 	void FormattedStream::write_formatted(const Formatter& formatter) {
-		write_formatted(formatter.formatted());
+		formatter.write(*this);
 	}
 }

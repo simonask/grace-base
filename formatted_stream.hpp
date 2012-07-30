@@ -16,8 +16,10 @@
 #include <string>
 
 namespace falling {
+	class FormattedStream;
+	
 	struct Formatter {
-		virtual std::string formatted() const = 0;
+		virtual void write(FormattedStream&) const = 0;
 	};
 	
 	class FormattedStream : public OutputStream {
@@ -54,23 +56,6 @@ namespace falling {
 	protected:
 		OutputStream& stream_;
 	};
-	
-	template <typename T>
-	struct PrintfFormatter : Formatter {
-		std::string v;
-		PrintfFormatter(const char* format_string, T value) {
-			char* ret;
-			asprintf(&ret, format_string, value);
-			v = ret;
-			free(ret);
-		}
-		std::string formatted() const { return v; }
-	};
-	
-	template <typename T>
-	PrintfFormatter<T> format(const char* format_string, T value) {
-		return PrintfFormatter<T>(format_string, value);
-	}
 	
 	template <typename T, size_t N>
 	void FormattedStream::write_formatted(TVector<T, N> v) {
