@@ -12,8 +12,13 @@ template <typename T> using Array = std::vector<T>;
 }
 #else
 
+#include <string>
 
 namespace falling {
+	
+	struct IndexOutOfBoundsException {
+		std::string what() { return "Index out of bounds."; }
+	};
 
 template <typename T>
 class Array {
@@ -62,6 +67,8 @@ private:
 	T* data_;
 	uint32 size_;
 	uint32 alloc_size_;
+	
+	void check_index_valid(size_t idx) const;
 };
 
 template <typename T>
@@ -103,13 +110,13 @@ Array<T>& Array<T>::operator=(Array<T>&& other) {
 
 template <typename T>
 T& Array<T>::operator[](size_t idx) {
-	ASSERT(idx < size_);
+	check_index_valid(idx);
 	return data_[idx];
 }
 
 template <typename T>
 const T& Array<T>::operator[](size_t idx) const {
-	ASSERT(idx < size_);
+	check_index_valid(idx);
 	return data_[idx];
 }
 
@@ -172,6 +179,13 @@ void Array<T>::clear(bool deallocate) {
 		delete[] reinterpret_cast<byte*>(data_);
 		data_ = nullptr;
 		alloc_size_ = 0;
+	}
+}
+	
+template <typename T>
+void Array<T>::check_index_valid(size_t idx) const {
+	if (idx >= size_) {
+		throw IndexOutOfBoundsException();
 	}
 }
 
