@@ -37,7 +37,9 @@ namespace falling {
 			return *this;
 		}
 		
+		void write_formatted(const char* cstr);
 		void write_formatted(const std::string&);
+		void write_formatted(bool b);
 		void write_formatted(uint8);
 		void write_formatted(uint16);
 		void write_formatted(uint32);

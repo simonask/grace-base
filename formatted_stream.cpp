@@ -9,9 +9,19 @@
 #include "io/formatted_stream.hpp"
 #include "io/formatters.hpp"
 
+#include <string.h>
+
 namespace falling {
+	void FormattedStream::write_formatted(const char *cstr) {
+		write((const byte*)cstr, strlen(cstr));
+	}
+	
 	void FormattedStream::write_formatted(const std::string& str) {
 		write((const byte*)str.c_str(), str.size());
+	}
+	
+	void FormattedStream::write_formatted(bool b) {
+		write_formatted(b ? "true" : "false");
 	}
 	
 	void FormattedStream::write_formatted(uint8 n) {
