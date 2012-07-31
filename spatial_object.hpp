@@ -16,6 +16,8 @@ namespace falling {
 	class SpatialObject : public Object {
 		REFLECT;
 	public:
+		virtual vec2 get_focus_point() const; // default: middle of bounds
+		
 		vec2 position;
 		vec2 size;
 		vec4 bounds; // x, y, w, h

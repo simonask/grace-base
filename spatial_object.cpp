@@ -14,4 +14,8 @@ namespace falling {
 	BEGIN_TYPE_INFO(SpatialObject)
 	property(&SpatialObject::position, "position", "World Position");
 	END_TYPE_INFO()
+	
+	vec2 SpatialObject::get_focus_point() const {
+		return position + (size / vec2::two());
+	}
 }
