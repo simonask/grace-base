@@ -82,11 +82,6 @@ namespace falling {
 #endif
 		}
 		
-		inline fvec4 sqrt(fvec4 vec) {
-			return _mm_sqrt_ps(vec);
-		}
-		
-		
 		inline fvec2 hadd2(fvec2 v) {
 			fvec2 r;
 			r[0] = v[0] + v[1];
@@ -94,7 +89,74 @@ namespace falling {
 			return r;
 		}
 		
+		inline ivec2 hadd2i(ivec2 v) {
+			ivec2 r;
+			r[0] = v[0] + v[1];
+			r[1] = r[0];
+			return r;
+		}
 		
+		inline uvec2 hadd2u(uvec2 v) {
+			uvec2 r;
+			r[0] = v[0] + v[1];
+			r[1] = r[0];
+			return r;
+		}
+		
+		inline ivec4 hadd3i(ivec4 v) {
+			int32 r = v[0] + v[1] + v[2];
+			return ivec4{r, r, r, r};
+		}
+		
+		inline uvec4 hadd3u(uvec4 v) {
+			uint32 r = v[0] + v[1] + v[2];
+			return uvec4{r, r, r, r};
+		}
+		
+		inline ivec4 hadd4i(ivec4 v) {
+			int32 r = v[0] + v[1] + v[2] + v[3];
+			return ivec4{r, r, r, r};
+		}
+		
+		inline uvec4 hadd4u(uvec4 v) {
+			uint32 r = v[0] + v[1] + v[2] + v[3];
+			return uvec4{r, r, r, r};
+		}
+		
+		inline fvec4 sqrt(fvec4 vec) {
+			return _mm_sqrt_ps(vec);
+		}
+		
+		inline fvec4 rsqrt(fvec4 vec) {
+			return _mm_rsqrt_ps(vec);
+		}
+		
+		inline fvec2 sqrt(fvec2 vec) {
+			// TODO: Is there a faster way to convert between fvec2 and fvec4?
+			fvec4 v = fvec4{vec[0], vec[1], 0.f, 0.f};
+			fvec4 result = sqrt(v);
+			return fvec2{result[0], result[1]};
+		}
+		
+		inline fvec2 rsqrt(fvec2 vec) {
+			// TODO: Is there a faster way to convert between fvec2 and fvec4?
+			fvec4 v = fvec4{vec[0], vec[1], 0.f, 0.f};
+			fvec4 result = rsqrt(v);
+			return fvec2{result[0], result[1]};
+		}
+		
+		
+		static const __m128 SIGNMASK_VEC4 = _mm_set1_epi32(0x80000000);
+		
+		inline fvec4 neg(fvec4 v) {
+			fvec4 negval = _mm_xor_ps(v, SIGNMASK_VEC4);
+			return negval;
+		}
+		
+		inline fvec4 abs(fvec4 v) {
+			fvec4 absval = _mm_andnot_ps(SIGNMASK_VEC4, v);
+			return absval;
+		}
 	}
 }
 

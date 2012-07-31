@@ -13,6 +13,7 @@
 #include "base/basic.hpp"
 #include "base/simd.hpp"
 
+#include <math.h>
 
 namespace falling {
 
@@ -20,29 +21,31 @@ namespace falling {
 		using namespace simd;
 		
 		template <typename ElementType, size_t N> struct GetVectorType;
-		template <> struct GetVectorType<int32, 1>   { typedef int32  Type; typedef uint32 MaskType; };
-		template <> struct GetVectorType<int32, 2>   { typedef ivec2  Type; typedef uvec2  MaskType; };
-		template <> struct GetVectorType<int32, 3>   { typedef ivec4  Type; typedef uvec4  MaskType; };
-		template <> struct GetVectorType<int32, 4>   { typedef ivec4  Type; typedef uvec4  MaskType; };
-		template <> struct GetVectorType<int64, 2>   { typedef ilvec2 Type; typedef ulvec2 MaskType; };
-		template <> struct GetVectorType<int64, 3>   { typedef ilvec4 Type; typedef ulvec4 MaskType; };
-		template <> struct GetVectorType<int64, 4>   { typedef ilvec4 Type; typedef ulvec4 MaskType; };
-		template <> struct GetVectorType<uint32, 1>  { typedef uint32 Type; typedef uint32 MaskType; };
-		template <> struct GetVectorType<uint32, 2>  { typedef uvec2  Type; typedef uvec2  MaskType; };
-		template <> struct GetVectorType<uint32, 3>  { typedef uvec4  Type; typedef uvec4  MaskType; };
-		template <> struct GetVectorType<uint32, 4>  { typedef uvec4  Type; typedef uvec4  MaskType; };
-		template <> struct GetVectorType<uint64, 2>  { typedef ulvec2 Type; typedef ulvec2 MaskType; };
-		template <> struct GetVectorType<uint64, 3>  { typedef ulvec4 Type; typedef ulvec4 MaskType; };
-		template <> struct GetVectorType<uint64, 4>  { typedef ulvec4 Type; typedef ulvec4 MaskType; };
+		template <> struct GetVectorType<int32, 1>   { typedef int32  Type; typedef uint32 MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<int32, 2>   { typedef ivec2  Type; typedef uvec2  MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<int32, 3>   { typedef ivec4  Type; typedef uvec4  MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<int32, 4>   { typedef ivec4  Type; typedef uvec4  MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<int64, 1>   { typedef int64  Type; typedef uint64 MaskType; typedef uint64 MaskElementType; };
+		template <> struct GetVectorType<int64, 2>   { typedef ilvec2 Type; typedef ulvec2 MaskType; typedef uint64 MaskElementType; };
+		template <> struct GetVectorType<int64, 3>   { typedef ilvec4 Type; typedef ulvec4 MaskType; typedef uint64 MaskElementType; };
+		template <> struct GetVectorType<int64, 4>   { typedef ilvec4 Type; typedef ulvec4 MaskType; typedef uint64 MaskElementType; };
+		template <> struct GetVectorType<uint32, 1>  { typedef uint32 Type; typedef uint32 MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<uint32, 2>  { typedef uvec2  Type; typedef uvec2  MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<uint32, 3>  { typedef uvec4  Type; typedef uvec4  MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<uint32, 4>  { typedef uvec4  Type; typedef uvec4  MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<uint64, 1>  { typedef uint64 Type; typedef uint64 MaskType; typedef uint64 MaskElementType; };
+		template <> struct GetVectorType<uint64, 2>  { typedef ulvec2 Type; typedef ulvec2 MaskType; typedef uint64 MaskElementType; };
+		template <> struct GetVectorType<uint64, 3>  { typedef ulvec4 Type; typedef ulvec4 MaskType; typedef uint64 MaskElementType; };
+		template <> struct GetVectorType<uint64, 4>  { typedef ulvec4 Type; typedef ulvec4 MaskType; typedef uint64 MaskElementType; };
 		
-		template <> struct GetVectorType<float32, 1> { typedef float32 Type; typedef uint32  MaskType; };
-		template <> struct GetVectorType<float32, 2> { typedef fvec2  Type; typedef uvec2  MaskType; };
-		template <> struct GetVectorType<float32, 3> { typedef fvec4  Type; typedef uvec4  MaskType; };
-		template <> struct GetVectorType<float32, 4> { typedef fvec4  Type; typedef uvec4  MaskType; };
-		template <> struct GetVectorType<float64, 1> { typedef float64 Type; typedef uint64 MaskType; };
-		template <> struct GetVectorType<float64, 2> { typedef flvec2 Type; typedef ulvec2 MaskType; };
-		template <> struct GetVectorType<float64, 3> { typedef flvec4 Type; typedef ulvec4 MaskType; };
-		template <> struct GetVectorType<float64, 4> { typedef flvec4 Type; typedef ulvec4 MaskType; };
+		template <> struct GetVectorType<float32, 1> { typedef float32 Type; typedef uint32  MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<float32, 2> { typedef fvec2   Type; typedef uvec2   MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<float32, 3> { typedef fvec4   Type; typedef uvec4   MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<float32, 4> { typedef fvec4   Type; typedef uvec4   MaskType; typedef uint32 MaskElementType; };
+		template <> struct GetVectorType<float64, 1> { typedef float64 Type; typedef uint64  MaskType; typedef uint64 MaskElementType; };
+		template <> struct GetVectorType<float64, 2> { typedef flvec2  Type; typedef ulvec2  MaskType; typedef uint64 MaskElementType; };
+		template <> struct GetVectorType<float64, 3> { typedef flvec4  Type; typedef ulvec4  MaskType; typedef uint64 MaskElementType; };
+		template <> struct GetVectorType<float64, 4> { typedef flvec4  Type; typedef ulvec4  MaskType; typedef uint64 MaskElementType; };
 	}
 	
 	template <typename T, size_t N>
@@ -134,10 +137,12 @@ namespace falling {
 		typedef internal::GetVectorType<ElementType, N> GetVectorType;
 		typedef typename GetVectorType::Type Type;
 		typedef typename GetVectorType::MaskType MaskType;
+		typedef typename GetVectorType::MaskElementType MaskElementType;
 		typedef ElementType ComponentType;
 		typedef TVector<ElementType, N> Self;
+		typedef TVector<MaskElementType, N> MaskVector;
 		
-		typedef TVector<MaskType, N> ComparisonResult;
+		typedef TVector<MaskElementType, N> ComparisonResult;
 		
 		// Array-like interface
 		
@@ -197,32 +202,136 @@ namespace falling {
 		typename std::enable_if<!IsFloatingPoint<T>::Value, ComparisonResult>::type
 		operator!=(const Self& other) const { return simd::cmp_neq(this->m, other.m); }
 		
+		ComparisonResult equal_within(const Self& other, ElementType epsilon) const {
+			Self diff = (*this - other).abs();
+			return diff <= replicate(epsilon);
+		}
 		
+		bool all_equal_within(const Self& other, ElementType epsilon) const {
+			// TODO: This is SSE-specific, generalize.
+			ComparisonResult mask = ComparisonResult::replicate(1);
+			ComparisonResult bool_mask = equal_within(other, epsilon) & mask;
+			return bool_mask.sum() == N;
+		}
+		
+		bool any_equal_within(const Self& other, ElementType epsilon) const {
+			// TODO: This is SSE-specific, generalize.
+			ComparisonResult mask = ComparisonResult::replicate(1);
+			ComparisonResult bool_mask = equal_within(other, epsilon) & mask;
+			return bool_mask.sum() > 0;
+		}
+		
+		template <typename T = ElementType>
+		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		all_equal(const Self& other, MaskElementType ulps = 5) const {
+			auto abs_diff = MaskVector(this->mask - other.mask).abs();
+			auto result = abs_diff <= MaskVector::replicate(ulps);
+			auto bools = result & MaskVector::replicate(1);
+			return bools.sum() == N;
+		}
+		
+		template <typename T = ElementType>
+		typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
+		all_equal(const Self& other) const {
+			auto mask = ComparisonResult::replicate(1);
+			auto result = (*this == other) & mask;
+			return result.sum() == N;
+		}
+		
+		template <typename T = ElementType>
+		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		any_equal(const Self& other, MaskElementType ulps = 5) const {
+			auto abs_diff = MaskVector(this->mask - other.mask).abs();
+			auto result = abs_diff <= MaskVector::replicate(ulps);
+			auto bools = result & MaskVector::replicate(1);
+			return bools.sum() > 0;
+		}
+		
+		template <typename T = ElementType>
+		typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
+		any_equal(const Self& other) const {
+			auto mask = ComparisonResult::replicate(1);
+			auto result = (*this == other) & mask;
+			return result.sum() > 0;
+		}
+		
+		template <typename T = ElementType>
+		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		all_is_nan() const {
+			// TODO: Do this by masking and summing.
+			size_t n = 0;
+			for (size_t i = 0; i < N; ++i) {
+				if (isnan((*this)[i])) ++n;
+			}
+			return n == N;
+		}
+		
+		template <typename T = ElementType>
+		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		any_is_nan() const {
+			// TODO: Do this by masking and summing.
+			size_t n = 0;
+			for (size_t i = 0; i < N; ++i) {
+				if (isnan((*this)[i])) ++n;
+			}
+			return n > 0;
+		}
+		
+		template <typename T = ElementType>
+		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		all_is_infinity() const {
+			// TODO: Do this by masking and summing.
+			size_t n = 0;
+			for (size_t i = 0; i < N; ++i) {
+				if (isinf((*this)[i])) ++n;
+			}
+			return n == N;
+		}
+		
+		template <typename T = ElementType>
+		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		any_is_infinity() const {
+			// TODO: Do this by masking and summing.
+			size_t n = 0;
+			for (size_t i = 0; i < N; ++i) {
+				if (isinf((*this)[i])) ++n;
+			}
+			return n > 0;
+		}
 		
 		// Arithmetic
 		
 		Self& operator+=(Self other) { this->m += other.m; return *this; }
-		Self operator+(Self other) { return Self(this->m + other.m); }
+		Self operator+(Self other) const { return Self(this->m + other.m); }
 		Self& operator-=(Self other) { this->m -= other.m; return *this; }
-		Self operator-(Self other) { return Self(this->m - other.m); }
+		Self operator-(Self other) const { return Self(this->m - other.m); }
+		Self operator-() const;
 		Self& operator*=(Self other) { this->m *= other.m; return *this; }
-		Self operator*(Self other) { return Self(this->m * other.m); }
+		Self operator*(Self other) const { return Self(this->m * other.m); }
 		Self& operator/=(Self other) { this->m /= other.m; return *this; }
-		Self operator/(Self other) { return Self(this->m / other.m); }
+		Self operator/(Self other) const { return Self(this->m / other.m); }
 		
 		
 		// Masking
 		
-		MaskType operator&(MaskType msk) const { return this->mask & msk; }
-		MaskType operator|(MaskType msk) const { return this->mask | msk; }
-		MaskType operator^(MaskType msk) const { return this->mask ^ msk; }
-		MaskType operator~() const { return ~this->mask; }
+		Self operator&(MaskType msk) const { return this->mask & msk; }
+		Self operator&(ComparisonResult msk) const { return this->mask & msk.mask; }
+		Self operator|(MaskType msk) const { return this->mask | msk; }
+		Self operator|(ComparisonResult msk) const { return this->mask | msk.mask; }
+		Self operator^(MaskType msk) const { return this->mask ^ msk; }
+		Self operator^(ComparisonResult msk) const { return this->mask ^ msk.mask; }
+		Self operator~() const { return ~this->mask; }
 		Self& operator&=(MaskType  msk) { this->mask &= msk; return *this; }
 		Self& operator|=(MaskType msk) { this->mask |= msk; return *this; }
 		Self& operator^=(MaskType msk) { this->mask ^= msk; return *this; }
 		
+		Self abs() const;
+		Self sumv() const;
+		ElementType sum() const;
+		
 
 		// Convenience
+		
 		static TVector<ElementType, N> replicate(ElementType value) {
 			Self v;
 			for (size_t i = 0; i < N; ++i) {
@@ -234,13 +343,30 @@ namespace falling {
 		static constexpr Self zero() { return replicate(0); }
 		static constexpr Self one() { return replicate(1); }
 		static constexpr Self two() { return replicate(2); }
+		static constexpr Self nan() { return zero() / zero(); }
+		static constexpr Self infinity() { return one() / zero(); }
 		
 		// Geometry
 		
-		Self normalized() const;
+		Self normalize() const;
+		Self normalize_safe() const;
 		Self lengthv() const;
 		ElementType length() const;
 		ElementType dot(Self other) const;
+		
+		template <typename T = ElementType>
+		typename std::enable_if<IsFloatingPoint<T>::Value, Self>::type
+		sqrt() const { return simd::sqrt(this->m); }
+		
+		template <typename T = ElementType>
+		typename std::enable_if<IsFloatingPoint<T>::Value, Self>::type
+		rsqrt() const { return simd::rsqrt(this->m); }
+		
+		template <typename T = ElementType>
+		typename std::enable_if<IsFloatingPoint<T>::Value, Self>::type
+		fast_sqrt() const {
+			return rsqrt() * (*this);
+		}
 	
 		Self cross(Self other) const {
 			return VectorCrosser<ElementType,N>::cross(*this, other);
@@ -275,9 +401,46 @@ namespace falling {
 	inline vec2 sumv(vec2 vec) { return vec2(simd::hadd2(vec.m)); }
 	inline vec3 sumv(vec3 vec) { return vec3(simd::hadd3(vec.m)); }
 	inline vec4 sumv(vec4 vec) { return vec4(simd::hadd4(vec.m)); }
+	inline uvec1 sumv(uvec1 vec) { return vec; }
+	inline uvec2 sumv(uvec2 vec) { return uvec2(simd::hadd2u(vec.m)); }
+	inline uvec3 sumv(uvec3 vec) { return uvec3(simd::hadd3u(vec.m)); }
+	inline uvec4 sumv(uvec4 vec) { return uvec4(simd::hadd4u(vec.m)); }
+	inline ivec1 sumv(ivec1 vec) { return vec; }
+	inline ivec2 sumv(ivec2 vec) { return ivec2(simd::hadd2i(vec.m)); }
+	inline ivec3 sumv(ivec3 vec) { return ivec3(simd::hadd3i(vec.m)); }
+	inline ivec4 sumv(ivec4 vec) { return ivec4(simd::hadd4i(vec.m)); }
 	
-	inline vec4 sqrt(vec4 vec) {
-		return vec4(simd::sqrt(vec.m));
+	template <typename T, size_t N>
+	TVector<T,N> TVector<T,N>::sumv() const {
+		return falling::sumv(*this);
+	}
+	
+	template <typename T, size_t N>
+	T TVector<T,N>::sum() const {
+		return sumv()[0];
+	}
+	
+	inline float32 sqrt(float32 f) {
+		return ::sqrtf(f);
+	}
+	
+	inline float64 sqrt(float64 f) {
+		return ::sqrt(f);
+	}
+	
+	template <typename T, size_t N>
+	inline TVector<T,N> sqrt(TVector<T,N> vec) {
+		return vec.sqrt();
+	}
+	
+	template <typename T, size_t N>
+	inline TVector<T,N> rsqrt(TVector<T,N> vec) {
+		return vec.rsqrt();
+	}
+	
+	template <typename T, size_t N>
+	inline TVector<T,N> fast_sqrt(TVector<T,N> vec) {
+		return vec.fast_sqrt();
 	}
 	
 	template <typename ElementType, size_t VectorSize>
@@ -301,14 +464,25 @@ namespace falling {
 	};
 	
 	template <typename T, size_t N>
-	TVector<T,N> TVector<T,N>::normalized() const {
+	TVector<T,N> TVector<T,N>::normalize() const {
 		return (*this) / lengthv();
+	}
+	
+	void throw_normalize_zero_length_vector_exception();
+	
+	template <typename T, size_t N>
+	TVector<T,N> TVector<T,N>::normalize_safe() const {
+		auto v = lengthv();
+		if (v.all_equal_within(zero(), 0.f)) {
+			throw_normalize_zero_length_vector_exception();
+		}
+		return (*this) / v;
 	}
 	
 	template <typename T, size_t N>
 	TVector<T,N> TVector<T,N>::lengthv() const {
 		TVector<T,N> sq = (*this) * (*this);
-		return sqrt(sumv(sq));
+		return falling::sqrt(sq.sumv());
 	}
 	
 	template <typename T, size_t N>
@@ -320,6 +494,16 @@ namespace falling {
 	T TVector<T,N>::dot(Self other) const {
 		auto product = (*this) * other;
 		return sumv(product);
+	}
+	
+	template <typename T, size_t N>
+	TVector<T,N> TVector<T,N>::abs() const {
+		return simd::abs(this->m);
+	}
+	
+	template <typename T, size_t N>
+	TVector<T,N> TVector<T,N>::operator-() const {
+		return simd::neg(this->m);
 	}
 	
 	template <Axis X_, Axis Y_, Axis Z_, Axis W_, typename T>
