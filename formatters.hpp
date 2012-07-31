@@ -12,6 +12,8 @@
 #include "io/formatted_stream.hpp"
 #include "io/string_stream.hpp"
 
+#include <functional>
+
 namespace falling {
 	template <typename T>
 	struct PrintfFormatter : Formatter {
@@ -28,6 +30,45 @@ namespace falling {
 	template <typename T>
 	PrintfFormatter<T> format(const char* format_string, T value) {
 		return PrintfFormatter<T>(format_string, value);
+	}
+	
+	template <typename T>
+	struct TruncateFormatter : Formatter {
+		const T& value;
+		uint32 width;
+		std::string ellipsis;
+	};
+	
+	struct ClosureFormatter : Formatter {
+		std::function<void(FormattedStream&)> closure;
+		void write(FormattedStream& stream) const {
+			closure(stream);
+		};
+	};
+	
+	inline ClosureFormatter closure_formatter(std::function<void(FormattedStream&)> closure) {
+		ClosureFormatter formatter;
+		formatter.closure = closure;
+		return formatter;
+	}
+	
+	template <typename T>
+	ClosureFormatter truncate(const T& value, uint32 width, const std::string& ellipsis = "") {
+		return closure_formatter([=](FormattedStream& stream) {
+			StringStream ss;
+			ss << value;
+			auto s = ss.str();
+			size_t ellipsis_length = ellipsis.size();
+			if (s.size() > width) {
+				if (ellipsis.size() && width > ellipsis.size()) {
+					stream << s.substr(0, width - ellipsis.size()) << ellipsis;
+				} else {
+					stream << s.substr(0, width);
+				}
+			} else {
+				stream << s;
+			}
+		});
 	}
 	
 	template <typename T>
