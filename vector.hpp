@@ -57,6 +57,8 @@ namespace falling {
 		typedef typename GetVectorType::MaskType MaskType;
 	};
 	
+	static const char VectorComponentNames[][2] = {"x", "y", "z", "w"};
+	
 	template <typename ElementType, size_t N> struct VectorData;
 	template <typename T> struct VectorData<T, 1> {
 		typedef internal::GetVectorType<T, 1> GetVectorType;
