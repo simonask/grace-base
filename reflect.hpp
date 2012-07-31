@@ -21,6 +21,8 @@ struct ObjectTypeBuilder {
 	Self& name(std::string n) { type_->name_ = std::move(n); return *this; }
 	Self& description(std::string d) { type_->description_ = std::move(d); return *this; }
 	Self& super(const ObjectTypeBase* t) { type_->super_ = t; return *this; }
+	template <typename SuperClass>
+	Self& super() { return super(get_type<SuperClass>()); }
 	
 	void check_attribute_name_(const std::string& name) {
 		const char* reserved_names[] = {"class", "aspects"};
