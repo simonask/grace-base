@@ -154,6 +154,7 @@ aspect_cast(From* ptr) {
 template <typename To, typename From>
 typename std::enable_if<!std::is_convertible<From*, To*>::value, To*>::type
 aspect_cast(From* ptr) {
+	if (ptr == nullptr) return nullptr;
 	Object* o = ptr; // check that From derives from Object.
 	const Type* from = o->object_type();
 	const Type* to = get_type<To>();
