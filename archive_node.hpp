@@ -39,6 +39,8 @@ struct ArchiveNode {
 	bool get(uint32&) const;
 	bool get(uint64&) const;
 	bool get(std::string&) const;
+	template <typename T, size_t N>
+	bool get(TVector<T,N>& vec) const;
 	void set(float32);
 	void set(float64);
 	void set(int8);
@@ -50,6 +52,8 @@ struct ArchiveNode {
 	void set(uint32);
 	void set(uint64);
 	void set(std::string);
+	template <typename T, size_t N>
+	void set(TVector<T,N> vec);
 	void clear() { clear(Type::Empty); }
 	
 	const ArchiveNode& operator[](size_t idx) const;
@@ -157,6 +161,25 @@ inline void ArchiveNode::set(uint64 n) {
 inline void ArchiveNode::set(std::string s) {
 	clear(Type::String);
 	string_value = std::move(s);
+}
+
+template <typename T, size_t N>
+inline void ArchiveNode::set(TVector<T,N> v) {
+	clear(Type::Map);
+	for (size_t i = 0; i < N; ++i) {
+		(*this)[VectorComponentNames[i]] = v[i];
+	}
+}
+	
+template <typename T, size_t N>
+inline bool ArchiveNode::get(TVector<T,N>& v) const {
+	if (type() == Type::Map) {
+		for (size_t i = 0; i < N; ++i) {
+			(*this)[VectorComponentNames[i]].get(v[i]);
+		}
+		return true;
+	}
+	return false;
 }
 
 template <typename T, typename U>
