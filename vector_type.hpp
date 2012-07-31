@@ -32,8 +32,6 @@ namespace falling {
 		}
 	};
 	
-	static const char VectorComponentNames[][2] = {"x", "y", "z", "w"};
-	
 	template <typename T, size_t N>
 	void VectorTypeImpl<T,N>::deserialize(TVector<T, N>& vector, const ArchiveNode& node, IUniverse&) const {
 		for (size_t i = 0; i < N; ++i) {
