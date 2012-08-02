@@ -48,6 +48,12 @@ template <typename ForwardType_ = MEMBER_TYPE, typename... ForwardArgs_> \
 auto METHOD_NAME(ForwardArgs_&&... args) const -> decltype(((const ForwardType_)ForwardType_()).METHOD_NAME(std::forward<ForwardArgs_>(args)...)) { \
 return MEMBER.METHOD_NAME(std::forward<ForwardArgs_>(args)...); \
 }
+	
+#if __has_attribute(always_inline)
+#define ALWAYS_INLINE inline __attribute__((always_inline))
+#else
+#define ALWAYS_INLINE inline
+#endif
 
 template <typename T>
 struct RemoveConstRef {
