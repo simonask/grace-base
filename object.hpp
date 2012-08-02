@@ -3,6 +3,7 @@
 #define OBJECT_HPP_P40DARL9
 
 #include "base/basic.hpp"
+#include "base/time.hpp"
 
 namespace falling {
 
@@ -27,6 +28,7 @@ struct Object {
 	virtual ~Object() {}
 	
 	virtual void initialize() {} // Called after all other objects have been instantiated and deserialized.
+	virtual void update(GameTimeDelta delta) {}
 	
 	Object* find_parent();
 	const Object* find_parent() const;

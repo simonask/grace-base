@@ -32,6 +32,7 @@ struct ObjectPtr/*<T, typename std::enable_if<IsDerivedFromObject<T>::Value>::ty
 	template <typename U>
 	bool operator!=(ObjectPtr<U> other) const { ptr_ != other.ptr_; }
 	bool operator!=(const ObjectPtr<T>& other) const { return ptr_ != other.ptr_; }
+	explicit operator bool() const { return ptr_ != nullptr; }
 	
 	template <typename U>
 	ObjectPtr<U> cast() const {
