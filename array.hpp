@@ -62,6 +62,7 @@ public:
 	const_iterator begin() const { return data_; }
 	const_iterator end() const { return data_ + size_; }
 	
+	size_t erase(size_t idx);
 	iterator erase(iterator);
 private:
 	T* data_;
@@ -187,6 +188,23 @@ void Array<T>::check_index_valid(size_t idx) const {
 	if (idx >= size_) {
 		throw IndexOutOfBoundsException();
 	}
+}
+	
+template <typename T>
+size_t Array<T>::erase(size_t idx) {
+	check_index_valid(idx);
+	if (idx == size_-1) {
+		data_[idx].~T();
+		--size_;
+	} else {
+		for (size_t i = idx; i < size_-1; ++i) {
+			data_[idx] = std::move(data_[idx+1]);
+		}
+		--size_;
+		// destroy last element
+		data_[size_].~T();
+	}
+	return idx;
 }
 
 /*template <typename T>
