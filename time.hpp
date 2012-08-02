@@ -10,73 +10,194 @@
 #define falling_time_hpp
 
 #include "base/basic.hpp"
-#include <chrono>
 
 namespace falling {
+	enum Timeline : byte {
+		System,
+		Game,
+	};
 	
-	template <typename TimeType>
-	struct TimeInterval {
-		typedef TimeInterval<TimeType> Self;
-		typedef typename TimeType::DurationRep Rep;
+	template <Timeline T>
+	struct TimeDelta {
+	public:
+		TimeDelta(const TimeDelta<T>&) = default;
+		TimeDelta<T>& operator=(const TimeDelta<T>&) = default;
 		
+		TimeDelta<T> operator+(TimeDelta<T>) const;
+		TimeDelta<T>& operator+=(TimeDelta<T>);
+		TimeDelta<T> operator-(TimeDelta<T>) const;
+		TimeDelta<T>& operator-=(TimeDelta<T>);
+		TimeDelta<T> operator*(int64 n) const;
+		TimeDelta<T>& operator*=(int64 n);
+		TimeDelta<T> operator*(float64 n) const;
+		TimeDelta<T>& operator*=(float64 n);
+
+		bool operator==(TimeDelta<T> other) const { return microseconds_ == other.microseconds_; }
+		bool operator!=(TimeDelta<T> other) const { return microseconds_ != other.microseconds_; }
+		bool operator<(TimeDelta<T> other) const { return microseconds_ < other.microseconds_; }
+		bool operator<=(TimeDelta<T> other) const { return microseconds_ <= other.microseconds_; }
+		bool operator>(TimeDelta<T> other) const { return microseconds_ > other.microseconds_; }
+		bool operator>=(TimeDelta<T> other) const { return microseconds_ >= other.microseconds_; }
+
+		int64 microseconds() const { return microseconds_; }
 	private:
-		Rep rep_;
+		TimeDelta(int64 microseconds) : microseconds_(microseconds) {}
+		int64 microseconds_;
+		template <Timeline> friend struct Time;
 	};
 	
-	struct SystemTimeImpl {
-		typedef std::chrono::time_point<std::chrono::system_clock> Rep;
-		typedef typename Rep::duration DurationRep;
+	template <Timeline T>
+	struct Time {
+	public:
+		Time(const Time<T>&) = default;
+		Time(Time<T>&&) = default;
+		Time<T>& operator=(const Time<T>& other) = default;
+		Time<T>& operator=(Time<T>&& other) = default;
 		
-		static Rep now() { return std::system_clock::now(); }
-		static Rep epoch() { return 0; }
-		static Rep days_since_epoch(uint64 days) { return hours_since_epoch(days*24); }
-		static Rep hours_since_epoch(uint64 hours) { return minutes_since_epoch(hours*60); }
-		static Rep minutes_since_epoch(uint64 minutes) { return seconds_since_epoch(minutes*60); }
-		static Rep seconds_since_epoch(uint64 seconds) { return milliseconds_since_epoch(seconds*1000); }
-		static Rep milliseconds_since_epoch(uint64 ms) { return microseconds_since_epoch(ms*1000); }
-		static Rep microseconds_since_epoch(uint64 us) { return us; }
-		static DurationRep hours(int64 hours) { return minutes(hours*60); }
-		static DurationRep minutes(int64 minutes) { return seconds(minutes*60); }
-		static DurationRep seconds(int64 seconds) { return milliseconds(seconds*1000); }
-		static DurationRep milliseconds(int64 ms) { return microseconds(ms*1000); }
-		static DurationRep microseconds(int64 us) { return us; }
-	};
+		float64 seconds() const;
+		float64 minutes() const;
+		
+		Time<T> operator+(TimeDelta<T>) const;
+		Time<T>& operator+=(TimeDelta<T>);
+		Time<T> operator-(TimeDelta<T>) const;
+		TimeDelta<T> operator-(Time<T>) const;
+		Time<T>& operator-=(TimeDelta<T>);
+		bool operator==(Time<T> other) const { return microseconds_since_epoch_ == other.microseconds_since_epoch_; }
+		bool operator!=(Time<T> other) const { return microseconds_since_epoch_ != other.microseconds_since_epoch_; }
+		bool operator<(Time<T> other) const { return microseconds_since_epoch_ < other.microseconds_since_epoch_; }
+		bool operator<=(Time<T> other) const { return microseconds_since_epoch_ <= other.microseconds_since_epoch_; }
+		bool operator>(Time<T> other) const { return microseconds_since_epoch_ > other.microseconds_since_epoch_; }
+		bool operator>=(Time<T> other) const { return microseconds_since_epoch_ >= other.microseconds_since_epoch_; }
+		
+		void extract_components(int64& hours, int64& minutes, int64& seconds, int64& ms, int64& us) const;
+		void extract_components(int64& minutes, int64& seconds, int64& ms, int64& us) const;
+		void extract_components(int64& seconds, int64& ms, int64& us) const;
+
+		static TimeDelta<T> hours(int64 h) { return minutes(h * 60); }
+		static TimeDelta<T> minutes(int64 m) { return seconds(m * 60); }
+		static TimeDelta<T> seconds(int64 s) { return milliseconds(s * 1000); }
+		static TimeDelta<T> milliseconds(int64 ms) { return microseconds(ms * 1000); }
+		static TimeDelta<T> microseconds(int64 us) { return TimeDelta<T>(us); }
 	
-	struct GameTimeImpl {
-		// microseconds
-		typedef uint64 Rep;
-		typedef int64 DurationRep;
-		
-		static Rep epoch() { return 0; }
-		static Rep days_since_epoch(uint64 days) { return hours_since_epoch(days*24); }
-		static Rep hours_since_epoch(uint64 hours) { return minutes_since_epoch(hours*60); }
-		static Rep minutes_since_epoch(uint64 minutes) { return seconds_since_epoch(minutes*60); }
-		static Rep seconds_since_epoch(uint64 seconds) { return milliseconds_since_epoch(seconds*1000); }
-		static Rep milliseconds_since_epoch(uint64 ms) { return microseconds_since_epoch(ms*1000); }
-		static Rep microseconds_since_epoch(uint64 us) { return us; }
-		static DurationRep hours(int64 hours) { return minutes(hours*60); }
-		static DurationRep minutes(int64 minutes) { return seconds(minutes*60); }
-		static DurationRep seconds(int64 seconds) { return milliseconds(seconds*1000); }
-		static DurationRep milliseconds(int64 ms) { return microseconds(ms*1000); }
-		static DurationRep microseconds(int64 us) { return us; }
+		explicit Time(uint64 us_since_epoch = 0) : microseconds_since_epoch_(us_since_epoch) {}
+
+		private:
+		uint64 microseconds_since_epoch_;
 	};
+
+	extern template struct Time<Timeline::System>;
+	extern template struct Time<Timeline::Game>;
+
+	using SystemTime = Time<Timeline::System>;
+	using SystemTimeDelta = TimeDelta<Timeline::System>;
+	using GameTime = Time<Timeline::Game>;
+	using GameTimeDelta = TimeDelta<Timeline::Game>;
+
+	SystemTime system_now();
 	
-	template <typename Impl>
-	struct Time : public Impl {
-		typedef TimeInterval<Time<Impl>> Interval;
-		typedef typename Impl::Rep Rep;
-		typedef typename Impl::DurationRep DurationRep;
-		
-		
-		
-	private:
-		Rep rep_;
-	};
+	template <Timeline T>
+	inline TimeDelta<T> TimeDelta<T>::operator+(TimeDelta<T> delta) const {
+		return microseconds_ + delta.microseconds_;
+	}
+
+	template <Timeline T>
+	inline TimeDelta<T>& TimeDelta<T>::operator+=(TimeDelta<T> delta) {
+		microseconds_ += delta.microseconds_;
+		return *this;
+	}
+
+	template <Timeline T>
+	inline TimeDelta<T> TimeDelta<T>::operator-(TimeDelta<T> delta) const {
+		return microseconds_ - delta.microseconds_;
+	}
+
+	template <Timeline T>
+	inline TimeDelta<T>& TimeDelta<T>::operator-=(TimeDelta<T> delta) {
+		microseconds_ -= delta.microseconds_;
+		return *this;
+	}
+
+	template <Timeline T>
+	inline TimeDelta<T> TimeDelta<T>::operator*(int64 n) const {
+		return microseconds_ * n;
+	}
+
+	template <Timeline T>
+	inline TimeDelta<T>& TimeDelta<T>::operator*=(int64 n) {
+		microseconds_ *= n;
+		return *this;
+	}
+
+	template <Timeline T>
+	inline TimeDelta<T> TimeDelta<T>::operator*(float64 n) const {
+		return (uint64)((float64)microseconds_ * n);
+	}
+
+	template <Timeline T>
+	inline TimeDelta<T>& TimeDelta<T>::operator*=(float64 n) {
+		microseconds_ = (uint64)((float64)microseconds_ * n);
+		return *this;
+	}
+
+	template <Timeline T>
+	inline Time<T> Time<T>::operator+(TimeDelta<T> delta) const {
+		return Time<T>(microseconds_since_epoch_ + delta.microseconds_);
+	}
+
+	template <Timeline T>
+	inline Time<T>& Time<T>::operator+=(TimeDelta<T> delta) {
+		microseconds_since_epoch_ += delta.microseconds_;
+		return *this;
+	}
+
+	template <Timeline T>
+	inline Time<T> Time<T>::operator-(TimeDelta<T> delta) const {
+		return Time<T>(microseconds_since_epoch_ - delta.microseconds_);
+	}
+
+	template <Timeline T>
+	inline TimeDelta<T> Time<T>::operator-(Time<T> other) const {
+		return (int64)microseconds_since_epoch_ - (int64)other.microseconds_since_epoch_;
+	}
+
+	template <Timeline T>
+	inline Time<T>& Time<T>::operator-=(TimeDelta<T> delta) {
+		microseconds_since_epoch_ -= delta.microseconds_;
+		return *this;
+	}
+
+	class FormattedStream;
 	
-	using GameTime = Time<GameTimeImpl>;
-	using SystemTime = Time<SystemTimeImpl>;
-	using GameTimeInterval = TimeInterval<GameTime>;
-	using SystemTimeInterval = TimeInterval<SystemTime>;
+	void write_time_to_stream(FormattedStream& stream, GameTime time);
+	void write_time_to_stream(FormattedStream& stream, SystemTime time);
+	
+	template <Timeline T>
+	inline FormattedStream& operator<<(FormattedStream& stream, Time<T> time) {
+		write_time_to_stream(stream, time);
+		return stream;
+	}
+
+	template <Timeline T>
+	void Time<T>::extract_components(int64 &hours, int64 &minutes, int64 &seconds, int64 &ms, int64 &us) const {
+		extract_components(minutes, seconds, ms, us);
+		hours = minutes / 60;
+		minutes %= 60;
+	}
+	
+	template <Timeline T>
+	void Time<T>::extract_components(int64 &minutes, int64 &seconds, int64 &ms, int64 &us) const {
+		extract_components(seconds, ms, us);
+		minutes = seconds / 60;
+		seconds %= 60;
+	}
+	
+	template <Timeline T>
+	void Time<T>::extract_components(int64 &seconds, int64 &ms, int64 &us) const {
+		ms = microseconds_since_epoch_ / 1000;
+		us = microseconds_since_epoch_ % 1000;
+		seconds = ms / 1000;
+		ms %= 1000;
+	}
 }
 
 #endif
