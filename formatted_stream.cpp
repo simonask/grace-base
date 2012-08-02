@@ -12,63 +12,73 @@
 #include <string.h>
 
 namespace falling {
-	void FormattedStream::write_formatted(const char *cstr) {
-		write((const byte*)cstr, strlen(cstr));
+	FormattedStream& operator<<(FormattedStream& stream, const char *cstr) {
+		stream.write((const byte*)cstr, strlen(cstr));
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(const std::string& str) {
-		write((const byte*)str.c_str(), str.size());
+	FormattedStream& operator<<(FormattedStream& stream, const std::string& str) {
+		stream.write((const byte*)str.c_str(), str.size());
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(bool b) {
-		write_formatted(b ? "true" : "false");
+	FormattedStream& operator<<(FormattedStream& stream, bool b) {
+		stream << (b ? "true" : "false");
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(uint8 n) {
-		write_formatted(format("%u", n));
+	FormattedStream& operator<<(FormattedStream& stream, uint8 n) {
+		stream << format("%u", n);
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(uint16 n) {
-		write_formatted(format("%u", n));
+	FormattedStream& operator<<(FormattedStream& stream, uint16 n) {
+		stream << format("%u", n);
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(uint32 n) {
-		write_formatted(format("%u", n));
+	FormattedStream& operator<<(FormattedStream& stream, uint32 n) {
+		stream << format("%u", n);
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(uint64 n) {
-		write_formatted(format("%llu", n));
+	FormattedStream& operator<<(FormattedStream& stream, uint64 n) {
+		stream << format("%llu", n);
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(char c) {
-		write((const byte*)&c, 1);
+	FormattedStream& operator<<(FormattedStream& stream, char c) {
+		stream.write((const byte*)&c, 1);
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(int8 n) {
-		write_formatted(format("%d", n));
+	FormattedStream& operator<<(FormattedStream& stream, int8 n) {
+		stream << format("%d", n);
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(int16 n) {
-		write_formatted(format("%d", n));
+	FormattedStream& operator<<(FormattedStream& stream, int16 n) {
+		stream << format("%d", n);
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(int32 n) {
-		write_formatted(format("%d", n));
+	FormattedStream& operator<<(FormattedStream& stream, int32 n) {
+		stream << format("%d", n);
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(int64 n) {
-		write_formatted(format("%lld", n));
+	FormattedStream& operator<<(FormattedStream& stream, int64 n) {
+		stream << format("%lld", n);
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(float32 f) {
-		write_formatted(format("%f", f));
+	FormattedStream& operator<<(FormattedStream& stream, float32 f) {
+		stream << format("%f", f);
+		return stream;
 	}
 	
-	void FormattedStream::write_formatted(float64 f) {
-		write_formatted(format("%llf", f));
-	}
-	
-	void FormattedStream::write_formatted(const Formatter& formatter) {
-		formatter.write(*this);
+	FormattedStream& operator<<(FormattedStream& stream, float64 f) {
+		stream << format("%llf", f);
+		return stream;
 	}
 }

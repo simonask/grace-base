@@ -18,6 +18,7 @@ namespace falling {
 		StdOut = StandardOutput,
 		StandardError,
 		StdErr = StandardError,
+		NumStandardOutputStreamTypes
 	};
 	
 	enum StandardInputStreamType {
@@ -33,9 +34,11 @@ namespace falling {
 		OutputFileStream stream_;
 	};
 	
+	StdOutputStream& get_stdout_stream(StandardOutputStreamType type);
+	
 	template <typename T>
-	StdOutputStream operator<<(StandardOutputStreamType type, const T& value) {
-		StdOutputStream stream;
+	StdOutputStream& operator<<(StandardOutputStreamType type, const T& value) {
+		StdOutputStream& stream = get_stdout_stream(type);
 		stream << value;
 		return stream;
 	}

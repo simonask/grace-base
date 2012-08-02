@@ -15,12 +15,22 @@ namespace falling {
 			switch (type) {
 				case StandardOutput: return stdout;
 				case StandardError: return stderr;
+				default: ASSERT(false); return nullptr;
 			}
 		}
 		
 		FILE* file_pointer_for_stream_type(StandardInputStreamType type) {
 			return stdin;
 		}
+	}
+	
+	StdOutputStream& get_stdout_stream(StandardOutputStreamType type) {
+		static StdOutputStream* stream[NumStandardOutputStreamTypes] = {nullptr};
+		StdOutputStream*& ptr = stream[type];
+		if (ptr == nullptr) {
+			ptr = new StdOutputStream(type);
+		}
+		return *ptr;
 	}
 	
 	StdOutputStream::StdOutputStream(StandardOutputStreamType type) : FormattedStream(stream_) {
