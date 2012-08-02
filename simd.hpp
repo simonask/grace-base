@@ -24,6 +24,13 @@ namespace falling {
 		Z = 2,
 		W = 3,
 	};
+	
+	namespace simd {
+		template <typename ElementType, size_t N> struct GetVectorType;
+	}
+	
+#define SIMD_DEFINE_VECTOR_TYPE(N, ELEMENT_TYPE, TYPE, MASK_ELEMENT_TYPE) \
+	template <> struct GetVectorType<ELEMENT_TYPE, N>   { typedef TYPE Type; typedef MASK_ELEMENT_TYPE MaskElementType; };
 }
 
 #if defined(USE_SSE)
