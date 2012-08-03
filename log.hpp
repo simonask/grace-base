@@ -10,7 +10,7 @@
 #define falling_log_hpp
 
 #include "io/string_stream.hpp"
-
+#include "base/time.hpp"
 #include "object/signal.hpp"
 
 namespace falling {
@@ -31,6 +31,7 @@ namespace falling {
 		explicit LogEntry(LogLevel level) : level(level) {}
 		LogEntry(LogEntry&& other) : initialized(other.initialized), level(other.level), ss(std::move(other.ss)) {
 			other.initialized = false;
+			time = system_now();
 		}
 		~LogEntry();
 		
@@ -44,6 +45,7 @@ namespace falling {
 		bool initialized = false;
 		LogLevel level;
 		StringStream ss;
+		SystemTime time;
 	};
 	
 	
