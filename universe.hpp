@@ -33,6 +33,14 @@ struct IUniverse {
 	}
 	
 	template <typename T>
+	ObjectPtr<T> create_root(std::string id) {
+		ObjectPtr<> o = this->create_root(get_type<T>(), std::move(id));
+		ObjectPtr<T> ptr = o.cast<T>();
+		ASSERT(ptr != nullptr);
+		return ptr;
+	}
+	
+	template <typename T>
 	void register_object_for_category(ObjectPtr<T> object, const std::string& category_name);
 	template <typename T>
 	void unregister_object_from_all_categories(ObjectPtr<T> object);
