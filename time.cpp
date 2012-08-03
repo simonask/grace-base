@@ -11,6 +11,7 @@
 #include "io/formatters.hpp"
 
 #include <sys/time.h>
+#include <time.h>
 
 namespace falling {
 	template class Time<Timeline::System>;
@@ -36,7 +37,12 @@ namespace falling {
 	}
 
 	void write_time_to_stream(FormattedStream& stream, SystemTime time) {
-		write_time(stream, time);
+		struct tm tm;
+		time_t seconds = (time_t)time.seconds_since_epoch();
+		localtime_r(&seconds, &tm);
+		stream << pad_or_truncate(tm.tm_hour, 2, '0', true) << ':';
+		stream << pad_or_truncate(tm.tm_min, 2, '0', true) << ':';
+		stream << pad_or_truncate(tm.tm_sec, 2, '0', true);
 	}
 	
 	SystemTime system_now() {
