@@ -409,12 +409,12 @@ namespace falling {
 	ALWAYS_INLINE ivec4 sumv(ivec4 vec) { return ivec4(simd::hadd4i(vec.m)); }
 	
 	template <typename T, size_t N>
-	TVector<T,N> TVector<T,N>::sumv() const {
+	ALWAYS_INLINE TVector<T,N> TVector<T,N>::sumv() const {
 		return falling::sumv(*this);
 	}
 	
 	template <typename T, size_t N>
-	T TVector<T,N>::sum() const {
+	ALWAYS_INLINE T TVector<T,N>::sum() const {
 		return sumv()[0];
 	}
 	
@@ -450,26 +450,26 @@ namespace falling {
 		assign_element(Vector&) {}
 		
 		template <size_t Idx, typename... Rest>
-		static void assign_element(Vector& vector, ElementType element, Rest&&... rest) {
+		ALWAYS_INLINE static void assign_element(Vector& vector, ElementType element, Rest&&... rest) {
 			get<Idx>(vector) = element;
 			assign_element<Idx+1>(vector, std::forward<Rest>(rest)...);
 		}
 		
 		template <typename... Elements>
-		static void assign(Vector& vector, Elements&&... elements) {
+		ALWAYS_INLINE static void assign(Vector& vector, Elements&&... elements) {
 			assign_element<0>(vector, std::forward<Elements>(elements)...);
 		}
 	};
 	
 	template <typename T, size_t N>
-	TVector<T,N> TVector<T,N>::normalize() const {
+	ALWAYS_INLINE TVector<T,N> TVector<T,N>::normalize() const {
 		return (*this) / lengthv();
 	}
 	
 	void throw_normalize_zero_length_vector_exception();
 	
 	template <typename T, size_t N>
-	TVector<T,N> TVector<T,N>::normalize_safe() const {
+	ALWAYS_INLINE TVector<T,N> TVector<T,N>::normalize_safe() const {
 		auto v = lengthv();
 		if (v.all_equal_within(zero(), 0.f)) {
 			throw_normalize_zero_length_vector_exception();
@@ -478,56 +478,56 @@ namespace falling {
 	}
 	
 	template <typename T, size_t N>
-	TVector<T,N> TVector<T,N>::lengthv() const {
+	ALWAYS_INLINE TVector<T,N> TVector<T,N>::lengthv() const {
 		TVector<T,N> sq = (*this) * (*this);
 		return falling::sqrt(sq.sumv());
 	}
 	
 	template <typename T, size_t N>
-	T TVector<T,N>::length() const {
+	ALWAYS_INLINE T TVector<T,N>::length() const {
 		return get<0>(lengthv());
 	}
 	
 	template <typename T, size_t N>
-	T TVector<T,N>::dot(Self other) const {
+	ALWAYS_INLINE T TVector<T,N>::dot(Self other) const {
 		auto product = (*this) * other;
 		return product.sum();
 	}
 	
 	template <typename T, size_t N>
-	TVector<T,N> TVector<T,N>::abs() const {
+	ALWAYS_INLINE TVector<T,N> TVector<T,N>::abs() const {
 		return simd::abs(this->m);
 	}
 	
 	template <typename T, size_t N>
-	TVector<T,N> TVector<T,N>::operator-() const {
+	ALWAYS_INLINE TVector<T,N> TVector<T,N>::operator-() const {
 		return simd::neg(this->m);
 	}
 	
 	template <Axis X_, Axis Y_, Axis Z_, Axis W_, typename T>
-	TVector<T, 4> shuffle(TVector<T, 4> vec) {
+	ALWAYS_INLINE TVector<T, 4> shuffle(TVector<T, 4> vec) {
 		return simd::shuffle<X_, Y_, Z_, W_>(vec.m);
 	}
 	
 	template <Axis X_, Axis Y_, Axis Z_, typename T>
-	TVector<T, 3> shuffle(TVector<T, 3> vec) {
+	ALWAYS_INLINE TVector<T, 3> shuffle(TVector<T, 3> vec) {
 		static_assert(X_ < 3 && Y_ < 3 && Z_ < 3, "No such axis for a 3-dimensional vector.");
 		return simd::shuffle<X_, Y_, Z_, W>(vec.m);
 	}
 	
 	template <Axis X_, Axis Y_, typename T>
-	TVector<T, 2> shuffle(TVector<T, 2> vec) {
+	ALWAYS_INLINE TVector<T, 2> shuffle(TVector<T, 2> vec) {
 		static_assert(X_ < 2 && Y_ < 2, "No such axis for a 2-dimensional vector.");
 		return simd::shuffle<X_, Y_>(vec.m);
 	}
 	
 	template <typename T>
-	TVector<T,4> rotate_right1(TVector<T,4> vec) {
+	ALWAYS_INLINE TVector<T,4> rotate_right1(TVector<T,4> vec) {
 		return shuffle<W,X,Y,Z>(vec);
 	}
 	
 	template <size_t I, typename T>
-	TVector<T,4> rotate_right(TVector<T,4> vec) {
+	ALWAYS_INLINE TVector<T,4> rotate_right(TVector<T,4> vec) {
 		for (size_t i = 0; i < I; ++i) {
 			vec = rotate_right1(vec);
 		}
@@ -535,12 +535,12 @@ namespace falling {
 	}
 	
 	template <typename T>
-	TVector<T,4> rotate_left1(TVector<T,4> vec) {
+	ALWAYS_INLINE TVector<T,4> rotate_left1(TVector<T,4> vec) {
 		return shuffle<Y,Z,W,X>(vec);
 	}
 	
 	template <size_t I, typename T>
-	TVector<T,4> rotate_left(TVector<T,4> vec) {
+	ALWAYS_INLINE TVector<T,4> rotate_left(TVector<T,4> vec) {
 		for (size_t i = 0; i < I; ++i) {
 			vec = rotate_left1(vec);
 		}
@@ -548,14 +548,14 @@ namespace falling {
 	}
 	
 	template <typename T>
-	TVector<T,4> shift_right1(TVector<T,4> vec) {
+	ALWAYS_INLINE TVector<T,4> shift_right1(TVector<T,4> vec) {
 		vec = rotate_right1(vec);
 		vec.x = 0;
 		return vec;
 	}
 	
 	template <size_t I, typename T>
-	TVector<T,4> shift_right(TVector<T,4> vec) {
+	ALWAYS_INLINE TVector<T,4> shift_right(TVector<T,4> vec) {
 		for (size_t i = 0; i < I; ++i) {
 			vec = shift_right1(vec);
 		}
@@ -563,23 +563,23 @@ namespace falling {
 	}
 	
 	template <Axis A_, typename T>
-	TVector<T, 4> splat(TVector<T, 4> vec) {
+	ALWAYS_INLINE TVector<T, 4> splat(TVector<T, 4> vec) {
 		return shuffle<A_, A_, A_, A_>(vec);
 	}
 	
 	template <Axis A_, typename T>
-	TVector<T, 3> splat(TVector<T, 3> vec) {
+	ALWAYS_INLINE TVector<T, 3> splat(TVector<T, 3> vec) {
 		return shuffle<A_, A_, A_>(vec);
 	}
 	
 	template <Axis A_, typename T>
-	TVector<T, 2> splat(TVector<T, 2> vec) {
+	ALWAYS_INLINE TVector<T, 2> splat(TVector<T, 2> vec) {
 		return shuffle<A_, A_>(vec);
 	}
 	
 	template <typename T> struct VectorCrosser<T,3> {
 		typedef TVector<T,3> V;
-		static V cross(V a, V b) {
+		inline static V cross(V a, V b) {
 			V a_left = shuffle<Y,Z,X>(a);
 			V b_left = shuffle<Z,X,Y>(b);
 			V left = a_left * b_left;
