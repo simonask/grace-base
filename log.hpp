@@ -15,6 +15,7 @@
 
 namespace falling {
 	enum LogLevel {
+		LogLevelNone,
 		LogLevelError,
 		LogLevelWarning,
 		LogLevelInformation,

@@ -35,6 +35,7 @@ namespace falling {
 			if (get().on_log.num_connections() == 0) {
 				auto io = entry.level == LogLevelInformation ? stdout : stderr;
 				switch (entry.level) {
+					case LogLevelNone: break;
 					case LogLevelError: fprintf(io, "ERROR: "); break;
 					case LogLevelWarning: fprintf(io, "WARNING: "); break;
 					case LogLevelInformation: fprintf(io, "INFO: "); break;
