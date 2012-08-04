@@ -124,7 +124,8 @@ const T& Array<T>::operator[](size_t idx) const {
 template <typename T>
 void Array<T>::push_back(T element) {
 	reserve(size_+1);
-	data_[size_++] = element;
+	new(data_ + size_) T(std::move(element));
+	size_++;
 }
 
 template <typename T>
