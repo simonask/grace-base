@@ -1,3 +1,7 @@
+#pragma once
+#ifndef _falling_maybe_hpp_included
+#define _falling_maybe_hpp_included
+
 #include "type/type.hpp"
 #include "base/maybe.hpp"
 #include "serialization/archive_node.hpp"
@@ -57,3 +61,5 @@ struct BuildTypeInfo<Maybe<T>> {
 };
 
 }
+
+#endif
