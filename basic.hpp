@@ -36,6 +36,11 @@ struct HasMember {
 public:
 	static const bool Value = (sizeof(f<T>(0)) == sizeof(MatchedReturnType)); 
 };
+	
+template <typename T, typename... ConstructorArgs>
+std::unique_ptr<T> make_unique(ConstructorArgs... args) {
+	return std::unique_ptr<T>(new T(std::forward<ConstructorArgs>(args)...));
+}
 
 #define FORWARD_TO_MEMBER(METHOD_NAME, MEMBER, MEMBER_TYPE) \
 template <typename ForwardType_ = MEMBER_TYPE, typename... ForwardArgs_> \
@@ -92,6 +97,17 @@ struct IsMoveAssignableNonRef {
 	template <> struct IsSigned<uint32> { enum { Value = false }; };
 	template <> struct IsSigned<uint64> { enum { Value = false }; };
 	template <typename T> struct IsSigned { enum { Value = true }; };
+	
+	template <typename T, typename R, typename... Args>
+	struct GetMemberFunctionPointerType;
+	template <typename T, typename R, typename... Args>
+	struct GetMemberFunctionPointerType<const T, R, Args...> {
+		typedef R(T::*Type)(Args...) const;
+	};
+	template <typename T, typename R, typename... Args>
+	struct GetMemberFunctionPointerType {
+		typedef R(T::*Type)(Args...);
+	};
 
 template <typename T>
 void destruct(T* ptr) {
