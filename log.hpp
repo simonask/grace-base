@@ -29,10 +29,9 @@ namespace falling {
 #endif
 	
 	struct LogEntry {
-		explicit LogEntry(LogLevel level) : level(level) {}
-		LogEntry(LogEntry&& other) : initialized(other.initialized), level(other.level), ss(std::move(other.ss)) {
+		explicit LogEntry(LogLevel level) : level(level) { time = system_now(); }
+		LogEntry(LogEntry&& other) : initialized(other.initialized), level(other.level), ss(std::move(other.ss)), time(other.time) {
 			other.initialized = false;
-			time = system_now();
 		}
 		~LogEntry();
 		
