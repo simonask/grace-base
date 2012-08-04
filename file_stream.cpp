@@ -81,7 +81,7 @@ namespace falling {
 	
 	void FileStreamBase::seek_end() {
 		if (is_open()) {
-			auto r = fseek(impl().fp, 0, SEEK_END);
+			fseek(impl().fp, 0, SEEK_END);
 		}
 	}
 	
