@@ -38,7 +38,7 @@ public:
 };
 	
 template <typename T, typename... ConstructorArgs>
-std::unique_ptr<T> make_unique(ConstructorArgs... args) {
+std::unique_ptr<T> make_unique(ConstructorArgs&&... args) {
 	return std::unique_ptr<T>(new T(std::forward<ConstructorArgs>(args)...));
 }
 
