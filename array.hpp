@@ -31,12 +31,8 @@ public:
 	Array<T>& operator=(const Array<T>& other);
 	Array<T>& operator=(Array<T>&& other);
 	
-	operator ArrayRef<T>() {
+	operator ArrayRef<T>() const {
 		return ArrayRef<T>(data_, data_ + size_);
-	}
-	
-	operator ArrayRef<const T>() const {
-		return ArrayRef<const T>(data_, data_ + size_);
 	}
 	
 	T& operator[](size_t idx);
