@@ -10,7 +10,6 @@
 #include <algorithm>
 
 namespace falling {
-
 template <typename T>
 struct ObjectTypeBuilder {
 	typedef ObjectTypeBuilder<T> Self;
@@ -56,7 +55,13 @@ struct ObjectTypeBuilder {
 	
 	template <typename R, typename... Args>
 	Self& slot(R(T::*function)(Args...), std::string name, std::string description) {
-		type_->slots_.push_back(new SlotAttribute<T, R, Args...>(std::move(name), std::move(description), function));
+		type_->slots_.push_back(new SlotForTypeWithSignature<T, R, Args...>(std::move(name), std::move(description), function));
+		return *this;
+	}
+	
+	template <typename R, typename... Args>
+	Self& slot(R(T::*function)(Args...) const, std::string name, std::string description) {
+		type_->slots_.push_back(new SlotForTypeWithSignature<const T, R, Args...>(std::move(name), std::move(description), function));
 		return *this;
 	}
 	

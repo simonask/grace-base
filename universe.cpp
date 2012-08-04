@@ -1,10 +1,15 @@
 #include "object/universe.hpp"
 #include "object/object_type.hpp"
 #include "io/formatters.hpp"
+#include "base/log.hpp"
 
 #include <sstream>
 
 namespace falling {
+	
+	void error_category_already_initialized_with_different_type(const std::string& name) {
+		Error() << "Object category has already been initialized with a different type: " << name;
+	}
 
 ObjectPtr<> BasicUniverse::create_root(const DerivedType* type, std::string id) {
 	clear();

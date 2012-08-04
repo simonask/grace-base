@@ -5,7 +5,7 @@
 
 namespace falling {
 
-std::string SignalTypeBase::build_signal_name(const Array<const Type*>& signature) {
+std::string SignalTypeBase::build_signal_name(ArrayRef<const Type*> signature) {
 	StringStream ss;
 	ss << "Signal<";
 	for (size_t i = 0; i < signature.size(); ++i) {
@@ -18,11 +18,12 @@ std::string SignalTypeBase::build_signal_name(const Array<const Type*>& signatur
 	return ss.str();
 }
 	
-	void SignalTypeBase::report_invalid_signal_connection_warning() {
-		Warning() << "Invalid signal connection.";
+	void nonexistent_slot_warning(ObjectPtr<> receiver, const std::string& slot_name) {
+		Warning() << "Object " << receiver->object_id() << " dot not have a slot named " << slot_name << ".";
 	}
-
-	void SignalTypeBase::report_non_map_signal_connection_warning() {
-		Warning() << "Non-map signal connection node. Did you forget to write a scene upgrader?";
+	
+	void slot_type_mismatch_warning(ObjectPtr<> receiver, const std::string& slot_name, std::string expected_signature_description, std::string signature_description) {
+		Warning() << "Tried to connect signal to slot '" << slot_name << "', which has a different signature. Expected " << expected_signature_description << ", got " << signature_description << ".";
 	}
+	
 }

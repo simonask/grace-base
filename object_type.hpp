@@ -7,13 +7,10 @@
 
 #include <new>
 #include "type/attribute.hpp"
-#include "object/signal.hpp"
+#include "object/slot.hpp"
 #include "object/universe.hpp"
 
 namespace falling {
-
-struct SlotAttributeBase;
-template <typename T> struct SlotForObject;
 
 struct ObjectTypeBase : DerivedType {
 	std::string name() const override { return name_; }
@@ -22,14 +19,15 @@ struct ObjectTypeBase : DerivedType {
 	const ObjectTypeBase* super() const;
 	virtual Array<const AttributeBase*> attributes() const = 0;
 	virtual size_t num_slots() const = 0;
-	virtual const SlotAttributeBase* slot_at(size_t idx) const = 0;
+	virtual const SlotBase* slot_at(size_t idx) const = 0;
+	virtual const SlotBase* find_slot_by_name(const std::string& name) const = 0;
 	
 	template <typename T, typename R, typename... Args>
-	const SlotAttributeBase* find_slot_for_method(R(T::*method)(Args...)) const {
+	const SlotForTypeWithSignature<T,R,Args...>* find_slot_for_method(typename GetMemberFunctionPointerType<T, R, Args...>::Type method) const {
 		size_t n = num_slots();
 		for (size_t i = 0; i < n; ++i) {
-			const SlotAttributeBase* s = slot_at(i);
-			const SlotAttribute<T, R, Args...>* slot = dynamic_cast<const SlotAttribute<T,R,Args...>*>(s);
+			auto s = slot_at(i);
+			auto slot = dynamic_cast<const SlotForTypeWithSignature<T,R,Args...>*>(s);
 			if (slot != nullptr) {
 				if (slot->method() == method) {
 					return slot;
@@ -65,7 +63,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 		return result;
 	}
 	size_t num_slots() const { return slots_.size(); }
-	const SlotAttributeBase* slot_at(size_t idx) const { return dynamic_cast<const SlotAttributeBase*>(slots_[idx]); }
+	const SlotBase* slot_at(size_t idx) const { return slots_[idx]; }
 	
 	size_t num_elements() const { return properties_.size(); }
 	const Type* type_of_element(size_t idx) const { return properties_[idx]->attribute_type(); }
@@ -77,15 +75,15 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	void set_abstract(bool b) { is_abstract_ = b; }
 	bool is_abstract() const { return is_abstract_; }
 	
-	const SlotAttributeBase* get_slot_by_name(const std::string& name) const {
+	const SlotBase* find_slot_by_name(const std::string& name) const {
 		for (auto& it: slots_) {
-			if (it->slot_name() == name) return dynamic_cast<const SlotAttributeBase*>(it);
+			if (it->name() == name) return it;
 		}
 		return nullptr;
 	}
 
 	Array<AttributeForObject<T>*> properties_;
-	Array<SlotForObject<T>*> slots_;
+	Array<SlotForType<T>*> slots_;
 	Array<std::string> categories_;
 	bool is_abstract_;
 };
@@ -114,12 +112,6 @@ void ObjectType<T>::serialize(const T& object, ArchiveNode& node, IUniverse& uni
 		property->serialize_attribute(&object, node[property->name()], universe);
 	}
 	node["class"] = this->name();
-}
-
-template <typename T, typename R, typename... Args>
-const SlotAttributeBase* MemberSlotInvoker<T,R,Args...>::slot() const {
-	const ObjectTypeBase* type = get_type<T>();
-	return type->find_slot_for_method(member_);
 }
 
 }

@@ -7,11 +7,11 @@
 #include "object/object.hpp"
 #include "object/objectptr.hpp"
 #include "base/array_ref.hpp"
-#include "base/log.hpp"
 
 namespace falling {
 
 struct DerivedType;
+	void error_category_already_initialized_with_different_type(const std::string& name);
 
 struct IUniverse {
 	virtual ObjectPtr<> create_object(const DerivedType* type, std::string id) = 0;
@@ -83,7 +83,7 @@ private:
 		ObjectCategoryBase* category_base = category_for_name_it->second.get();
 		auto category = dynamic_cast<ObjectCategory<T>*>(category_base);
 		if (category == nullptr) {
-			Error() << "Category '" << category_name << "' has been initialized with a wrong type.";
+			error_category_already_initialized_with_different_type(category_name);
 		} else {
 			category->objects.push_back(object);
 		}
