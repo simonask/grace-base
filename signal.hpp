@@ -115,7 +115,9 @@ namespace falling {
     typename std::enable_if<!HasReflection<typename std::remove_const<T>::type>::Value, void>::type
     Signal<Args...>::connect(T* receiver, R(T::*member)(Args...)) {
         // Convert member function call to free function call:
-        connect(std::bind(member, receiver));
+		connect([=](const Args&... args) {
+			(receiver->*member)(std::forward<Args>(args)...);
+		});
     }
 	
 	template <typename... Args>
@@ -123,7 +125,9 @@ namespace falling {
     typename std::enable_if<!HasReflection<typename std::remove_const<T>::type>::Value, void>::type
     Signal<Args...>::connect(const T* receiver, R(T::*member)(Args...) const) {
         // Convert member function call to free function call:
-        connect(std::bind(member, receiver));
+		connect([=](const Args&... args) {
+			(receiver->*member)(std::forward<Args>(args)...);
+		});
     }
 
     template <typename... Args>
