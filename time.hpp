@@ -55,11 +55,11 @@ namespace falling {
 		Time<T>& operator=(Time<T>&& other) = default;
 		
 		uint64 microseconds_since_epoch() const { return microseconds_since_epoch_; }
-		float64 milliseconds_since_epoch() const { return microseconds_since_epoch() / 1000.0; }
-		float64 seconds_since_epoch() const { return milliseconds_since_epoch() / 1000; }
-		float64 minutes_since_epoch() const { return seconds_since_epoch() / 60; }
-		float64 hours_since_epoch() const { return minutes_since_epoch() / 60; }
-		float64 days_since_epoch() const { return hours_since_epoch() / 24; }
+		uint64 milliseconds_since_epoch() const { return microseconds_since_epoch() / 1000; }
+		uint64 seconds_since_epoch() const { return milliseconds_since_epoch() / 1000; }
+		uint64 minutes_since_epoch() const { return seconds_since_epoch() / 60; }
+		uint64 hours_since_epoch() const { return minutes_since_epoch() / 60; }
+		uint64 days_since_epoch() const { return hours_since_epoch() / 24; }
 		
 		Time<T> operator+(TimeDelta<T>) const;
 		Time<T>& operator+=(TimeDelta<T>);
