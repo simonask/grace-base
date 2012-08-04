@@ -16,7 +16,7 @@ struct DeserializeReferenceBase;
 struct SerializeReferenceBase;
 struct DeserializeSignalBase;
 struct IUniverse;
-struct SlotAttributeBase;
+struct SlotBase;
 struct DerivedType;
 
 struct ArchiveNode {
@@ -332,7 +332,7 @@ protected:
 	std::string slot_id_;
 	
 	Object* get_object(const IUniverse&) const;
-	const SlotAttributeBase* get_slot(Object*) const;
+	const SlotBase* get_slot(Object*) const;
 };
 
 template <typename T>
@@ -342,7 +342,7 @@ struct DeserializeSignal : DeserializeSignalBase {
 	void perform(const IUniverse& universe) const {
 		Object* object = get_object(universe);
 		if (object == nullptr) return;
-		const SlotAttributeBase* slot = get_slot(object);
+		const SlotBase* slot = get_slot(object);
 		if (slot == nullptr) return;
 		signal_->connect(object, slot);
 	}

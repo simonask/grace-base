@@ -4,6 +4,7 @@
 #include "object/objectptr.hpp"
 
 namespace falling {
+class IUniverse;
 
 ArchiveNode& ArchiveNode::array_push() {
 	if (type() != Type::Array) {
@@ -78,9 +79,9 @@ Object* DeserializeSignalBase::get_object(const IUniverse& universe) const {
 	return universe.get_object(receiver_id_).get();
 }
 
-const SlotAttributeBase* DeserializeSignalBase::get_slot(Object* object) const {
+const SlotBase* DeserializeSignalBase::get_slot(Object* object) const {
 	const DerivedType* type = get_type(object);
-	return type->get_slot_by_name(slot_id_);
+	return type->find_slot_by_name(slot_id_);
 }
 
 }
