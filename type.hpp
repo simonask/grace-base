@@ -17,7 +17,7 @@ namespace falling {
 	
 struct ArchiveNode;
 struct IUniverse;
-struct SlotAttributeBase;
+struct SlotBase;
 
 struct Type {
 	virtual void deserialize(byte* place, const ArchiveNode&, IUniverse&) const = 0;
@@ -140,7 +140,7 @@ struct StringType : TypeFor<std::string> {
 
 struct DerivedType : Type {
 	virtual Object* cast(const DerivedType* to, Object* o) const = 0;
-	virtual const SlotAttributeBase* get_slot_by_name(const std::string& name) const { return nullptr; }
+	virtual const SlotBase* find_slot_by_name(const std::string& name) const { return nullptr; }
 };
 
 // static_cast
