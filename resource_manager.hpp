@@ -36,7 +36,8 @@ namespace falling {
 		struct Impl;
 		static Impl& impl();
 		
-		static Resource* load_resource_raw(ResourceID rid);
+		static Resource* load_resource_in_fiber(ResourceID rid);
+		static Resource* load_resource_impl(ResourceID rid);
 		static void add_loader(std::string file_extension, ResourceLoaderBase* loader);
 	};
 	
@@ -47,7 +48,7 @@ namespace falling {
 	
 	template <typename T>
 	ResourcePtr<T> ResourceManager::load_resource(ResourceID rid) {
-		Resource* resource = load_resource_raw(rid);
+		Resource* resource = load_resource_in_fiber(rid);
 		if (resource != nullptr) {
 			T* typed = dynamic_cast<T*>(resource);
 			if (typed != nullptr) {

@@ -9,16 +9,51 @@
 #include "io/resource_manager.hpp"
 #include "base/log.hpp"
 #include "io/resource_loader.hpp"
+#include "base/fiber.hpp"
 
 #include <string>
 
 #include "io/file_stream.hpp"
 
 namespace falling {
+	struct ResourceLoaderFiberManager : IFiberManager {
+		ResourceLoaderFiberManager() {}
+		ResourceLoaderFiberManager(const ResourceLoaderFiberManager&) = delete;
+		
+		GameTime now() const { return GameTime(); }
+		void update(GameTime) {
+			IFiberManager::set_current_manager(this);
+			
+			while (fibers_.size() != 0) {
+				size_t i = fibers_.size()-1;
+				current_ = fibers_[i].get();
+				fibers_[i]->resume();
+				current_ = nullptr;
+				if (fibers_[i]->state() == FiberState::Unstarted) {
+					// Fiber finished, so pop it. Since it didn't start any new fibers, it should be the last one.
+					fibers_.erase(i);
+				}
+			}
+			
+			IFiberManager::set_current_manager(nullptr);
+		}
+		virtual void set_alarm_clock(Fiber* fiber, GameTime at) {};
+		virtual void launch(std::function<void()> f) {
+			fibers_.push_back(make_unique<Fiber>(*this, std::move(f), now()));
+		}
+		virtual void defer(std::function<void()> f, GameTime until) { launch(f); }
+		virtual Fiber* current_fiber() const { return current_; }
+		
+		Array<std::unique_ptr<Fiber>> fibers_;
+		Fiber* current_;
+	};
+	
 	struct ResourceManager::Impl {
 		std::string resource_path;
 		std::map<ResourceID, Resource*> resource_cache;
 		std::map<std::string, ResourceLoaderBase*> resource_loaders;
+		bool is_in_resource_loader_fiber = false;
+		ResourceLoaderFiberManager fiber_manager;
 	};
 	
 	ResourceManager::Impl& ResourceManager::impl() {
@@ -37,7 +72,35 @@ namespace falling {
 		}
 	}
 	
-	Resource* ResourceManager::load_resource_raw(ResourceID rid) {
+	Resource* ResourceManager::load_resource_in_fiber(ResourceID rid) {
+		if (impl().is_in_resource_loader_fiber) {
+			impl().fiber_manager.launch([=]() {
+				load_resource_impl(rid);
+			});
+			Fiber::yield();
+			auto loaded = impl().resource_cache.find(rid);
+			if (loaded != impl().resource_cache.end()) {
+				return loaded->second;
+			}
+			Error() << "Dependency '" << rid << "' failed to load.";
+			return nullptr;
+		} else {
+			impl().is_in_resource_loader_fiber = true;
+			impl().fiber_manager.launch([=]() {
+				load_resource_impl(rid);
+			});
+			impl().fiber_manager.update(GameTime());
+			impl().is_in_resource_loader_fiber = false;
+			auto loaded = impl().resource_cache.find(rid);
+			if (loaded != impl().resource_cache.end()) {
+				return loaded->second;
+			}
+			Error() << "Failed to load resource: " << rid;
+			return nullptr;
+		}
+	}
+	
+	Resource* ResourceManager::load_resource_impl(ResourceID rid) {
 		auto it = impl().resource_cache.find(rid);
 		if (it != impl().resource_cache.end()) {
 			return it->second;
