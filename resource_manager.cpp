@@ -58,6 +58,7 @@ namespace falling {
 			resource->id_ = rid;
 			if (loader->load_resource(resource, f)) {
 				impl().resource_cache[rid] = resource;
+				Debug() << "Loaded resource: " << rid;
 				return resource;
 			}
 			loader->free(resource);
