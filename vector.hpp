@@ -368,7 +368,7 @@ namespace falling {
 	using uvec2 = TVector<uint32, 2>;
 	using uvec1 = TVector<uint32, 1>;
 	
-	extern template struct TVector<float32, 4>;
+	/*extern template struct TVector<float32, 4>;
 	extern template struct TVector<float32, 3>;
 	extern template struct TVector<float32, 2>;
 	extern template struct TVector<float32, 1>;
@@ -379,7 +379,7 @@ namespace falling {
 	extern template struct TVector<uint32, 4>;
 	extern template struct TVector<uint32, 3>;
 	extern template struct TVector<uint32, 2>;
-	extern template struct TVector<uint32, 1>;
+	extern template struct TVector<uint32, 1>;*/
 	
 	
 	// Conversion
