@@ -45,7 +45,7 @@ namespace falling {
 		virtual Fiber* current_fiber() const { return current_; }
 		
 		Array<std::unique_ptr<Fiber>> fibers_;
-		Fiber* current_;
+		Fiber* current_ = nullptr;
 	};
 	
 	struct ResourceManager::Impl {
