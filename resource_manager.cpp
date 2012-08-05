@@ -73,6 +73,11 @@ namespace falling {
 	}
 	
 	Resource* ResourceManager::load_resource_in_fiber(ResourceID rid) {
+		auto it = impl().resource_cache.find(rid);
+		if (it != impl().resource_cache.end()) {
+			return it->second;
+		}
+		
 		if (impl().is_in_resource_loader_fiber) {
 			impl().fiber_manager.launch([=]() {
 				load_resource_impl(rid);
@@ -101,11 +106,6 @@ namespace falling {
 	}
 	
 	Resource* ResourceManager::load_resource_impl(ResourceID rid) {
-		auto it = impl().resource_cache.find(rid);
-		if (it != impl().resource_cache.end()) {
-			return it->second;
-		}
-		
 		ResourceLoaderBase* loader = get_loader_for_resource_id(rid);
 		if (loader == nullptr) {
 			Error() << "No loader for resource ID: " << rid;
