@@ -81,4 +81,8 @@ namespace falling {
 		stream << format("%llf", f);
 		return stream;
 	}
+	
+	FormattedStream& operator<<(FormattedStream& stream, void* ptr) {
+		return stream << format("%p", ptr);
+	}
 }

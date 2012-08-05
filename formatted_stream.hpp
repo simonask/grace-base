@@ -45,6 +45,8 @@ namespace falling {
 	FormattedStream& operator<<(FormattedStream& stream, float32);
 	FormattedStream& operator<<(FormattedStream& stream, float64);
 	inline FormattedStream& operator<<(FormattedStream& stream, unsigned long n) { return stream << (uint32)n; }
+	inline FormattedStream& operator<<(FormattedStream& stream, std::nullptr_t) { return stream << "(null)"; }
+	FormattedStream& operator<<(FormattedStream& stream, void* ptr);
 	
 	template <size_t N>
 	FormattedStream& operator<<(FormattedStream& stream, const char str[N]) {
