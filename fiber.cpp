@@ -119,7 +119,7 @@ namespace falling {
 			return (byte*)sp;
 		}
 		
-		void launchpad(Fiber* fiber) {
+		__attribute__((noinline)) void fiber_launchpad(Fiber* fiber) {
 			try {
 				fiber->impl().function();
 			}
@@ -208,8 +208,8 @@ namespace falling {
 					 "movq %1, %%rdi\n"
 					 "callq *%2\n"
 					 "movq %%rbx, %%rsp\n"
-					 : // input registers
-					 : "r"(fiber_stack_top), "r"(this), "r"(launchpad) // output registers
+					 : // output registers
+					 : "r"(fiber_stack_top), "r"(this), "r"(fiber_launchpad) // input registers
 					 : "rsp", "rbx" // clobbered
 					 );
 				} else {
