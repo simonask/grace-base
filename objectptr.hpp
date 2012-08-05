@@ -42,7 +42,7 @@ struct ObjectPtr/*<T, typename std::enable_if<IsDerivedFromObject<T>::Value>::ty
 	T* get() const { return ptr_; }
 	T* operator->() const { return ptr_; }
 	T& operator*() const { return *ptr_; }
-	const Type* type() const { return get_type(*ptr_); }
+	const Type* type() const { return ptr_ ? get_type(*ptr_) : get_type<T>(); }
 	
 	
 	bool operator<(const ObjectPtr<T>& other) const { return ptr_ < other.ptr_; }
