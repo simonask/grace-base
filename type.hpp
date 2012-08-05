@@ -139,61 +139,27 @@ struct StringType : TypeFor<std::string> {
 };
 
 struct DerivedType : Type {
-	virtual Object* cast(const DerivedType* to, Object* o) const = 0;
 	virtual const SlotBase* find_slot_by_name(const std::string& name) const { return nullptr; }
 };
 
-// static_cast
+// static downcast
 template <typename To, typename From>
 typename std::enable_if<std::is_convertible<From*, To*>::value, To*>::type
 aspect_cast(From* ptr) {
 	return ptr;
 }
 
-// complex cast
+// dynamic upcast
 template <typename To, typename From>
-typename std::enable_if<!std::is_convertible<From*, To*>::value, To*>::type
+typename std::enable_if<
+	!std::is_same<To, From>::value
+	&& (!HasReflection<To>::Value || !HasReflection<From>::Value)
+	&& std::is_convertible<typename std::remove_const<To>::type*, typename std::remove_const<From>::type*>::value
+	, To*>::type
 aspect_cast(From* ptr) {
-	if (ptr == nullptr) return nullptr;
-	Object* o = ptr; // check that From derives from Object.
-	const Type* from = o->object_type();
-	const Type* to = get_type<To>();
-	
-	auto derived_type = dynamic_cast<const DerivedType*>(from);
-	if (derived_type != nullptr) {
-		auto other_derived_type = dynamic_cast<const DerivedType*>(to);
-		if (other_derived_type != nullptr) {
-			return dynamic_cast<To*>(derived_type->cast(other_derived_type, ptr));
-		}
-		return nullptr;
-	}
-	
-	auto simple_type = dynamic_cast<const SimpleType*>(from);
-	if (simple_type != nullptr) {
-		auto other_simple_type = dynamic_cast<const SimpleType*>(to);
-		if (other_simple_type != nullptr) {
-			return static_cast<To*>(simple_type->cast(other_simple_type, ptr));
-		}
-		return nullptr;
-	}
-	
-	return nullptr;
+	return dynamic_cast<To*>(ptr);
 }
 
-// runtime cast
-template <typename From>
-Object*
-aspect_cast(From* ptr, const DerivedType* to) {
-	Object* o = ptr; // check that From derives from Object.
-	return o->object_type()->cast(to, o);
-}
-
-/*template <typename From>
-const Object*
-aspect_cast(const From* ptr, const DerivedType* to) {
-	const Object* o = ptr;
-	return o->object_type()->cast(to, o);
-}*/
 
 #define DECLARE_TYPE(T) template<> const Type* build_type_info<T>();
 DECLARE_TYPE(int8)

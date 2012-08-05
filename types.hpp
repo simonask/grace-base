@@ -17,5 +17,6 @@
 #include "io/resource_ptr_type.hpp"
 #include "object/object_type.hpp"
 #include "object/signal_type.hpp"
+#include "object/composite_type.hpp"
 
 #endif
