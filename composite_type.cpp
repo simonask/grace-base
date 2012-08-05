@@ -17,78 +17,36 @@ void CompositeType::add_aspect(const DerivedType* aspect) {
 	aspects_.push_back(aspect); // TODO: Check for circular dependencies.
 	size_ += aspect->size();
 }
+	
+Object* CompositeType::find_aspect_of_type(Object* composite_object, const DerivedType* aspect_type, const DerivedType* skip_in_search) const {
+	ASSERT(composite_object->object_type() == this);
+	
+	// Breadth:
+	for (size_t i = 0; i < aspects_.size(); ++i) {
+		if (aspects_[i] == aspect_type) {
+			return get_aspect_in_object(composite_object, i);
+		}
+	}
+	
+	// Depth:
+	for (size_t i = 0; i < aspects_.size(); ++i) {
+		if (aspects_[i] != skip_in_search) {
+			const CompositeType* comp = dynamic_cast<const CompositeType*>(aspects_[i]);
+			if (comp != nullptr) {
+				Object* subcomp = get_aspect_in_object(composite_object, i);
+				Object* r = comp->find_aspect_of_type(subcomp, aspect_type);
+				if (r != nullptr) {
+					return r;
+				}
+			}
+		}
+	}
+	
+	return nullptr;
+}
 
 const ObjectTypeBase* CompositeType::base_type() const {
 	return base_type_ ? base_type_ : get_type<Object>();
-}
-
-Object* CompositeType::cast(const DerivedType* to, Object* o) const {
-	return cast(to, o, nullptr);
-}
-
-Object* CompositeType::cast(const DerivedType* to, Object* o, const DerivedType* avoid) const {
-	if (to == this) return o;
-	
-	// Check base type and aspects
-	Object* result = find_instance_down(to, o, avoid);
-	if (result != nullptr) return result;
-	
-	// Then check parent objects (that have this object as an aspect)
-	return find_instance_up(to, o, this);
-}
-
-Object* CompositeType::find_instance_down(const DerivedType* to, Object* o, const DerivedType* avoid) const {
-	// First check the base type
-	Object* result = base_type()->cast(to, o);
-	if (result != nullptr) return result;
-	
-	// Then do breadth-first search of aspects
-	size_t offset = base_type()->size();
-	for (auto& aspect: aspects_) {
-		Object* aspect_object = reinterpret_cast<Object*>(reinterpret_cast<byte*>(o) + offset);
-		
-		const CompositeType* composite_aspect = dynamic_cast<const CompositeType*>(aspect);
-		if (composite_aspect != nullptr) {
-			if (composite_aspect != avoid) {
-				Object* result = composite_aspect->find_instance_down(to, aspect_object, nullptr);
-				if (result != nullptr) return result;
-			}
-		} else {
-			Object* result = aspect->cast(to, aspect_object);
-			if (result != nullptr) return result;
-		}
-		offset += aspect->size();
-	}
-	
-	return nullptr; // not found
-}
-
-Object* CompositeType::find_instance_up(const DerivedType* to, Object* object, const DerivedType* avoid) const {
-	Object* o = object->find_parent();
-	if (o != nullptr) {
-		const DerivedType* t = o->object_type();
-		const CompositeType* ct = dynamic_cast<const CompositeType*>(t);
-		if (ct != nullptr) {
-			return ct->cast(to, o, this);
-		} else {
-			return t->cast(to, o);
-		}
-	}
-	return nullptr;
-}
-
-Object* CompositeType::find_self_up(Object* object) const {
-	Object* o = object;
-	ssize_t offset = o->object_offset();
-	byte* memory = reinterpret_cast<byte*>(o);
-	while (true) {
-		if (o->object_type() == this) return o;
-		if (offset == 0) break;
-		memory -= offset;
-		o = reinterpret_cast<Object*>(memory);
-		offset = o->object_offset();
-	}
-	return nullptr;
 }
 
 

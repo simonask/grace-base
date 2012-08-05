@@ -15,7 +15,6 @@ namespace falling {
 struct ObjectTypeBase : DerivedType {
 	std::string name() const override { return name_; }
 	const std::string& description() const { return description_; }
-	Object* cast(const DerivedType* to, Object* o) const override;
 	const ObjectTypeBase* super() const;
 	virtual Array<const AttributeBase*> attributes() const = 0;
 	virtual size_t num_slots() const = 0;
