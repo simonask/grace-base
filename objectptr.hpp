@@ -72,7 +72,7 @@ aspect_cast(ObjectPtr<From> ptr, const DerivedType* type) {
 
 template <typename OutputStream, typename T>
 OutputStream& operator<<(OutputStream& os, const ObjectPtr<T>& ptr) {
-	os << '(' << ptr.type()->name() << "*)" << ptr.get();
+	os << '(' << ptr.type()->name() << "*)" << (void*)ptr.get();
 	return os;
 }
 
