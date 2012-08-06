@@ -33,6 +33,8 @@ public:
 	Array<T>& operator=(std::initializer_list<T> list);
 	Array<T>& operator=(const Array<T>& other);
 	Array<T>& operator=(Array<T>&& other);
+	bool operator==(const Array<T>& other) const;
+	bool operator!=(const Array<T>& other) const { return !(*this == other); }
 	
 	operator ArrayRef<T>() const {
 		return ArrayRef<T>(data_, data_ + size_);
@@ -118,6 +120,17 @@ Array<T>& Array<T>::operator=(Array<T>&& other) {
 	other.size_ = 0;
 	other.alloc_size_ = 0;
 	return *this;
+}
+
+template <typename T>
+bool Array<T>::operator==(const Array<T>& other) const {
+	if (size() == other.size()) {
+		for (size_t i = 0; i < size(); ++i) {
+			if (data_[i] != other[i]) return false;
+		}
+		return true;
+	}
+	return false;
 }
 
 template <typename T>
