@@ -4,6 +4,7 @@
 
 #include "base/basic.hpp"
 #include "base/array_ref.hpp"
+#include "base/allocator.hpp"
 
 #if defined(USE_STD_VECTOR)
 #include <vector>
@@ -21,7 +22,7 @@ namespace falling {
 	};
 
 template <typename T>
-class Array {
+class Array : private Allocator<T> {
 public:
 	Array() : data_(nullptr), size_(0), alloc_size_(0) {}
 	Array(const Array<T>& other);
@@ -135,18 +136,12 @@ template <typename T>
 void Array<T>::reserve(size_t new_size) {
 	if (new_size > alloc_size_) {
 		size_t req_size = alloc_size_ ? alloc_size_ : 1;
-		if (new_size > 0x2000) { // Allocate precisely as much as needed when above 8K
+		if (new_size*sizeof(T) > 0x2000) { // Allocate precisely as much as needed when above 8K
 			req_size = new_size;
 		} else {
 			while (req_size < new_size) req_size *= 2;
 		}
-		byte* p = new byte[sizeof(T)*req_size];
-		for (uint32 i = 0; i < size_; ++i) {
-			new(p+sizeof(T)*i) T(std::move(data_[i]));
-			data_[i].~T();
-		}
-		delete[] reinterpret_cast<byte*>(data_);
-		data_ = reinterpret_cast<T*>(p);
+		data_ = this->reallocate(data_, size_, req_size);
 		alloc_size_ = (uint32)req_size;
 	}
 }
@@ -181,7 +176,7 @@ void Array<T>::clear(bool deallocate) {
 	}
 	size_ = 0;
 	if (deallocate) {
-		delete[] reinterpret_cast<byte*>(data_);
+		this->deallocate(data_);
 		data_ = nullptr;
 		alloc_size_ = 0;
 	}
