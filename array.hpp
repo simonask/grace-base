@@ -57,6 +57,9 @@ public:
 	template <typename InputIterator>
 	void insert(InputIterator begin, InputIterator end);
 	
+	template <typename InputIterator>
+	void insert(InputIterator begin, InputIterator end, iterator before);
+	
 	template <typename... Args>
 	void emplace_back(Args... args);
 	
@@ -181,11 +184,46 @@ void Array<T>::resize(size_t new_size, T x) {
 
 template <typename T>
 template <typename InputIterator>
-void Array<T>::insert(InputIterator begin, InputIterator end) {
-	reserve(end - begin);
-	for (auto p = begin; p < end; ++p) {
-		push_back(*p);
+void Array<T>::insert(InputIterator b, InputIterator e) {
+	insert(b, e, end());
+}
+
+template <typename T>
+template <typename InputIterator>
+void Array<T>::insert(InputIterator b, InputIterator e, iterator before) {
+	size_t add_len = e - b;
+	size_t num_move = end() - before;
+	size_t before_idx = before - begin();
+	reserve(size_ + add_len);
+	// reserve invalidates iterators, so recalculate it:
+	before = begin() + before_idx;
+	iterator move_end = end();
+	iterator move_begin = before;
+	iterator move_target_end = end() + add_len;
+	iterator move_target_begin = before + add_len;
+	for (size_t i = 0; i < num_move; ++i) {
+		iterator src = move_end - i - 1;
+		iterator dst = move_target_end - i - 1;
+		if (dst >= end()) {
+			// moving to uninitialized memory
+			new(dst) T(std::move(*src));
+		} else {
+			// moving to previously initialized memory
+			*dst = std::move(*src);
+		}
 	}
+	size_t i = 0;
+	for (auto it = b; it != e; ++it, ++i) {
+		iterator dst = before + i;
+		if (dst < end()) {
+			// moving to previously initialized memory
+			*dst = *it;
+		} else {
+			// moving to uninitialized memory
+			new(dst) T(*it);
+		}
+	}
+	size_ += add_len;
 }
 
 template <typename T>
