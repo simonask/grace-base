@@ -11,6 +11,7 @@
 
 #include "io/formatted_stream.hpp"
 #include "io/string_stream.hpp"
+#include "base/array.hpp"
 
 #include <functional>
 
@@ -104,6 +105,35 @@ namespace falling {
 	template <typename T>
 	PadOrTruncateFormatter<T> pad_or_truncate(const T& value, uint32 width, char padding = ' ', bool pad_left = false) {
 		return PadOrTruncateFormatter<T>(value, width, padding, pad_left);
+	}
+	
+	template <typename Container>
+	struct JoinFormatter : Formatter {
+		const Container& container;
+		const char* delimiter;
+		JoinFormatter(const Container& c, const char* delimiter) : container(c), delimiter(delimiter) {}
+		void write(FormattedStream& stream) const {
+			for (auto it = container.begin(); it != container.end();) {
+				stream << *it;
+				++it;
+				if (it != container.end()) {
+					stream << delimiter;
+				}
+			}
+		}
+	};
+	
+	template <typename Container>
+	JoinFormatter<Container> join(const Container& c, const char* delimiter = ", ") {
+		return JoinFormatter<Container>(c, delimiter);
+	}
+	
+	template <typename T>
+	FormattedStream& operator<<(FormattedStream& stream, const Array<T>& array) {
+		stream << '[';
+		stream << join(array, ", ");
+		stream << ']';
+		return stream;
 	}
 }
 
