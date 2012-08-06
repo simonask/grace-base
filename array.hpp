@@ -24,6 +24,10 @@ namespace falling {
 template <typename T>
 class Array : private Allocator<T> {
 public:
+	typedef T value_type;
+	typedef T* iterator;
+	typedef const T* const_iterator;
+	
 	Array() : data_(nullptr), size_(0), alloc_size_(0) {}
 	Array(std::initializer_list<T> list);
 	Array(const Array<T>& other);
@@ -56,9 +60,6 @@ public:
 	template <typename... Args>
 	void emplace_back(Args... args);
 	
-	typedef T value_type;
-	typedef T* iterator;
-	typedef const T* const_iterator;
 	iterator begin() { return data_; }
 	iterator end() { return data_ + size_; }
 	const_iterator begin() const { return data_; }
@@ -232,11 +233,13 @@ size_t Array<T>::erase(size_t idx) {
 	return idx;
 }
 
-/*template <typename T>
-Array<T>::iterator Array<T>::erase(Array<T>::iterator it) {
-	ASSERT(it >= begin() && it < end());
-	
-}*/
+template <typename T>
+typename Array<T>::iterator Array<T>::erase(Array<T>::iterator it) {
+	size_t idx = it - begin();
+	check_index_valid(idx);
+	idx = erase(idx);
+	return begin() + idx;
+}
 
 }
 
