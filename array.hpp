@@ -262,7 +262,7 @@ size_t Array<T>::erase(size_t idx) {
 		--size_;
 	} else {
 		for (size_t i = idx; i < size_-1; ++i) {
-			data_[idx] = std::move(data_[idx+1]);
+			data_[i] = std::move(data_[i+1]);
 		}
 		--size_;
 		// destroy last element
