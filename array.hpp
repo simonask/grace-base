@@ -25,10 +25,12 @@ template <typename T>
 class Array : private Allocator<T> {
 public:
 	Array() : data_(nullptr), size_(0), alloc_size_(0) {}
+	Array(std::initializer_list<T> list);
 	Array(const Array<T>& other);
 	Array(Array<T>&& other);
 	explicit Array(ArrayRef<T> array); // TODO!
 	~Array();
+	Array<T>& operator=(std::initializer_list<T> list);
 	Array<T>& operator=(const Array<T>& other);
 	Array<T>& operator=(Array<T>&& other);
 	
@@ -71,6 +73,11 @@ private:
 };
 
 template <typename T>
+Array<T>::Array(std::initializer_list<T> list) : data_(nullptr), size_(0), alloc_size_(0) {
+	insert(list.begin(), list.end());
+}
+
+template <typename T>
 Array<T>::Array(const Array<T>& other) : data_(nullptr), size_(0), alloc_size_(0) {
 	reserve(other.size());
 	insert(other.begin(), other.end());
@@ -86,6 +93,12 @@ Array<T>::Array(Array<T>&& other) : data_(other.data_), size_(other.size_), allo
 template <typename T>
 Array<T>::~Array() {
 	clear(true);
+}
+
+template <typename T>
+Array<T>& Array<T>::operator=(std::initializer_list<T> list) {
+	clear(list.size() < alloc_size_); // deallocate if we have more memory than we need for the list
+	insert(list.begin(), list.end());
 }
 
 template <typename T>
