@@ -10,6 +10,8 @@
 #include "base/log.hpp"
 
 #include <setjmp.h>
+#include <cxxabi.h>
+#include <stdio.h>
 
 namespace falling {
 	IFiberManager* IFiberManager::current_manager_ = nullptr; // TODO: Thread-local
@@ -125,6 +127,9 @@ namespace falling {
 			}
 			catch (FiberTerminated) {}
 			catch (...) {
+				const std::type_info* ex_type = __cxxabiv1::__cxa_current_exception_type();
+				const char* ex_name = ex_type->name();
+				printf("UNHANDLED EXCEPTION IN FIBER: %s\n", ex_name);
 				ASSERT(false); // Unhandled exception in fiber.
 			}
 			fiber->impl().saved_stack.clear();
