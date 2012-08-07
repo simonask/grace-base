@@ -69,6 +69,7 @@ struct ArchiveNode {
 	const std::string& internal_string() const { return string_value; }
 	const Array<ArchiveNode*>& internal_array() const { return array_; }
 	Array<ArchiveNode*>& internal_array() { return array_; }
+	Archive& archive() const { return archive_; }
 	
 	template <typename T>
 	ArchiveNode& operator=(T value) {

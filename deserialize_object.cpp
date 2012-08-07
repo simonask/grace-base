@@ -4,6 +4,7 @@
 #include "object/composite_type.hpp"
 #include "object/object_type.hpp"
 #include "object/universe.hpp"
+#include "object/object_template.hpp"
 #include <memory>
 
 namespace falling {
@@ -50,6 +51,18 @@ namespace {
 		}
 		return nullptr;
 	}
+	
+	
+	struct MergedArchiveNode : public ArchiveNode {
+	public:
+		MergedArchiveNode(Archive& archive) : ArchiveNode(archive, ArchiveNodeType::Map) {}
+	};
+	
+	void merge_archive_node_map(ArchiveNode& into, const ArchiveNode& from) {
+		for (auto& pair: from.internal_map()) {
+			into.internal_map()[pair.first] = pair.second;
+		}
+	}
 }
 
 ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
@@ -57,6 +70,16 @@ ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
 		Error() << "Expected object, got non-map.";
 		return nullptr;
 	}
+	
+	MergedArchiveNode merged_node(node.archive());
+	ResourceID template_rid;
+	if (node["template"].get(template_rid)) {
+		ResourcePtr<ObjectTemplate> templ = load_resource<ObjectTemplate>(template_rid);
+		if (templ != nullptr) {
+			merged_node.internal_map() = templ->archive.root().internal_map();
+		}
+	}
+	merge_archive_node_map(merged_node, node);
 	
 	std::string error;
 	const DerivedType* type = get_type_from_map(node, error);
@@ -75,7 +98,7 @@ ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
 		Warning() << "Object '" << id << "' was renamed to '" << ptr->object_id() << "' because of a collision.\n";
 	}
 	
-	type->deserialize(reinterpret_cast<byte*>(ptr.get()), node, universe);
+	type->deserialize(reinterpret_cast<byte*>(ptr.get()), merged_node, universe);
 	
 	return ptr;
 }
