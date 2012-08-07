@@ -16,6 +16,18 @@
 #include "io/resource_loader.hpp"
 
 namespace falling {
+	typedef uintptr_t ResourceLoaderID;
+	
+	template <typename ResourceType>
+	struct ResourceLoaderIDHolder {
+	};
+	
+	template <typename ResourceType>
+	__attribute__((noinline)) ResourceLoaderID get_loader_id_for_type() {
+		static ResourceLoaderIDHolder<ResourceType>* holder = new ResourceLoaderIDHolder<ResourceType>;
+		return reinterpret_cast<ResourceLoaderID>(holder);
+	}
+	
 	class ResourceManager {
 	public:
 		static void initialize_with_path(const std::string& path_to_resources);
@@ -26,9 +38,10 @@ namespace falling {
 		static ResourceLoaderBase* get_loader_for_resource_id(ResourceID rid);
 		static std::string path_for_resource(ResourceID rid);
 		
-		template <typename T>
-		static void add_loader(std::string file_extension) {
-			add_loader(std::move(file_extension), new T);
+		template <typename ResourceType, typename ResourceLoaderType>
+		static void add_loader() {
+			ResourceLoaderID lid = get_loader_id_for_type<ResourceType>();
+			add_loader(lid, new ResourceLoaderType);
 		}
 		
 		static void garbage_collect();
@@ -36,9 +49,9 @@ namespace falling {
 		struct Impl;
 		static Impl& impl();
 		
-		static Resource* load_resource_in_fiber(ResourceID rid);
-		static Resource* load_resource_impl(ResourceID rid);
-		static void add_loader(std::string file_extension, ResourceLoaderBase* loader);
+		static Resource* load_resource_in_fiber(ResourceLoaderID lid, ResourceID rid);
+		static Resource* load_resource_impl(ResourceLoaderID lid, ResourceID rid);
+		static void add_loader(ResourceLoaderID lid, ResourceLoaderBase* loader);
 	};
 	
 	template <typename T>
@@ -48,7 +61,8 @@ namespace falling {
 	
 	template <typename T>
 	ResourcePtr<T> ResourceManager::load_resource(ResourceID rid) {
-		Resource* resource = load_resource_in_fiber(rid);
+		ResourceLoaderID lid = get_loader_id_for_type<T>();
+		Resource* resource = load_resource_in_fiber(lid, rid);
 		if (resource != nullptr) {
 			T* typed = dynamic_cast<T*>(resource);
 			if (typed != nullptr) {

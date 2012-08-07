@@ -51,7 +51,7 @@ namespace falling {
 	struct ResourceManager::Impl {
 		std::string resource_path;
 		std::map<ResourceID, Resource*> resource_cache;
-		std::map<std::string, ResourceLoaderBase*> resource_loaders;
+		std::map<ResourceLoaderID, ResourceLoaderBase*> resource_loaders;
 		bool is_in_resource_loader_fiber = false;
 		ResourceLoaderFiberManager fiber_manager;
 	};
@@ -72,7 +72,7 @@ namespace falling {
 		}
 	}
 	
-	Resource* ResourceManager::load_resource_in_fiber(ResourceID rid) {
+	Resource* ResourceManager::load_resource_in_fiber(ResourceLoaderID lid, ResourceID rid) {
 		auto it = impl().resource_cache.find(rid);
 		if (it != impl().resource_cache.end()) {
 			return it->second;
@@ -80,7 +80,7 @@ namespace falling {
 		
 		if (impl().is_in_resource_loader_fiber) {
 			impl().fiber_manager.launch([=]() {
-				load_resource_impl(rid);
+				load_resource_impl(lid, rid);
 			});
 			Fiber::yield();
 			auto loaded = impl().resource_cache.find(rid);
@@ -92,7 +92,7 @@ namespace falling {
 		} else {
 			impl().is_in_resource_loader_fiber = true;
 			impl().fiber_manager.launch([=]() {
-				load_resource_impl(rid);
+				load_resource_impl(lid, rid);
 			});
 			impl().fiber_manager.update(GameTime());
 			impl().is_in_resource_loader_fiber = false;
@@ -105,12 +105,14 @@ namespace falling {
 		}
 	}
 	
-	Resource* ResourceManager::load_resource_impl(ResourceID rid) {
-		ResourceLoaderBase* loader = get_loader_for_resource_id(rid);
-		if (loader == nullptr) {
+	Resource* ResourceManager::load_resource_impl(ResourceLoaderID lid, ResourceID rid) {
+		auto loader_it = impl().resource_loaders.find(lid);
+		ResourceLoaderBase* loader = nullptr;
+		if (loader_it == impl().resource_loaders.end()) {
 			Error() << "No loader for resource ID: " << rid;
 			return nullptr;
 		}
+		loader = loader_it->second;
 		
 		// TODO: Consider derived resources.
 		
@@ -138,24 +140,14 @@ namespace falling {
 		return impl().resource_path + rid;
 	}
 	
-	ResourceLoaderBase* ResourceManager::get_loader_for_resource_id(ResourceID rid) {
-		std::string::size_type dot_pos = rid.rfind('.');
-		if (dot_pos == std::string::npos) {
-			return nullptr;
-		}
-		std::string file_extension = rid.substr(dot_pos+1);
-		auto it = impl().resource_loaders.find(file_extension);
+	void ResourceManager::add_loader(ResourceLoaderID lid, ResourceLoaderBase *loader) {
+#if defined(DEBUG)
+		auto it = impl().resource_loaders.find(lid);
 		if (it != impl().resource_loaders.end()) {
-			return it->second;
+			Warning() << "Loader already registered for this resource type. Overriding.";
 		}
-		return nullptr;
-	}
-	
-	void ResourceManager::add_loader(std::string file_extension, ResourceLoaderBase *loader) {
-		if (impl().resource_loaders.find(file_extension) != impl().resource_loaders.end()) {
-			Warning() << "Loader already registered for extension '" << file_extension << "', overriding...";
-		}
-		impl().resource_loaders[file_extension] = loader;
+#endif
+		impl().resource_loaders[lid] = loader;
 	}
 	
 	void ResourceManager::garbage_collect() {
