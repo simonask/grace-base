@@ -82,14 +82,14 @@ ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
 	merge_archive_node_map(merged_node, node);
 	
 	std::string error;
-	const DerivedType* type = get_type_from_map(node, error);
+	const DerivedType* type = get_type_from_map(merged_node, error);
 	if (type == nullptr) {
 		Error() << error;
 		return nullptr;
 	}
 	
 	std::string id;
-	if (!node["id"].get(id)) {
+	if (!merged_node["id"].get(id)) {
 		Warning() << "Object without id.";
 	}
 	
