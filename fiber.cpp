@@ -129,8 +129,10 @@ namespace falling {
 			catch (...) {
 				const std::type_info* ex_type = __cxxabiv1::__cxa_current_exception_type();
 				const char* ex_name = ex_type->name();
-				printf("UNHANDLED EXCEPTION IN FIBER: %s\n", ex_name);
-				ASSERT(false); // Unhandled exception in fiber.
+				Debug() << "Unhandled exception in fiber: " << ex_name;
+				fiber->impl().saved_stack.clear();
+				fiber->impl().state = FiberState::UnhandledException;
+				longjmp(fiber->impl().portal, 1);
 			}
 			fiber->impl().saved_stack.clear();
 			fiber->impl().state = FiberState::Unstarted;
@@ -154,6 +156,7 @@ namespace falling {
 		switch (state()) {
 			case FiberState::Terminating:
 			case FiberState::Running: throw FiberTerminated();
+			case FiberState::UnhandledException:
 			case FiberState::Unstarted: return;
 			case FiberState::Sleeping: resume_into_state(FiberState::Terminating); return;
 		}
@@ -219,6 +222,10 @@ namespace falling {
 					 );
 				} else {
 					// coming back!
+					if (impl().state == FiberState::UnhandledException) {
+						// If the fiber threw an unhandled exception, rethrow it:
+						__cxxabiv1::__cxa_rethrow();
+					}
 					if (impl().state != FiberState::Sleeping && impl().state != FiberState::Unstarted) {
 						throw FiberError();
 					}
@@ -244,6 +251,10 @@ namespace falling {
 					longjmp(into_fiber, 1);
 				} else {
 					// coming back!
+					if (impl().state == FiberState::UnhandledException) {
+						// If the fiber threw an exception, rethrow it:
+						__cxxabiv1::__cxa_rethrow();
+					}
 					if (impl().state != FiberState::Sleeping && impl().state != FiberState::Unstarted) {
 						throw FiberError();
 					}

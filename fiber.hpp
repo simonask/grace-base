@@ -19,6 +19,7 @@ namespace falling {
 		Running,
 		Sleeping,
 		Terminating,
+		UnhandledException,
 	};
 	
 	class IFiberManager;
