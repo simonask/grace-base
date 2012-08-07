@@ -56,6 +56,10 @@ namespace falling {
 				T x;
 				T y;
 			};
+			struct {
+				T width;
+				T height;
+			};
 		};
 	};
 	template <typename T> struct VectorData<T, 3> {
@@ -72,6 +76,11 @@ namespace falling {
 				T x;
 				T y;
 				T z;
+			};
+			struct {
+				T width;
+				T height;
+				T depth;
 			};
 		};
 	};
@@ -90,6 +99,12 @@ namespace falling {
 				T y;
 				T z;
 				T w;
+			};
+			struct {
+				T width;
+				T height;
+				T depth;
+				// maybe time? :)
 			};
 		};
 	};
