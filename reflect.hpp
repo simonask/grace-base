@@ -65,8 +65,8 @@ struct ObjectTypeBuilder {
 		return *this;
 	}
 	
-	Self& category(std::string name) {
-		type_->categories_.push_back(std::move(name));
+	Self& indexed(bool b = true) {
+		type_->is_indexed_ = b;
 		return *this;
 	}
 	

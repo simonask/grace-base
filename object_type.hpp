@@ -36,16 +36,22 @@ struct ObjectTypeBase : DerivedType {
 		return nullptr;
 	}
 	
-	ObjectTypeBase(const ObjectTypeBase* super, std::string name, std::string description) : super_(super), name_(std::move(name)), description_(std::move(description)) {}
+	ObjectTypeBase(const ObjectTypeBase* super, std::string name, std::string description) : super_(super), name_(std::move(name)), description_(std::move(description)), is_abstract_(false), is_indexed_(false) {}
 	
 	const ObjectTypeBase* super_;
 	std::string name_;
 	std::string description_;
+	bool is_abstract_;
+	bool is_indexed_;
+	
+	void set_abstract(bool b) { this->is_abstract_ = b; }
+	bool is_abstract() const { return this->is_abstract_; }
+	bool is_indexed() const { return this->is_indexed_; }
 };
 
 template <typename T>
 struct ObjectType : TypeFor<T, ObjectTypeBase> {
-	ObjectType(const ObjectTypeBase* super, std::string name, std::string description) : TypeFor<T, ObjectTypeBase>(super, std::move(name), std::move(description)), is_abstract_(false) {}
+	ObjectType(const ObjectTypeBase* super, std::string name, std::string description) : TypeFor<T, ObjectTypeBase>(super, std::move(name), std::move(description)) {}
 	
 	void construct(byte* place, IUniverse& universe) const {
 		Object* p = ::new(place) T;
@@ -71,9 +77,6 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	void deserialize(T& object, const ArchiveNode&, IUniverse&) const;
 	void serialize(const T& object, ArchiveNode&, IUniverse&) const;
 	
-	void set_abstract(bool b) { is_abstract_ = b; }
-	bool is_abstract() const { return is_abstract_; }
-	
 	const SlotBase* find_slot_by_name(const std::string& name) const {
 		for (auto& it: slots_) {
 			if (it->name() == name) return it;
@@ -83,8 +86,6 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 
 	Array<AttributeForObject<T>*> properties_;
 	Array<SlotForType<T>*> slots_;
-	Array<std::string> categories_;
-	bool is_abstract_;
 };
 
 
@@ -97,8 +98,8 @@ void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& u
 		property->deserialize_attribute(&object, node[property->name()], universe);
 	}
 	
-	for (auto category: categories_) {
-		universe.register_object_for_category(ObjectPtr<T>(&object), category);
+	if (this->is_indexed()) {
+		universe.register_object_of_type(ObjectPtr<T>(&object));
 	}
 }
 

@@ -10,6 +10,12 @@ namespace falling {
 	void error_category_already_initialized_with_different_type(const std::string& name) {
 		Error() << "Object category has already been initialized with a different type: " << name;
 	}
+	
+	void warn_attempt_to_get_objects_of_unindexed_type(const ObjectTypeBase* type) {
+		if (!type->is_indexed()) {
+			Warning() << "Attempt to get objects of type " << type->name() << ", but that type is not indexed.";
+		}
+	}
 
 ObjectPtr<> BasicUniverse::create_root(const DerivedType* type, std::string id) {
 	clear();
