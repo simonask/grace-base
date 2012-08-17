@@ -10,10 +10,13 @@
 #define falling_array_ref_hpp
 
 namespace falling {
+	struct Empty {};
+
 	template <typename T>
 	struct ArrayRef {
 	public:
 		ArrayRef() : begin_(nullptr), end_(nullptr) {}
+		ArrayRef(Empty e) : begin_(nullptr), end_(nullptr) {}
 		ArrayRef(T* begin, T* end) : begin_(begin), end_(end) { ASSERT(begin_ <= end_); }
 		ArrayRef(const ArrayRef<T>& other) = default;
 		ArrayRef(ArrayRef<T>&& other) = default;
