@@ -147,6 +147,28 @@ namespace falling {
 		ALWAYS_INLINE bool cmp_eq(uint32 a, uint32 b) { return a == b; }
 		ALWAYS_INLINE bool cmp_neq(uint32 a, uint32 b) { return a != b; }
 		
+		ALWAYS_INLINE float32 min(float32 a, float32 b) { return a < b ? a : b; }
+		ALWAYS_INLINE int32   min(int32 a,   int32 b)   { return a < b ? a : b; }
+		ALWAYS_INLINE uint32  min(uint32 a,  uint32 b)  { return a < b ? a : b; }
+		ALWAYS_INLINE fvec2 min(fvec2 a, fvec2 b) { return (fvec2){min(a[0], b[0]), min(a[1], b[1])}; }
+		ALWAYS_INLINE ivec2 min(ivec2 a, ivec2 b) { return (ivec2){min(a[0], b[0]), min(a[1], b[1])}; }
+		ALWAYS_INLINE uvec2 min(uvec2 a, uvec2 b) { return (uvec2){min(a[0], b[0]), min(a[1], b[1])}; }
+		ALWAYS_INLINE fvec4 min(fvec4 a, fvec4 b) { return _mm_min_ps(a, b); }
+		ALWAYS_INLINE ivec4 min(ivec4 a, ivec4 b) { return _mm_min_ps(a, b); }
+		ALWAYS_INLINE uvec4 min(uvec4 a, uvec4 b) { return _mm_min_ps(a, b); }
+
+		ALWAYS_INLINE float32 max(float32 a, float32 b) { return a < b ? a : b; }
+		ALWAYS_INLINE int32   max(int32 a,   int32 b)   { return a < b ? a : b; }
+		ALWAYS_INLINE uint32  max(uint32 a,  uint32 b)  { return a < b ? a : b; }
+		ALWAYS_INLINE fvec2 max(fvec2 a, fvec2 b) { return (fvec2){max(a[0], b[0]), max(a[1], b[1])}; }
+		ALWAYS_INLINE ivec2 max(ivec2 a, ivec2 b) { return (ivec2){max(a[0], b[0]), max(a[1], b[1])}; }
+		ALWAYS_INLINE uvec2 max(uvec2 a, uvec2 b) { return (uvec2){max(a[0], b[0]), max(a[1], b[1])}; }
+		ALWAYS_INLINE fvec4 max(fvec4 a, fvec4 b) { return _mm_max_ps(a, b); }
+		ALWAYS_INLINE ivec4 max(ivec4 a, ivec4 b) { return _mm_max_ps(a, b); }
+		ALWAYS_INLINE uvec4 max(uvec4 a, uvec4 b) { return _mm_max_ps(a, b); }
+
+		
+		
 		template <Axis X_, Axis Y_, Axis Z_, Axis W_ = W>
 		fvec4 shuffle(fvec4 v) {
 			return _mm_shuffle_ps(v, v, _MM_SHUFFLE(W_, Z_, Y_, X_));

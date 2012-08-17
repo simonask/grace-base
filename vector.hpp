@@ -155,23 +155,23 @@ namespace falling {
 		
 		// Constructors
 		
-		TVector() {}
-		explicit TVector(const ElementType* elements) { simd::unaligned_load(this->m, elements); }
-		explicit TVector(ElementType elements[N])     { simd::unaligned_load(this->m, elements); }
-		TVector(const Self& other) { this->m = other.m; }
-		TVector(Type repr) { this->m = repr; }
+		ALWAYS_INLINE TVector() {}
+		ALWAYS_INLINE explicit TVector(const ElementType* elements) { simd::unaligned_load(this->m, elements); }
+		ALWAYS_INLINE explicit TVector(ElementType elements[N])     { simd::unaligned_load(this->m, elements); }
+		ALWAYS_INLINE TVector(const Self& other) { this->m = other.m; }
+		ALWAYS_INLINE TVector(Type repr) { this->m = repr; }
 		
 		
 		template <typename Enable = void>
-		explicit TVector(ElementType x, typename std::enable_if<N == 1, Enable*>::type = nullptr) { this->m = Type{x}; }
+		ALWAYS_INLINE explicit TVector(ElementType x, typename std::enable_if<N == 1, Enable*>::type = nullptr) { this->m = Type{x}; }
 		template <typename Enable = void>
-		TVector(ElementType x, ElementType y, typename std::enable_if<N == 2, Enable*>::type = nullptr) { this->m = Type{x, y}; }
+		ALWAYS_INLINE TVector(ElementType x, ElementType y, typename std::enable_if<N == 2, Enable*>::type = nullptr) { this->m = Type{x, y}; }
 		template <typename Enable = void>
-		TVector(ElementType x, ElementType y, ElementType z, typename std::enable_if<N == 3, Enable*>::type = nullptr) { this->m = Type{x, y, z}; }
+		ALWAYS_INLINE TVector(ElementType x, ElementType y, ElementType z, typename std::enable_if<N == 3, Enable*>::type = nullptr) { this->m = Type{x, y, z}; }
 		template <typename Enable = void>
-		TVector(ElementType x, ElementType y, ElementType z, ElementType w, typename std::enable_if<N == 4, Enable*>::type = nullptr) { this->m = Type{x, y, z, w}; }
+		ALWAYS_INLINE TVector(ElementType x, ElementType y, ElementType z, ElementType w, typename std::enable_if<N == 4, Enable*>::type = nullptr) { this->m = Type{x, y, z, w}; }
 		
-		Self& operator=(Self other) { this->m = other.m; return *this; }
+		ALWAYS_INLINE Self& operator=(Self other) { this->m = other.m; return *this; }
 		
 		
 		// Conversion
@@ -182,32 +182,32 @@ namespace falling {
 		
 		// Comparison
 		
-		ComparisonResult operator<(const Self& other) const { return simd::cmp_lt(this->m, other.m); }
-		ComparisonResult operator<=(const Self& other) const { return simd::cmp_lte(this->m, other.m); }
-		ComparisonResult operator>(const Self& other) const { return simd::cmp_gt(this->m, other.m); }
-		ComparisonResult operator>=(const Self& other) const { return simd::cmp_gte(this->m, other.m); }
+		ALWAYS_INLINE ComparisonResult operator<(const Self& other) const { return simd::cmp_lt(this->m, other.m); }
+		ALWAYS_INLINE ComparisonResult operator<=(const Self& other) const { return simd::cmp_lte(this->m, other.m); }
+		ALWAYS_INLINE ComparisonResult operator>(const Self& other) const { return simd::cmp_gt(this->m, other.m); }
+		ALWAYS_INLINE ComparisonResult operator>=(const Self& other) const { return simd::cmp_gte(this->m, other.m); }
 		
 		template <typename T = ElementType>
-		typename std::enable_if<!IsFloatingPoint<T>::Value, ComparisonResult>::type
+		ALWAYS_INLINE typename std::enable_if<!IsFloatingPoint<T>::Value, ComparisonResult>::type
 		operator==(const Self& other) const { return simd::cmp_eq(this->m, other.m); }
 		
 		template <typename T = ElementType>
-		typename std::enable_if<!IsFloatingPoint<T>::Value, ComparisonResult>::type
+		ALWAYS_INLINE typename std::enable_if<!IsFloatingPoint<T>::Value, ComparisonResult>::type
 		operator!=(const Self& other) const { return simd::cmp_neq(this->m, other.m); }
 		
-		ComparisonResult equal_within(const Self& other, ElementType epsilon) const {
+		ALWAYS_INLINE ComparisonResult equal_within(const Self& other, ElementType epsilon) const {
 			Self diff = (*this - other).abs();
 			return diff <= replicate(epsilon);
 		}
 		
-		bool all_equal_within(const Self& other, ElementType epsilon) const {
+		ALWAYS_INLINE bool all_equal_within(const Self& other, ElementType epsilon) const {
 			// TODO: This is SSE-specific, generalize.
 			ComparisonResult mask = ComparisonResult::replicate(1);
 			ComparisonResult bool_mask = equal_within(other, epsilon) & mask;
 			return bool_mask.sum() == N;
 		}
 		
-		bool any_equal_within(const Self& other, ElementType epsilon) const {
+		ALWAYS_INLINE bool any_equal_within(const Self& other, ElementType epsilon) const {
 			// TODO: This is SSE-specific, generalize.
 			ComparisonResult mask = ComparisonResult::replicate(1);
 			ComparisonResult bool_mask = equal_within(other, epsilon) & mask;
@@ -215,7 +215,7 @@ namespace falling {
 		}
 		
 		template <typename T = ElementType>
-		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
 		all_equal(const Self& other, MaskElementType ulps = 5) const {
 			auto abs_diff = MaskVector(this->mask - other.mask).abs();
 			auto result = abs_diff <= MaskVector::replicate(ulps);
@@ -224,7 +224,7 @@ namespace falling {
 		}
 		
 		template <typename T = ElementType>
-		typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
+		ALWAYS_INLINE typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
 		all_equal(const Self& other) const {
 			auto mask = ComparisonResult::replicate(1);
 			auto result = (*this == other) & mask;
@@ -232,7 +232,7 @@ namespace falling {
 		}
 		
 		template <typename T = ElementType>
-		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
 		any_equal(const Self& other, MaskElementType ulps = 5) const {
 			auto abs_diff = MaskVector(this->mask - other.mask).abs();
 			auto result = abs_diff <= MaskVector::replicate(ulps);
@@ -241,7 +241,7 @@ namespace falling {
 		}
 		
 		template <typename T = ElementType>
-		typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
+		ALWAYS_INLINE typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
 		any_equal(const Self& other) const {
 			auto mask = ComparisonResult::replicate(1);
 			auto result = (*this == other) & mask;
@@ -249,7 +249,7 @@ namespace falling {
 		}
 		
 		template <typename T = ElementType>
-		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
 		all_is_nan() const {
 			// TODO: Do this by masking and summing.
 			size_t n = 0;
@@ -260,7 +260,7 @@ namespace falling {
 		}
 		
 		template <typename T = ElementType>
-		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
 		any_is_nan() const {
 			// TODO: Do this by masking and summing.
 			size_t n = 0;
@@ -271,7 +271,7 @@ namespace falling {
 		}
 		
 		template <typename T = ElementType>
-		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
 		all_is_infinity() const {
 			// TODO: Do this by masking and summing.
 			size_t n = 0;
@@ -282,7 +282,7 @@ namespace falling {
 		}
 		
 		template <typename T = ElementType>
-		typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
+		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
 		any_is_infinity() const {
 			// TODO: Do this by masking and summing.
 			size_t n = 0;
@@ -294,29 +294,26 @@ namespace falling {
 		
 		// Arithmetic
 		
-		Self& operator+=(Self other) { this->m += other.m; return *this; }
-		Self operator+(Self other) const { return Self(this->m + other.m); }
-		Self& operator-=(Self other) { this->m -= other.m; return *this; }
-		Self operator-(Self other) const { return Self(this->m - other.m); }
-		Self operator-() const;
-		Self& operator*=(Self other) { this->m *= other.m; return *this; }
-		Self operator*(Self other) const { return Self(this->m * other.m); }
-		Self& operator/=(Self other) { this->m /= other.m; return *this; }
-		Self operator/(Self other) const { return Self(this->m / other.m); }
+		ALWAYS_INLINE Self& operator+=(Self other) { this->m += other.m; return *this; }
+		ALWAYS_INLINE Self operator+(Self other) const { return Self(this->m + other.m); }
+		ALWAYS_INLINE Self& operator-=(Self other) { this->m -= other.m; return *this; }
+		ALWAYS_INLINE Self operator-(Self other) const { return Self(this->m - other.m); }
+		ALWAYS_INLINE Self operator-() const;
+		ALWAYS_INLINE Self& operator*=(Self other) { this->m *= other.m; return *this; }
+		ALWAYS_INLINE Self operator*(Self other) const { return Self(this->m * other.m); }
+		ALWAYS_INLINE Self& operator/=(Self other) { this->m /= other.m; return *this; }
+		ALWAYS_INLINE Self operator/(Self other) const { return Self(this->m / other.m); }
 		
 		
 		// Masking
 		
-		Self operator&(MaskType msk) const { return this->mask & msk; }
-		Self operator&(ComparisonResult msk) const { return this->mask & msk.mask; }
-		Self operator|(MaskType msk) const { return this->mask | msk; }
-		Self operator|(ComparisonResult msk) const { return this->mask | msk.mask; }
-		Self operator^(MaskType msk) const { return this->mask ^ msk; }
-		Self operator^(ComparisonResult msk) const { return this->mask ^ msk.mask; }
-		Self operator~() const { return ~this->mask; }
-		Self& operator&=(MaskType  msk) { this->mask &= msk; return *this; }
-		Self& operator|=(MaskType msk) { this->mask |= msk; return *this; }
-		Self& operator^=(MaskType msk) { this->mask ^= msk; return *this; }
+		ALWAYS_INLINE Self operator&(MaskVector msk) const { return this->mask & msk.mask; }
+		ALWAYS_INLINE Self operator|(MaskVector msk) const { return this->mask | msk.mask; }
+		ALWAYS_INLINE Self operator^(MaskVector msk) const { return this->mask ^ msk.mask; }
+		ALWAYS_INLINE Self operator~() const { return ~this->mask; }
+		ALWAYS_INLINE Self& operator&=(MaskVector  msk) { this->mask &= msk; return *this; }
+		ALWAYS_INLINE Self& operator|=(MaskVector msk) { this->mask |= msk; return *this; }
+		ALWAYS_INLINE Self& operator^=(MaskVector msk) { this->mask ^= msk; return *this; }
 		
 		Self abs() const;
 		Self sumv() const;
@@ -333,11 +330,11 @@ namespace falling {
 			return v;
 		}
 		
-		static constexpr Self zero() { return replicate(0); }
-		static constexpr Self one() { return replicate(1); }
-		static constexpr Self two() { return replicate(2); }
-		static constexpr Self nan() { return zero() / zero(); }
-		static constexpr Self infinity() { return one() / zero(); }
+		ALWAYS_INLINE static constexpr Self zero() { return replicate(0); }
+		ALWAYS_INLINE static constexpr Self one() { return replicate(1); }
+		ALWAYS_INLINE static constexpr Self two() { return replicate(2); }
+		ALWAYS_INLINE static constexpr Self nan() { return zero() / zero(); }
+		ALWAYS_INLINE static constexpr Self infinity() { return one() / zero(); }
 		
 		// Geometry
 		
@@ -347,12 +344,12 @@ namespace falling {
 		ElementType length() const;
 		ElementType dot(Self other) const;
 		
-		Self sqrt() const { return simd::sqrt(this->m); }
-		Self rsqrt() const { return simd::rsqrt(this->m); }
-		Self fast_sqrt() const { return rsqrt() * (*this); }
+		ALWAYS_INLINE Self sqrt() const { return simd::sqrt(this->m); }
+		ALWAYS_INLINE Self rsqrt() const { return simd::rsqrt(this->m); }
+		ALWAYS_INLINE Self fast_sqrt() const { return rsqrt() * (*this); }
 		
 		template <size_t N_ = N>
-		typename std::enable_if<N_ == 3, Self>::type
+		ALWAYS_INLINE typename std::enable_if<N_ == 3, Self>::type
 		cross(Self other) const {
 			return VectorCrosser<ElementType,N>::cross(*this, other);
 		}
@@ -604,6 +601,21 @@ namespace falling {
 			return left - right;
 		}
 	};
+	
+	template <typename T, size_t N>
+	ALWAYS_INLINE TVector<T, N> select(typename TVector<T,N>::ComparisonResult cmp, TVector<T,N> if_true, TVector<T,N> if_false) {
+		return (if_true & cmp) | (if_false & ~cmp).mask;
+	}
+	
+	template <typename T, size_t N>
+	ALWAYS_INLINE TVector<T, N> min(TVector<T,N> a, TVector<T,N> b) {
+		return simd::min(a.m, b.m);
+	}
+	
+	template <typename T, size_t N>
+	ALWAYS_INLINE TVector<T, N> max(TVector<T,N> a, TVector<T,N> b) {
+		return simd::max(a.m, b.m);
+	}
 }
 
 
