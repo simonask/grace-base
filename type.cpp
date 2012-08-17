@@ -92,8 +92,10 @@ void* IntegerType::cast(const SimpleType* to, void* memory) const {
 void FloatType::deserialize(byte* place, const ArchiveNode& node, IUniverse&) const {
 	if (width_ == 4) {
 		node.get(*reinterpret_cast<float32*>(place));
+		return;
 	} else if (width_ == 8) {
 		node.get(*reinterpret_cast<float64*>(place));
+		return;
 	}
 	ASSERT(false); // FloatType with neither 32-bit nor 64-bit floats?
 }
