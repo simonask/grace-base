@@ -13,11 +13,9 @@
 #include "io/file_stream.hpp"
 
 namespace falling {
-	enum StandardOutputStreamType {
-		StandardOutput,
-		StdOut = StandardOutput,
-		StandardError,
-		StdErr = StandardError,
+	enum StandardOStreamType {
+		StandardOutputStreamType,
+		StandardErrorStreamType,
 		NumStandardOutputStreamTypes
 	};
 	
@@ -27,21 +25,34 @@ namespace falling {
 	
 	class StdOutputStream : public FormattedStream {
 	public:
-		StdOutputStream(StandardOutputStreamType stream_type = StandardOutput);
+		StdOutputStream(StandardOStreamType stream_type = StandardOutputStreamType);
 		StdOutputStream(StdOutputStream&& other) = default;
 		StdOutputStream& operator=(StdOutputStream&& other) = default;
 	private:
 		OutputFileStream stream_;
 	};
 	
-	StdOutputStream& get_stdout_stream(StandardOutputStreamType type);
+	StdOutputStream& get_stdout_stream(StandardOStreamType type);
 	
 	template <typename T>
-	StdOutputStream& operator<<(StandardOutputStreamType type, const T& value) {
+	StdOutputStream& operator<<(StandardOStreamType type, const T& value) {
 		StdOutputStream& stream = get_stdout_stream(type);
 		stream << value;
 		return stream;
 	}
+	
+	template <StandardOStreamType t>
+	struct GetOutputStream {
+		GetOutputStream() {}
+		operator StdOutputStream&() const {
+			return get_stdout_stream(t);
+		}
+	};
+	
+	static const GetOutputStream<StandardOutputStreamType> StdOut;
+	static const GetOutputStream<StandardOutputStreamType> StandardOutput;
+	static const GetOutputStream<StandardErrorStreamType> StdErr;
+	static const GetOutputStream<StandardErrorStreamType> StandardError;
 }
 
 #endif

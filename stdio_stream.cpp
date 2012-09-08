@@ -11,10 +11,10 @@
 
 namespace falling {
 	namespace {
-		FILE* file_pointer_for_stream_type(StandardOutputStreamType type) {
+		FILE* file_pointer_for_stream_type(StandardOStreamType type) {
 			switch (type) {
-				case StandardOutput: return stdout;
-				case StandardError: return stderr;
+				case StandardOutputStreamType: return stdout;
+				case StandardErrorStreamType: return stderr;
 				default: ASSERT(false); return nullptr;
 			}
 		}
@@ -24,7 +24,7 @@ namespace falling {
 		}
 	}
 	
-	StdOutputStream& get_stdout_stream(StandardOutputStreamType type) {
+	StdOutputStream& get_stdout_stream(StandardOStreamType type) {
 		static StdOutputStream* stream[NumStandardOutputStreamTypes] = {nullptr};
 		StdOutputStream*& ptr = stream[type];
 		if (ptr == nullptr) {
@@ -33,7 +33,7 @@ namespace falling {
 		return *ptr;
 	}
 	
-	StdOutputStream::StdOutputStream(StandardOutputStreamType type) : FormattedStream(stream_) {
+	StdOutputStream::StdOutputStream(StandardOStreamType type) : FormattedStream(stream_) {
 		stream_ = OutputFileStream::wrap_file_pointer(file_pointer_for_stream_type(type));
 		stream_.set_sync(true);
 	}
