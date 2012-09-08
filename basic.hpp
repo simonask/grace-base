@@ -142,18 +142,7 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 	template <size_t... S> struct MakeIndices<0, S...> {
 		typedef Indices<S...> Type;
 	};
-	
-	template <typename T, typename FunctionType, typename... Args>
-	struct ApplyTupleToMember {
-		T* object;
-		FunctionType function;
-		ApplyTupleToMember(T* object, FunctionType function) : object(object), function(function) {}
-		inline void operator()(std::tuple<Args...> args) const
-		{
-			
-		}
-	};
-	
+		
 	template <typename T, typename FunctionType, typename... Args, size_t... I>
 	auto apply_tuple_to_member_impl(T* object, FunctionType function, std::tuple<Args...> args, Indices<I...> i)
 	-> decltype((object->*function)(std::get<I>(args)...))
