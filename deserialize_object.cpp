@@ -63,6 +63,42 @@ namespace {
 			into.internal_map()[pair.first] = pair.second;
 		}
 	}
+	
+	void copy_archive_node(ArchiveNode& to, const ArchiveNode& from) {
+		switch (from.type()) {
+			case ArchiveNodeType::Empty: to.clear(); break;
+			case ArchiveNodeType::Float:
+				double f;
+				from.get(f);
+				to.set(f);
+				break;
+			case ArchiveNodeType::Integer:
+				int64 n;
+				from.get(n);
+				to.set(n);
+				break;
+			case ArchiveNodeType::String: {
+				std::string s;
+				from.get(s);
+				to.set(std::move(s));
+				break;
+			}
+			case ArchiveNodeType::Array: {
+				for (size_t i = 0; i < from.array_size(); ++i) {
+					ArchiveNode& n = to.array_push();
+					copy_archive_node(n, from[i]);
+				}
+				break;
+			}
+			case ArchiveNodeType::Map: {
+				for (auto& it: from.internal_map()) {
+					ArchiveNode& n = to[it.first];
+					copy_archive_node(n, *it.second);
+				}
+				break;
+			}
+		}
+	}
 }
 
 ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
@@ -76,7 +112,7 @@ ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
 	if (node["template"].get(template_rid)) {
 		ResourcePtr<ObjectTemplate> templ = load_resource<ObjectTemplate>(template_rid);
 		if (templ != nullptr) {
-			merged_node.internal_map() = templ->archive.root().internal_map();
+			copy_archive_node(merged_node, templ->archive.root());
 		}
 	}
 	merge_archive_node_map(merged_node, node);

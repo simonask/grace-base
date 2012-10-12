@@ -90,6 +90,7 @@ protected:
 protected:
 	Archive& archive_;
 	Type type_;
+public:
 	// TODO: Use an 'any'/'variant' type for the following:
 	std::map<std::string, ArchiveNode*> map_;
 	Array<ArchiveNode*> array_;
@@ -98,6 +99,7 @@ protected:
 		int64 integer_value;
 		float64 float_value;
 	};
+protected:
 	
 	void clear(ArchiveNodeType::Type new_node_type);
 	template <typename T, typename U>
