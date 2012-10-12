@@ -9,6 +9,7 @@
 #include "type/attribute.hpp"
 #include "object/slot.hpp"
 #include "object/universe.hpp"
+#include "base/intrusive_list.hpp"
 
 namespace falling {
 
@@ -36,18 +37,17 @@ struct ObjectTypeBase : DerivedType {
 		return nullptr;
 	}
 	
-	ObjectTypeBase(const ObjectTypeBase* super, std::string name, std::string description) : super_(super), name_(std::move(name)), description_(std::move(description)), is_abstract_(false), is_indexed_(false) {}
+	ObjectTypeBase(const ObjectTypeBase* super, std::string name, std::string description) : super_(super), name_(std::move(name)), description_(std::move(description)), is_abstract_(false) {}
 	
 	const ObjectTypeBase* super_;
 	std::string name_;
 	std::string description_;
 	bool is_abstract_;
-	bool is_indexed_;
 	
 	void set_abstract(bool b) { this->is_abstract_ = b; }
-	bool is_abstract() const { return this->is_abstract_; }
-	bool is_indexed() const { return this->is_indexed_; }
-};
+	bool is_abstract() const { return this->is_abstract_; }};
+
+template <typename T> struct IntrusiveListRegistrarForObject;
 
 template <typename T>
 struct ObjectType : TypeFor<T, ObjectTypeBase> {
@@ -86,6 +86,26 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 
 	Array<AttributeForObject<T>*> properties_;
 	Array<SlotForType<T>*> slots_;
+	Array<IntrusiveListRegistrarForObject<T>*> lists_;
+};
+
+template <typename T>
+struct IntrusiveListRegistrarForObject {
+	virtual void link_object_in_universe(T& object, IUniverse& universe) const = 0;
+};
+
+template <typename T, typename ObjectType, size_t MemberOffset>
+struct IntrusiveListRegistrarImpl : IntrusiveListRegistrarForObject<T> {
+	typedef IntrusiveListLink<ObjectType> ObjectType::* LinkMemberType;
+	LinkMemberType link_;
+	
+	IntrusiveListRegistrarImpl(LinkMemberType link) : link_(link) {}
+	
+	void link_object_in_universe(T& object, IUniverse& universe) const {
+		auto& list = universe.get_intrusive_list<ObjectType, MemberOffset>();
+		IntrusiveListLink<ObjectType>* link = &(object.*link_);
+		list.link_tail(link);
+	}
 };
 
 
@@ -98,8 +118,8 @@ void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& u
 		property->deserialize_attribute(&object, node[property->name()], universe);
 	}
 	
-	if (this->is_indexed()) {
-		universe.register_object_of_type(ObjectPtr<T>(&object));
+	for (auto& list: lists_) {
+		list->link_object_in_universe(object, universe);
 	}
 }
 

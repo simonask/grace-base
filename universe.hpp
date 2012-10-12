@@ -7,6 +7,7 @@
 #include "object/object.hpp"
 #include "object/objectptr.hpp"
 #include "base/array_ref.hpp"
+#include "base/intrusive_list.hpp"
 
 namespace falling {
 
@@ -41,55 +42,45 @@ struct IUniverse {
 		return ptr;
 	}
 	
-	template <typename T>
-	ArrayRef<ObjectPtr<T>> objects_of_type() const;
+	template <typename T, size_t MemberOffset>
+	IntrusiveList<T, MemberOffset>& get_intrusive_list();
 	
-	template <typename T>
-	void register_object_of_type(ObjectPtr<T> ptr);
+	template <typename IntrusiveListType>
+	IntrusiveListType& get_intrusive_list() {
+		return get_intrusive_list<typename IntrusiveListType::ValueType, IntrusiveListType::LinkOffset>();
+	}
 private:
-	struct ObjectIndexBase;
-	template <typename T> struct ObjectIndex;
-	std::map<const ObjectTypeBase*, std::unique_ptr<ObjectIndexBase>> object_indexes;
+	std::map<const Type*, std::map<size_t, VirtualIntrusiveListBase*>> intrusive_lists;
 };
 
-struct IUniverse::ObjectIndexBase {
-	virtual ~ObjectIndexBase() {}
-};
-
-template <typename T>
-struct IUniverse::ObjectIndex : ObjectIndexBase {
-	Array<ObjectPtr<T>> objects;
-};
-
-template <typename T>
-ArrayRef<ObjectPtr<T>> IUniverse::objects_of_type() const {
-	const ObjectTypeBase* type = get_type<T>();
-#if DEBUG
-	warn_attempt_to_get_objects_of_unindexed_type(type);
-#endif
-	auto it = object_indexes.find(type);
-	if (it != object_indexes.end()) {
-		ObjectIndex<T>* index = dynamic_cast<ObjectIndex<T>*>(it->second.get());
-		if (index != nullptr) {
-			return index->objects;
+template <typename T, size_t MemberOffset>
+IntrusiveList<T, MemberOffset>& IUniverse::get_intrusive_list() {
+	VirtualIntrusiveListBase* base_ptr = nullptr;
+	const Type* type = get_type<T>();
+	auto it1 = intrusive_lists.find(type);
+	if (it1 != intrusive_lists.end()) {
+		auto& map2 = it1->second;
+		auto it2 = map2.find(MemberOffset);
+		if (it2 != map2.end()) {
+			base_ptr = it2->second;
+		} else {
+			base_ptr = new VirtualIntrusiveList<T, MemberOffset>;
+			map2[MemberOffset] = base_ptr;
 		}
-	}
-	return Empty();
-}
-
-template <typename T>
-void IUniverse::register_object_of_type(ObjectPtr<T> ptr) {
-	const ObjectTypeBase* type = get_type<T>();
-	auto it = object_indexes.find(type);
-	ObjectIndex<T>* index;
-	if (it == object_indexes.end()) {
-		index = new ObjectIndex<T>;
-		object_indexes.insert(std::make_pair(type, std::unique_ptr<ObjectIndexBase>(index)));
 	} else {
-		index = dynamic_cast<ObjectIndex<T>*>(it->second.get());
+		base_ptr = new VirtualIntrusiveList<T, MemberOffset>;
+		std::map<size_t, VirtualIntrusiveListBase*> m = {{MemberOffset, base_ptr}};
+		intrusive_lists[type] = std::move(m);
 	}
-	ASSERT(index != nullptr);
-	index->objects.push_back(ptr);
+	
+	IntrusiveList<T, MemberOffset>* ptr = nullptr;
+#if DEBUG
+	ptr = dynamic_cast<VirtualIntrusiveList<T, MemberOffset>*>(base_ptr);
+	ASSERT(ptr != nullptr);
+#else
+	ptr = static_cast<VirtualIntrusiveList<T, MemberOffset>*>(base_ptr);
+#endif
+	return *ptr;
 }
 
 struct BasicUniverse : IUniverse {
