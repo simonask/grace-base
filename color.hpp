@@ -79,6 +79,54 @@ namespace falling {
 		auto weighted_diff = diff * Color::ColorComponents::replicate(weight); 
 		return Color(a.components() + weighted_diff);
 	}
+	
+	struct CompactColor {
+		typedef uint32 ColorComponents;
+		typedef byte ComponentType;
+		
+		static ComponentType denormalize(Color::ComponentType component) { return component * 255; }
+		static Color::ComponentType normalize(ComponentType component) { return float32(component) / 255.f; }
+		static ColorComponents combine_components(byte r, byte g, byte b, byte a) {
+			ColorComponents c = ((uint32)r << 24) | ((uint32)g << 16) | ((uint32)b << 8) | a;
+			return c;
+		}
+		static ColorComponents denormalize_all(Color components) {
+			byte r = denormalize(components.red());
+			byte g = denormalize(components.green());
+			byte b = denormalize(components.blue());
+			byte a = denormalize(components.alpha());
+			return combine_components(r, g, b, a);
+		}
+		
+		CompactColor() {}
+		CompactColor(Color c) : components_(denormalize_all(c)) {}
+		CompactColor(byte r, byte g, byte b, byte a = 255) : r(r), g(g), b(b), a(a) {}
+		CompactColor(uint32 hex) : components_(hex) {}
+		
+		operator Color() const {
+			float32 fr = normalize(r);
+			float32 fg = normalize(g);
+			float32 fb = normalize(b);
+			float32 fa = normalize(a);
+			return Color(fr, fg, fb, fa);
+		}
+		
+		byte red() const { return r; }
+		byte& red() { return r; }
+		byte green() const { return g; }
+		byte& green() { return g; }
+		byte blue() const { return b; }
+		byte& blue() { return b; }
+		byte alpha() const { return a; }
+		byte& alpha() { return a; }
+	private:
+		union {
+			ColorComponents components_;
+			struct {
+				byte r, g, b, a;
+			};
+		};
+	};
 }
 
 #endif
