@@ -20,6 +20,7 @@ namespace falling {
 	template <Timeline T>
 	struct TimeDelta {
 	public:
+		TimeDelta() : microseconds_(0) {}
 		TimeDelta(const TimeDelta<T>&) = default;
 		TimeDelta<T>& operator=(const TimeDelta<T>&) = default;
 		
