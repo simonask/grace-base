@@ -60,6 +60,8 @@ return MEMBER.METHOD_NAME(std::forward<ForwardArgs_>(args)...); \
 #define ALWAYS_INLINE inline
 #endif
 
+#define UNSAFE_OFFSET_OF(T, MEMBER) (size_t)(&((T*)nullptr)->MEMBER)
+
 template <typename T>
 struct RemoveConstRef {
 	typedef typename std::remove_const<typename std::remove_reference<T>::type>::type Type;
