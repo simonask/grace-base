@@ -78,8 +78,7 @@ namespace falling {
 		iterator end() { return iterator(this, &end_sentinel); }
 	};
 	
-#define UNSAFE_OFFSET_OF(T, MEMBER) offsetof(T, MEMBER)
-#define INTRUSIVE_LIST_TYPE(T, MEMBER) IntrusiveList<T, UNSAFE_OFFSET_OF(T, MEMBER)>
+#define INTRUSIVE_LIST_TYPE(T, MEMBER) IntrusiveList<T, offsetof(T, MEMBER)>
 
 	struct VirtualIntrusiveListBase {
 		virtual ~VirtualIntrusiveListBase() {}
