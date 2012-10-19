@@ -44,6 +44,10 @@ public:
 		return ArrayRef<T>(data_, data_ + size_);
 	}
 	
+	operator ArrayRef<const T>() const {
+		return ArrayRef<const T>(data_, data_ + size_);
+	}
+	
 	T& operator[](size_t idx);
 	const T& operator[](size_t idx) const;
 	
