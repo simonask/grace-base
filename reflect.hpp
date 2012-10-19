@@ -85,7 +85,7 @@ struct ObjectTypeBuilder {
 	ObjectType<T>* type_;
 };
 
-#define REFLECT_INTRUSIVE_LIST(T, MEMBER) intrusive_list<T, UNSAFE_OFFSET_OF(T, MEMBER)>(&T::MEMBER)
+#define REFLECT_INTRUSIVE_LIST(T, MEMBER) intrusive_list<T, offsetof(T, MEMBER)>(&T::MEMBER)
 
 #define BEGIN_TYPE_INFO(TYPE) \
 const ObjectTypeBase* TYPE::build_type_info__() { \
