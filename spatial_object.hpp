@@ -11,6 +11,7 @@
 
 #include "object/object.hpp"
 #include "base/vector.hpp"
+#include "base/geometry.hpp"
 
 namespace falling {
 	class SpatialObject : public Object {
@@ -20,7 +21,7 @@ namespace falling {
 		
 		vec2 position;
 		vec2 size;
-		vec4 bounds; // x, y, w, h
+		Rect bounds; // x, y, w, h
 	};
 }
 
