@@ -24,7 +24,7 @@ template <typename T>
 struct Attribute {
 	virtual ~Attribute() {}
 	virtual bool get_polymorphic(Object* object, T& out_value) const = 0;
-	virtual bool const_get_polymorphic(const Object* object, T const*& out_pointer) const = 0;
+	//virtual bool const_get_polymorphic(const Object* object, T const*& out_pointer) const = 0;
 	virtual bool set_polymorphic(Object* object, const T& in_value) const = 0;
 };
 
@@ -47,14 +47,14 @@ struct AttributeForObjectOfType : AttributeForObject<ObjectType>, Attribute<Memb
 	
 	bool deserialize_attribute(ObjectType* object, const ArchiveNode& node, IUniverse& universe) const {
 		MemberType value;
-		this->type()->deserialize(reinterpret_cast<byte*>(&value), node, universe);
+		this->type()->deserialize_raw(reinterpret_cast<byte*>(&value), node, universe);
 		set(*object, std::move(value));
 		return true; // eh...
 	}
 	
 	bool serialize_attribute(const ObjectType* object, ArchiveNode& node, IUniverse& universe) const {
 		GetterType value = get(*object);
-		this->type()->serialize(reinterpret_cast<const byte*>(&value), node, universe);
+		this->type()->serialize_raw(reinterpret_cast<const byte*>(&value), node, universe);
 		return true; // eh...
 	}
 	
@@ -76,14 +76,14 @@ struct AttributeForObjectOfType : AttributeForObject<ObjectType>, Attribute<Memb
 		return false;
 	}
 	
-	bool const_get_polymorphic(const Object* object, const MemberType*& out_pointer) const {
+	/*bool const_get_polymorphic(const Object* object, const MemberType*& out_pointer) const {
 		const ObjectType* o = dynamic_cast<const ObjectType*>(object);
 		if (o != nullptr) {
 			out_pointer = &get(*o);
 			return true;
 		}
 		return false;
-	}
+	}*/
 };
 
 template <typename ObjectType, typename MemberType>
@@ -103,7 +103,7 @@ struct MemberAttribute : AttributeForObjectOfType<ObjectType, MemberType, const 
 	// override deserialize_attribute so we can deserialize in-place
 	bool deserialize_attribute(ObjectType* object, const ArchiveNode& node, IUniverse& universe) const {
 		MemberType* ptr = &(object->*member_);
-		this->type()->deserialize(reinterpret_cast<byte*>(ptr), node, universe);
+		this->type()->deserialize_raw(reinterpret_cast<byte*>(ptr), node, universe);
 		return true; // eh...
 	}
 	

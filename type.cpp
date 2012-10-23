@@ -25,7 +25,7 @@ DEFINE_SIMPLE_TYPE(float32, true, true)
 DEFINE_SIMPLE_TYPE(float64, true, true)
 
 
-void IntegerType::deserialize(byte* place, const ArchiveNode& node, IUniverse&) const {
+void IntegerType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const {
 	if (is_signed_) {
 		switch (width_) {
 			case 1: node.get(*reinterpret_cast<int8* >(place)); return;
@@ -45,7 +45,7 @@ void IntegerType::deserialize(byte* place, const ArchiveNode& node, IUniverse&) 
 	}
 }
 
-void IntegerType::serialize(const byte* place, ArchiveNode& node, IUniverse&) const {
+void IntegerType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const {
 	if (is_signed_) {
 		switch (width_) {
 			case 1: node.set(*reinterpret_cast<const int8* >(place)); return;
@@ -88,7 +88,7 @@ void* IntegerType::cast(const SimpleType* to, void* memory) const {
 	return nullptr;
 }
 
-void FloatType::deserialize(byte* place, const ArchiveNode& node, IUniverse&) const {
+void FloatType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const {
 	if (width_ == 4) {
 		node.get(*reinterpret_cast<float32*>(place));
 		return;
@@ -99,7 +99,7 @@ void FloatType::deserialize(byte* place, const ArchiveNode& node, IUniverse&) co
 	ASSERT(false); // FloatType with neither 32-bit nor 64-bit floats?
 }
 
-void FloatType::serialize(const byte* place, ArchiveNode& node, IUniverse&) const {
+void FloatType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const {
 	if (width_ == 4) {
 		node.set(*reinterpret_cast<const float32*>(place));
 	} else if (width_ == 8) {
@@ -140,7 +140,7 @@ bool EnumType::value_for_name(const std::string& name, ssize_t& out_value) const
 	return false;
 }
 
-void EnumType::deserialize(byte* place, const ArchiveNode& node, IUniverse&) const {
+void EnumType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const {
 	std::string name;
 	if (node.get(name)) {
 		ssize_t value;
@@ -156,7 +156,7 @@ void EnumType::deserialize(byte* place, const ArchiveNode& node, IUniverse&) con
 	}
 }
 
-void EnumType::serialize(const byte* place, ArchiveNode& node, IUniverse&) const {
+void EnumType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const {
 	ssize_t value = 0;
 	ASSERT(width_ <= sizeof(ssize_t));
 	memcpy(&value, place, width_);
