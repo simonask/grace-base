@@ -3,6 +3,8 @@
 #define TYPE_REGISTRY_HPP_LPQGF8DT
 
 #include "object/object.hpp"
+#include "type/type.hpp"
+#include "object/objectptr.hpp"
 #include <string>
 
 namespace falling {
