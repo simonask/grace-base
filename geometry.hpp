@@ -10,6 +10,7 @@
 #define falling_geometry_hpp
 
 #include "base/vector.hpp"
+#include "type/type.hpp"
 
 namespace falling {
 	struct Rect {
@@ -25,6 +26,15 @@ namespace falling {
 		}
 		
 		// TODO: intersect, union, etc.
+	};
+	
+	namespace detail {
+		const Type* build_rect_type();
+	}
+	
+	template <>
+	struct BuildTypeInfo<Rect> {
+		static const Type* build() { return detail::build_rect_type(); }
 	};
 }
 
