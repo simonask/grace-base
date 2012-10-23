@@ -23,6 +23,8 @@ typedef float float32;
 typedef double float64;
 typedef uint8 byte;
 
+static struct NothingType {} Nothing;
+
 template <typename T, typename NameGetter>
 struct HasMember {
 	typedef char MatchedReturnType;
