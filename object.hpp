@@ -28,7 +28,6 @@ struct Object {
 	virtual ~Object() {}
 	
 	virtual void initialize() {} // Called after all other objects have been instantiated and deserialized.
-	virtual void update(GameTimeDelta delta) {}
 	
 	Object* find_parent();
 	const Object* find_parent() const;
@@ -59,38 +58,6 @@ template <typename T>
 struct IsDerivedFromObject {
 	static const bool Value = std::is_convertible<typename std::remove_const<T>::type*, Object*>::value;
 };
-
-struct CheckHasBuildTypeInfo {
-	template <typename T, const typename T::TypeInfoType*(*)() = T::build_type_info__>
-	struct Check {};
-};
-
-template <typename T>
-struct HasReflection : HasMember<T, CheckHasBuildTypeInfo> {};
-
-template <typename T>
-typename std::enable_if<HasReflection<T>::Value, const typename T::TypeInfoType*>::type
-get_type() {
-	return T::build_type_info__();
-}
-
-template <typename T>
-typename std::enable_if<!HasReflection<T>::Value, const Type*>::type
-get_type() {
- 	return build_type_info<T>();
-}
-
-template <typename T>
-typename std::enable_if<HasReflection<T>::Value, const DerivedType*>::type
-get_type(const T& object) {
-	return object.object_type();
-}
-
-template <typename T>
-typename std::enable_if<!HasReflection<T>::Value, const Type*>::type
-get_type(const T& value) {
-	return get_type<T>();
-}
 
 inline const DerivedType* get_type(Object* object) {
 	return object->object_type();
