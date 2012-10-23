@@ -11,6 +11,8 @@
 
 #include "base/basic.hpp"
 #include "type/type.hpp"
+#include "object/object.hpp"
+#include "object/objectptr.hpp"
 #include "serialization/deserialize_tuple.hpp"
 
 namespace falling {

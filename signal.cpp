@@ -1,4 +1,5 @@
 #include "object/signal.hpp"
+#include "object/signal_type.hpp"
 #include "object/object_type.hpp"
 #include "base/log.hpp"
 #include "io/string_stream.hpp"

@@ -12,6 +12,7 @@
 #include "type/type.hpp"
 #include "object/signal.hpp"
 #include "base/log.hpp"
+#include "object/objectptr.hpp"
 
 namespace falling {
 	struct SignalTypeBase : Type {
