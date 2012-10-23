@@ -14,6 +14,7 @@ template <typename T>
 class Maybe {
 public:
 	Maybe();
+	Maybe(NothingType);
 	Maybe(const Maybe<T>& other);
 	Maybe(Maybe<T>&& other);
 	Maybe(const T& other);
@@ -150,6 +151,11 @@ private:
 
 template <typename T>
 Maybe<T>::Maybe() {
+	set(false);
+}
+
+template <typename T>
+Maybe<T>::Maybe(NothingType) {
 	set(false);
 }
 
