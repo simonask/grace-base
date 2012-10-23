@@ -4,7 +4,6 @@
 
 #include "base/basic.hpp"
 #include "base/array.hpp"
-#include "object/object.hpp"
 #include "base/vector.hpp"
 #include <string>
 #include <map>
@@ -160,8 +159,9 @@ aspect_cast(From* ptr) {
 	return dynamic_cast<To*>(ptr);
 }
 
+template <typename T> struct BuildTypeInfo {};
 
-#define DECLARE_TYPE(T) template<> const Type* build_type_info<T>();
+#define DECLARE_TYPE(T) template<> struct BuildTypeInfo<T> { static const SimpleType* build(); };
 DECLARE_TYPE(int8)
 DECLARE_TYPE(int16)
 DECLARE_TYPE(int32)
@@ -173,8 +173,6 @@ DECLARE_TYPE(uint64)
 DECLARE_TYPE(float32)
 DECLARE_TYPE(float64)
 
-template <typename T> struct BuildTypeInfo {};
-
 template <> struct BuildTypeInfo<void> {
 	static const VoidType* build() { return VoidType::get(); }
 };
@@ -183,8 +181,35 @@ template <> struct BuildTypeInfo<std::string> {
 	static const StringType* build() { return StringType::get(); }
 };
 
-template <typename T> const Type* build_type_info() {
+template <typename T>
+auto build_type_info()
+-> decltype(BuildTypeInfo<T>::build())
+{
 	return BuildTypeInfo<T>::build();
+}
+
+template <typename T>
+typename std::enable_if<HasReflection<T>::Value, const typename T::TypeInfoType*>::type
+get_type() {
+	return T::build_type_info__();
+}
+	
+template <typename T>
+typename std::enable_if<!HasReflection<T>::Value, decltype(build_type_info<T>())>::type
+get_type() {
+	return build_type_info<T>();
+}
+	
+template <typename T>
+typename std::enable_if<HasReflection<T>::Value, const DerivedType*>::type
+get_type(const T& object) {
+	return object.object_type();
+}
+	
+template <typename T>
+typename std::enable_if<!HasReflection<T>::Value, const Type*>::type
+get_type(const T& value) {
+	return get_type<T>();
 }
 
 template <typename Last = void>

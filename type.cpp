@@ -4,13 +4,12 @@
 
 namespace falling {
 
-#define DEFINE_SIMPLE_TYPE(T, IS_FLOAT, IS_SIGNED) template <> const Type* build_type_info<T>() { \
+#define DEFINE_SIMPLE_TYPE(T, IS_FLOAT, IS_SIGNED) \
+const SimpleType* BuildTypeInfo<T>::build() {\
 	if (IS_FLOAT) { \
-		static const auto type = new FloatType(#T, sizeof(T)); \
-		return type; \
+		return new FloatType(#T, sizeof(T)); \
 	} else { \
-		static const auto type = new IntegerType(#T, sizeof(T), IS_SIGNED); \
-		return type; \
+		return new IntegerType(#T, sizeof(T), IS_SIGNED); \
 	} \
 }
 
@@ -205,10 +204,6 @@ const char VoidType::Name[] = "void";
 const VoidType* VoidType::get() {
 	static const VoidType p;
 	return &p;
-}
-
-template <> const Type* build_type_info<void>() {
-	return VoidType::get();
 }
 
 
