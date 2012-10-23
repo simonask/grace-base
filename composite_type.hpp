@@ -5,6 +5,7 @@
 #include "type/type.hpp"
 #include "serialization/archive.hpp"
 #include "base/array.hpp"
+#include "object/object_type.hpp"
 #include <new>
 
 namespace falling {
@@ -23,6 +24,8 @@ struct CompositeType : DerivedType {
 	// Type interface
 	void construct(byte* place, IUniverse&) const override;
 	void destruct(byte* place, IUniverse&) const override;
+	void copy_construct(byte* place, const byte* original) const override { ASSERT(false); }
+	void move_construct(byte* place, byte* original) const override { ASSERT(false); }
 	void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
 	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const override;
 	std::string name() const override { return name_; }
