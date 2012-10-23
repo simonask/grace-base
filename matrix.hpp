@@ -41,6 +41,7 @@ namespace falling {
 	
 	using matrix44 = TMatrix<float32, 4, 4>;
 	using matrix43 = TMatrix<float32, 4, 3>;
+	using matrix33 = TMatrix<float32, 3, 3>;
 	
 	template <typename T, size_t N, size_t M>
 	typename TMatrix<T, N, M>::Row TMatrix<T,N,M>::row_at(size_t idx) const {
