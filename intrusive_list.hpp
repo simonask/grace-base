@@ -9,6 +9,8 @@
 #ifndef falling_intrusive_list_hpp
 #define falling_intrusive_list_hpp
 
+#include "base/basic.hpp"
+
 namespace falling {
 	template <typename T>
 	struct IntrusiveListLink {
