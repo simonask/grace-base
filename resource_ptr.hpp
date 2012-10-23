@@ -17,6 +17,7 @@ namespace falling {
 	public:
 		ResourcePtr() : ptr_(nullptr) {}
 		ResourcePtr(std::nullptr_t) : ptr_(nullptr) {}
+		explicit ResourcePtr(T* ptr) : ptr_(ptr) { retain(); }
 		ResourcePtr(const ResourcePtr<T>& other) : ptr_(other.ptr_) { retain(); }
 		ResourcePtr(ResourcePtr<T>&& other) : ptr_(other.ptr_) { other.ptr_ = nullptr; }
 		ResourcePtr<T>& operator=(const ResourcePtr<T>& other);
@@ -32,7 +33,7 @@ namespace falling {
 		T& operator*() const { return ptr_; }
 	private:
 		friend class ResourceManager;
-		ResourcePtr(T* ptr) : ptr_(ptr) { retain(); }
+		
 		T* ptr_;
 		
 		void retain();
