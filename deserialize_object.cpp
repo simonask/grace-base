@@ -134,7 +134,7 @@ ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
 		Warning() << "Object '" << id << "' was renamed to '" << ptr->object_id() << "' because of a collision.\n";
 	}
 	
-	type->deserialize(reinterpret_cast<byte*>(ptr.get()), merged_node, universe);
+	type->deserialize_raw(reinterpret_cast<byte*>(ptr.get()), merged_node, universe);
 	
 	return ptr;
 }

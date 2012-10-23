@@ -10,7 +10,7 @@ namespace falling {
 template <typename T>
 void serialize(const T& object, ArchiveNode& node, IUniverse& universe) {
 	const byte* memory = reinterpret_cast<const byte*>(&object);
-	get_type(object)->serialize(memory, node, universe);
+	get_type(object)->serialize_raw(memory, node, universe);
 }
 
 }

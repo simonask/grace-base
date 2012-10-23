@@ -28,7 +28,7 @@ namespace falling {
 		const ArchiveNode& node = arg_list[SourceIdx];
 		auto& target = std::get<TupleIdx>(tuple);
 		const Type* t = get_type<typename RemoveConstRef<decltype(target)>::Type>();
-		t->deserialize((byte*)&target, node, universe);
+		t->deserialize_raw((byte*)&target, node, universe);
 		deserialize_list_into_tuple<SourceIdx+1, TupleIdx+1>(arg_list, tuple, universe);
 	}
 }
