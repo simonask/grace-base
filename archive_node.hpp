@@ -18,6 +18,7 @@ struct DeserializeSignalBase;
 struct IUniverse;
 struct SlotBase;
 struct DerivedType;
+struct Object;
 
 struct ArchiveNode {
 	typedef ArchiveNodeType::Type Type;
