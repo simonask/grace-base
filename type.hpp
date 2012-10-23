@@ -22,11 +22,15 @@ struct Type {
 	virtual void deserialize_raw(byte* place, const ArchiveNode&, IUniverse&) const = 0;
 	virtual void serialize_raw(const byte* place, ArchiveNode&, IUniverse&) const = 0;
 	virtual void construct(byte* place, IUniverse&) const = 0;
+	virtual void copy_construct(byte* to, const byte* from) const = 0;
+	virtual void move_construct(byte* to, byte* from) const = 0;
 	virtual void destruct(byte* place, IUniverse&) const = 0;
 	
 	virtual std::string name() const = 0;
 	virtual size_t size() const = 0;
 	virtual bool is_abstract() const { return false; }
+	virtual bool is_copy_constructible() const { return true; }
+	virtual bool is_move_constructible() const { return true; }
 protected:
 	Type() {}
 };
@@ -49,13 +53,62 @@ struct TypeFor : TypeType {
 	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse& universe) const {
 		this->serialize(*reinterpret_cast<const ObjectType*>(place), node, universe);
 	}
+	
 	void construct(byte* place, IUniverse&) const {
-		::new(place) ObjectType;
+		this->construct_unless_abstract(place);
 	}
 	void destruct(byte* place, IUniverse&) const {
 		reinterpret_cast<ObjectType*>(place)->~ObjectType();
 	}
+	void copy_construct(byte* to, const byte* from) const {
+		const ObjectType* original = reinterpret_cast<const ObjectType*>(from);
+		this->copy_construct_unless_abstract(to, *original);
+	}
+	void move_construct(byte* to, byte* from) const {
+		const ObjectType* original = reinterpret_cast<ObjectType*>(from);
+		this->move_construct_unless_abstract(to, std::move(*original));
+	}
 	size_t size() const { return sizeof(ObjectType); }
+	bool is_copy_constructible() const { return IsCopyConstructibleNonRef<ObjectType>::Value; }
+	bool is_move_constructible() const { return IsMoveConstructibleNonRef<ObjectType>::Value; }
+	
+private:
+	template <typename T = ObjectType, typename... Args>
+	typename std::enable_if<std::is_abstract<T>::value, void>::type
+	construct_unless_abstract(byte* place, Args&&...) const {
+		// Abstract, do nothing.
+		ASSERT(false); // Should never be called!
+	}
+	
+	template <typename T = ObjectType, typename... Args>
+	typename std::enable_if<!std::is_abstract<T>::value, void>::type
+	construct_unless_abstract(byte* place, Args&&... args) const {
+		::new(place) ObjectType(std::forward<Args>(args)...);
+	}
+	
+	template <typename T = ObjectType>
+	typename std::enable_if<std::is_abstract<T>::value || !IsCopyConstructibleNonRef<T>::Value, void>::type
+	copy_construct_unless_abstract(byte* place, const T& original) const {
+		ASSERT(false); // Type is abstract or not copy-constructible.
+	}
+	
+	template <typename T = ObjectType>
+	typename std::enable_if<!std::is_abstract<T>::value && IsCopyConstructibleNonRef<T>::Value, void>::type
+	copy_construct_unless_abstract(byte* place, const T& original) const {
+		::new(place) ObjectType(original);
+	}
+	
+	template <typename T = ObjectType>
+	typename std::enable_if<std::is_abstract<T>::value || !IsMoveConstructibleNonRef<T>::Value, void>::type
+	move_construct_unless_abstract(byte* place, T&& original) const {
+		ASSERT(false); // Type is abstract or not move-constructible.
+	}
+	
+	template <typename T = ObjectType>
+	typename std::enable_if<!std::is_abstract<T>::value && IsMoveConstructibleNonRef<T>::Value, void>::type
+	move_construct_unless_abstract(byte* place, T&& original) const {
+		::new(place) ObjectType(std::move(original));
+	}
 };
 
 struct VoidType : Type {
@@ -65,6 +118,8 @@ struct VoidType : Type {
 	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override {}
 	virtual void construct(byte*, IUniverse&) const override {}
 	virtual void destruct(byte*, IUniverse&) const override {}
+	virtual void copy_construct(byte*, const byte*) const override {}
+	virtual void move_construct(byte*, byte*) const override {}
 	static const char Name[];
 	std::string name() const override { return Name; }
 	size_t size() const override { return 0; }
@@ -78,6 +133,8 @@ struct SimpleType : Type {
 	std::string name() const override { return name_; }
 	void construct(byte* place, IUniverse&) const { std::fill(place, place + size(), 0); }
 	void destruct(byte*, IUniverse&) const {}
+	void copy_construct(byte* place, const byte* from) const { std::copy(from, from + size(), place); }
+	void move_construct(byte* place, byte* from) const { copy_construct(place, from); }
 	
 	size_t size() const override { return width_; }
 	size_t num_components() const { return width_ / component_width_; }
