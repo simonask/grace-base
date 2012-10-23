@@ -38,6 +38,14 @@ struct HasMember {
 public:
 	static const bool Value = (sizeof(f<T>(0)) == sizeof(MatchedReturnType)); 
 };
+
+struct CheckHasBuildTypeInfo {
+	template <typename T, const typename T::TypeInfoType*(*)() = T::build_type_info__>
+	struct Check {};
+};
+	
+template <typename T>
+struct HasReflection : HasMember<T, CheckHasBuildTypeInfo> {};
 	
 template <typename T, typename... ConstructorArgs>
 std::unique_ptr<T> make_unique(ConstructorArgs&&... args) {
