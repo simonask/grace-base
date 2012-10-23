@@ -24,6 +24,9 @@ namespace falling {
 		Color& operator=(const Color&) = default;
 		ColorComponents components() const { return components_; }
 		
+		bool operator==(const Color& other) const { return components_.all_equal(other.components_); }
+		bool operator!=(const Color& other) const { return !(*this == other); }
+		
 		ComponentType  red() const   { return components_[0]; }
 		ComponentType& red()         { return components_[0]; }
 		ComponentType  green() const { return components_[1]; }
