@@ -14,6 +14,7 @@
 namespace falling {
 	struct Rect {
 		Rect() {}
+		Rect(float32 x, float32 y, float32 w, float32 h) : origin(x, y), size(w, h) {}
 		Rect(vec2 origin, vec2 size) : origin(origin), size(size) {}
 	
 		vec2 origin;
