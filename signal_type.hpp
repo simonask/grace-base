@@ -75,7 +75,7 @@ namespace falling {
 			if (receiver != nullptr && slot != nullptr) {
 				ArchiveNode& signal_connection = node.array_push();
 				ArchiveNode& receiver_node = signal_connection["receiver"];
-				get_type<ObjectPtr<Object>>()->serialize(reinterpret_cast<const byte*>(&receiver), receiver_node, universe);
+				get_type(receiver)->serialize_raw(reinterpret_cast<byte*>(&receiver), receiver_node, universe);
 				signal_connection["slot"] = slot->name();
 			}
 		}

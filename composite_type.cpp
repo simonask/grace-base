@@ -75,9 +75,9 @@ void CompositeType::destruct(byte* place, IUniverse& universe) const {
 	ASSERT(offset == size_);
 }
 
-void CompositeType::deserialize(byte* place, const ArchiveNode& node, IUniverse& universe) const {
+void CompositeType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse& universe) const {
 	ASSERT(frozen_);
-	base_type()->deserialize(place, node, universe);
+	base_type()->deserialize_raw(place, node, universe);
 	
 	const ArchiveNode& aspect_array = node["aspects"];
 	if (aspect_array.is_array()) {
@@ -85,7 +85,7 @@ void CompositeType::deserialize(byte* place, const ArchiveNode& node, IUniverse&
 		size_t sz = aspect_array.array_size();
 		for (size_t i = 0; i < sz; ++i) {
 			const ArchiveNode& aspect_node = aspect_array[i];
-			aspects_[i]->deserialize(place + offset, aspect_node, universe);
+			aspects_[i]->deserialize_raw(place + offset, aspect_node, universe);
 			Object* subobject = reinterpret_cast<Object*>(place + offset);
 			subobject->set_object_offset__((uint32)offset);
 			offset += aspects_[i]->size();
@@ -94,16 +94,16 @@ void CompositeType::deserialize(byte* place, const ArchiveNode& node, IUniverse&
 	}
 }
 
-void CompositeType::serialize(const byte* place, ArchiveNode& node, IUniverse& universe) const {
+void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse& universe) const {
 	ASSERT(frozen_);
-	base_type()->serialize(place, node, universe);
+	base_type()->serialize_raw(place, node, universe);
 	node["class"] = base_type()->name();
 	
 	size_t offset = base_type()->size();
 	ArchiveNode& aspect_array = node["aspects"];
 	for (auto aspect: aspects_) {
 		ArchiveNode& aspect_node = aspect_array.array_push();
-		aspect->serialize(place + offset, aspect_node, universe);
+		aspect->serialize_raw(place + offset, aspect_node, universe);
 		offset += aspect->size();
 	}
 	ASSERT(offset == size_);

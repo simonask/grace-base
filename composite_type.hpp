@@ -23,8 +23,8 @@ struct CompositeType : DerivedType {
 	// Type interface
 	void construct(byte* place, IUniverse&) const override;
 	void destruct(byte* place, IUniverse&) const override;
-	void deserialize(byte* place, const ArchiveNode& node, IUniverse&) const override;
-	void serialize(const byte* place, ArchiveNode& node, IUniverse&) const override;
+	void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
+	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const override;
 	std::string name() const override { return name_; }
 	size_t size() const override { return size_; }
 	

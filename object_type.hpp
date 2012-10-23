@@ -54,7 +54,8 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	ObjectType(const ObjectTypeBase* super, std::string name, std::string description) : TypeFor<T, ObjectTypeBase>(super, std::move(name), std::move(description)) {}
 	
 	void construct(byte* place, IUniverse& universe) const {
-		Object* p = ::new(place) T;
+		TypeFor<T,ObjectTypeBase>::construct(place, universe);
+		Object* p = reinterpret_cast<Object*>(place);
 		p->set_object_type__(this);
 		p->set_universe__(&universe);
 	}
@@ -112,7 +113,7 @@ struct IntrusiveListRegistrarImpl : IntrusiveListRegistrarForObject<T> {
 template <typename T>
 void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& universe) const {
 	auto s = this->super();
-	if (s) s->deserialize(reinterpret_cast<byte*>(&object), node, universe);
+	if (s) s->deserialize_raw(reinterpret_cast<byte*>(&object), node, universe);
 	
 	for (auto& property: properties_) {
 		property->deserialize_attribute(&object, node[property->name()], universe);
@@ -126,7 +127,7 @@ void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& u
 template <typename T>
 void ObjectType<T>::serialize(const T& object, ArchiveNode& node, IUniverse& universe) const {
 	auto s = this->super();
-	if (s) s->serialize(reinterpret_cast<const byte*>(&object), node, universe);
+	if (s) s->serialize_raw(reinterpret_cast<const byte*>(&object), node, universe);
 	
 	for (auto& property: properties_) {
 		property->serialize_attribute(&object, node[property->name()], universe);
