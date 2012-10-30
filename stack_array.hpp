@@ -13,6 +13,9 @@
 #include <alloca.h>
 
 namespace falling {
+	/*
+	 StackArray is equivalent to std::array, except the size does not have to be known at compile-time.
+	*/
 	template <typename T>
 	struct StackArrayHolder {
 		T* begin;
@@ -27,8 +30,8 @@ namespace falling {
 	
 #define DEFINE_STACK_ARRAY(T, NAME, SIZE) \
 	T* NAME ## _data_ ## __LINE__ = (T*)alloca(sizeof(T) * SIZE); \
-	StackArrayHolder<T> NAME ## _holder_ ## __LINE__(NAME ## _data_ ## __LINE__, NAME ## _data_ ## __LINE__ + SIZE); \
-	ArrayRef<T> NAME(NAME ## _data_ ## __LINE__, NAME ## _data_ ## __LINE__ + SIZE)
+	falling::StackArrayHolder<T> NAME ## _holder_ ## __LINE__(NAME ## _data_ ## __LINE__, NAME ## _data_ ## __LINE__ + SIZE); \
+	falling::ArrayRef<T> NAME(NAME ## _data_ ## __LINE__, NAME ## _data_ ## __LINE__ + SIZE)
 
 }
 
