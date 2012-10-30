@@ -58,6 +58,8 @@ namespace falling {
 		void otherwise(Function function) const;
 		template <typename T>
 		Maybe<T> get() const;
+		template <typename T>
+		T unsafe_get() const;
 	private:
 		typedef typename std::aligned_storage<Size, Alignment>::type Storage;
 		Storage memory_;
@@ -197,6 +199,55 @@ namespace falling {
 			return Maybe<T>(*reinterpret_cast<const T*>(ptr()));
 		}
 		return Nothing;
+	}
+	
+	template <typename T>
+	T Any::unsafe_get() const {
+		ASSERT(get_type<T>() == stored_type_);
+		return *reinterpret_cast<const T*>(ptr());
+	}
+	
+	inline const byte* Any::ptr() const {
+		if (stored_type_ != nullptr) {
+			if (stored_type_->size() > Size) {
+				byte const* const* ptrptr = reinterpret_cast<byte const* const*>(&memory_);
+				return *ptrptr;
+			} else {
+				return reinterpret_cast<byte const*>(&memory_);
+			}
+		}
+		return nullptr;
+	}
+	
+	inline byte* Any::ptr() {
+		if (stored_type_ != nullptr) {
+			if (stored_type_->size() > Size) {
+				byte** ptrptr = reinterpret_cast<byte**>(&memory_);
+				return *ptrptr;
+			} else {
+				return reinterpret_cast<byte*>(&memory_);
+			}
+		} else {
+			return nullptr;
+		}
+	}
+	
+	inline void Any::allocate_storage() {
+		ASSERT(stored_type_ != nullptr);
+		size_t sz = stored_type_->size();
+		if (sz > Size) {
+			byte* memory = new byte[sz];
+			*reinterpret_cast<byte**>(&memory_) = memory;
+		}
+	}
+	
+	inline void Any::deallocate_storage() {
+		ASSERT(stored_type_ != nullptr);
+		size_t sz = stored_type_->size();
+		if (sz > Size) {
+			byte* memory = *reinterpret_cast<byte**>(&memory_);
+			delete[] memory;
+		}
 	}
 }
 
