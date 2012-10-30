@@ -252,9 +252,9 @@ get_type() {
 }
 	
 template <typename T>
-typename std::enable_if<!HasReflection<T>::Value, decltype(build_type_info<T>())>::type
+typename std::enable_if<!HasReflection<T>::Value, decltype(BuildTypeInfo<T>::build())>::type
 get_type() {
-	return build_type_info<T>();
+	return BuildTypeInfo<T>::build();
 }
 	
 template <typename T>
