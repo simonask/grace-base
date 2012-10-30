@@ -35,9 +35,7 @@ struct ObjectPtr/*<T, typename std::enable_if<IsDerivedFromObject<T>::Value>::ty
 	explicit operator bool() const { return ptr_ != nullptr; }
 	
 	template <typename U>
-	ObjectPtr<U> cast() const {
-		return aspect_cast<U>(ptr_);
-	}
+	ObjectPtr<U> cast() const;
 	
 	T* get() const { return ptr_; }
 	T* operator->() const { return ptr_; }
@@ -68,6 +66,12 @@ template <typename From>
 ObjectPtr<>
 aspect_cast(ObjectPtr<From> ptr, const DerivedType* type) {
 	return ObjectPtr<>(aspect_cast(ptr.get(), type));
+}
+
+template <typename T>
+template <typename U>
+ObjectPtr<U> ObjectPtr<T>::cast() const {
+	return aspect_cast<U>(ptr_);
 }
 
 template <typename OutputStream, typename T>
