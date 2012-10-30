@@ -34,6 +34,7 @@ namespace falling {
 		typedef float64 __attribute__((vector_size(16))) flvec2;
 		typedef float64 __attribute__((vector_size(32))) flvec4;
 		
+		SIMD_DEFINE_VECTOR_TYPE(4, byte,   uint32,  byte);
 		SIMD_DEFINE_VECTOR_TYPE(1, int32,  int32,   uint32)
 		SIMD_DEFINE_VECTOR_TYPE(2, int32,  ivec2,   uint32)
 		SIMD_DEFINE_VECTOR_TYPE(3, int32,  ivec4,   uint32)

@@ -181,7 +181,13 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 		return round_up_impl(val, boundary, val % boundary);
 	}
 
-#define ASSERT(X) do{ if (!(X)) { fprintf(stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); __asm__ __volatile__("int3\n"); } } while(0)
+#if defined(__i386__) || defined(__x86_64__)
+#define TRAP() do{ __asm__ __volatile__("int3\n"); }while(0)
+#elif defined(__arm__)
+#define TRAP() do{ __asm__ __volatile__("bkpt 0\n"); }while(0)
+#endif
+
+#define ASSERT(X) do{ if (!(X)) { fprintf(stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); TRAP(); } } while(0)
 
 
 #if defined(__has_feature) && __has_feature(cxx_lambdas)

@@ -379,6 +379,7 @@ namespace falling {
 	using uvec3 = TVector<uint32, 3>;
 	using uvec2 = TVector<uint32, 2>;
 	using uvec1 = TVector<uint32, 1>;
+	using u8vec4 = TVector<byte, 4>;
 	
 	/*extern template struct TVector<float32, 4>;
 	extern template struct TVector<float32, 3>;
@@ -609,12 +610,20 @@ namespace falling {
 	
 	template <typename T, size_t N>
 	ALWAYS_INLINE TVector<T, N> min(TVector<T,N> a, TVector<T,N> b) {
+#if defined(__arm__)
+		return select(a < b, a, b);
+#else
 		return simd::min(a.m, b.m);
+#endif
 	}
 	
 	template <typename T, size_t N>
 	ALWAYS_INLINE TVector<T, N> max(TVector<T,N> a, TVector<T,N> b) {
+#if defined(__arm__)
+		return select(a > b, a, b);
+#else
 		return simd::max(a.m, b.m);
+#endif
 	}
 }
 

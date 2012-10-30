@@ -13,6 +13,13 @@
 #include <cxxabi.h>
 #include <stdio.h>
 
+#if defined(__arm__)
+// Since Xcode compiles everything in Thumb mode by default (and we want that),
+// but the stack pointer is not accessible in Thumb mode, we need a separate
+// symbol, compiled in regular ARM mode, to do the jump to the fiber stack.
+extern "C" void falling_launch_fiber(void* self, void* stack_top, void* launchpad);
+#endif
+
 namespace falling {
 	IFiberManager* IFiberManager::current_manager_ = nullptr; // TODO: Thread-local
 	
@@ -191,7 +198,7 @@ namespace falling {
 			return;
 		}
 	}
-	
+
 	void Fiber::resume_into_state(FiberState new_state) {
 		if (new_state != FiberState::Running && new_state != FiberState::Terminating) {
 			throw FiberError();
@@ -209,6 +216,7 @@ namespace falling {
 					// launch!
 					impl().state = FiberState::Running;
 					impl().stack_top = fiber_stack_top;
+#if defined(__x86_64__)
 					__asm__ __volatile__
 					(
 					 "movq %%rsp, %%rbx\n"
@@ -220,6 +228,23 @@ namespace falling {
 					 : "r"(fiber_stack_top), "r"(this), "r"(fiber_launchpad) // input registers
 					 : "rsp", "rbx" // clobbered
 					 );
+#elif defined(__i386__)
+					__asm__ __volatile__
+					(
+					 "movl %%esp, %%ebx\n"
+					 "movl %0, %%esp\n"
+					 "movl %1, %%edi\n"
+					 "call *%2\n"
+					 "movl %%ebx, %%esp\n"
+					 : // output registers
+					 : "r"(fiber_stack_top), "r"(this), "r"(fiber_launchpad) // input registers
+					 : "esp", "ebx" // clobbered
+					);
+#elif defined(__arm__)
+					falling_launch_fiber(this, fiber_stack_top, (void*)fiber_launchpad);
+#else
+#error Fibers are not supported on this platform.
+#endif
 				} else {
 					// coming back!
 					if (impl().state == FiberState::UnhandledException) {
