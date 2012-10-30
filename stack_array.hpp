@@ -10,6 +10,7 @@
 #define falling_stack_array_hpp
 
 #include "base/array_ref.hpp"
+#include <alloca.h>
 
 namespace falling {
 	template <typename T>
