@@ -534,6 +534,30 @@ namespace falling {
 		return simd::shuffle<X_, Y_>(vec.m);
 	}
 	
+	template <size_t XVector, Axis X_, size_t YVector, Axis Y_, size_t ZVector, Axis Z_, size_t WVector, Axis W_, typename T>
+	ALWAYS_INLINE TVector<T, 4> shuffle2(TVector<T, 4> vecx, TVector<T, 4> vecy) {
+		static_assert(X_ < 4 && Y_ < 4, "No such axis for a 4-dimensional vector.");
+		static_assert(XVector < 4, "Vector index out of bounds.");
+		static_assert(YVector < 4, "Vector index out of bounds.");
+		return simd::shuffle2<XVector, X_, YVector, Y_, ZVector, Z_, WVector, W_>(vecx.m, vecy.m);
+	}
+	
+	template <size_t XVector, Axis X_, size_t YVector, Axis Y_, size_t ZVector, Axis Z_, typename T>
+	ALWAYS_INLINE TVector<T, 3> shuffle2(TVector<T, 3> vecx, TVector<T, 3> vecy) {
+		static_assert(X_ < 3 && Y_ < 3 && Z_ < 3, "No such axis for a 3-dimensional vector.");
+		static_assert(XVector < 3, "Vector index out of bounds.");
+		static_assert(YVector < 3, "Vector index out of bounds.");
+		return simd::shuffle2<XVector, X_, YVector, Y_, ZVector, Z_>(vecx.m, vecy.m);
+	}
+	
+	template <size_t XVector, Axis X_, size_t YVector, Axis Y_, typename T>
+	ALWAYS_INLINE TVector<T, 2> shuffle2(TVector<T, 2> vecx, TVector<T, 2> vecy) {
+		static_assert(X_ < 2 && Y_ < 2, "No such axis for a 2-dimensional vector.");
+		static_assert(XVector < 2, "Vector index out of bounds.");
+		static_assert(YVector < 2, "Vector index out of bounds.");
+		return simd::shuffle2<XVector, X_, YVector, Y_>(vecx.m, vecy.m);
+	}
+	
 	template <typename T>
 	ALWAYS_INLINE TVector<T,4> rotate_right1(TVector<T,4> vec) {
 		return shuffle<W,X,Y,Z>(vec);

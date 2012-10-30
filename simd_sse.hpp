@@ -169,10 +169,163 @@ namespace falling {
 		ALWAYS_INLINE uvec4 max(uvec4 a, uvec4 b) { return _mm_max_ps(a, b); }
 
 		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_ = W>
+		fvec4 shuffle2aabb(fvec4 a, fvec4 b) {
+			return _mm_shuffle_ps(a, b, _MM_SHUFFLE(W_, Z_, Y_, X_));
+		}
 		
 		template <Axis X_, Axis Y_, Axis Z_, Axis W_ = W>
 		fvec4 shuffle(fvec4 v) {
-			return _mm_shuffle_ps(v, v, _MM_SHUFFLE(W_, Z_, Y_, X_));
+			return shuffle2aabb<X_, Y_, Z_, W_>(v, v);
+		}
+		
+		template <Axis X_, Axis Y_>
+		fvec2 shuffle(fvec2 v) {
+			return (fvec2){v[(uint32)X_], v[(uint32)Y_]};
+		}
+		
+		template <size_t XVector, Axis X_, size_t YVector, Axis Y_, size_t ZVector, Axis Z_, size_t WVector = ZVector, Axis W_ = W>
+		struct Shuffle2;
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<0, X_, 0, Y_, 0, Z_, 0, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				return falling::simd::shuffle<X_, Y_, Z_, W_>(a);
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<0, X_, 0, Y_, 0, Z_, 1, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<IgnoreAxis, Z_, IgnoreAxis, W_>(a, b);
+				auto tmp1 = shuffle2aabb<X_, Y_, Y, W>(a, tmp0);
+				return tmp1;
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<0, X_, 0, Y_, 1, Z_, 0, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<IgnoreAxis, Z_, IgnoreAxis, W_>(b, a);
+				auto tmp1 = shuffle2aabb<X_, Y_, Y, W>(a, tmp0);
+				return tmp1;
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<0, X_, 0, Y_, 1, Z_, 1, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				return _mm_shuffle_ps(a, b, _MM_SHUFFLE(W_, Z_, Y_, X_));
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<0, X_, 1, Y_, 0, Z_, 0, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<IgnoreAxis, X_, IgnoreAxis, Y_>(a, b);
+				auto tmp1 = shuffle2aabb<Y, W, Z_, W_>(tmp0, a);
+				return tmp1;
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<0, X_, 1, Y_, 0, Z_, 1, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<X_, Z_, Y_, W_>(a, b);
+				return shuffle2aabb<X, Z, Y, W>(tmp0, tmp0);
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<0, X_, 1, Y_, 1, Z_, 0, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<X_, W_, Y_, Z_>(a, b);
+				return shuffle2aabb<X, Z, W, Y>(tmp0, tmp0);
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<0, X_, 1, Y_, 1, Z_, 1, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<X_, IgnoreAxis, Y_, IgnoreAxis>(a, b);
+				auto tmp1 = shuffle2aabb<X, Z, Z_, W_>(tmp0, b);
+				return tmp1;
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<1, X_, 0, Y_, 0, Z_, 0, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<X_, IgnoreAxis, Y_, IgnoreAxis>(b, a);
+				auto tmp1 = shuffle2aabb<X, Z, Z_, W_>(tmp0, a);
+				return tmp1;
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<1, X_, 0, Y_, 0, Z_, 1, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<X_, W_, Y_, Z_>(b, a);
+				return shuffle2aabb<X, Z, W, Y>(tmp0, tmp0);
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<1, X_, 0, Y_, 1, Z_, 0, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<Y_, W_, X_, Z_>(a, b);
+				return shuffle2aabb<Z, X, W, Y>(tmp0, tmp0);
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<1, X_, 0, Y_, 1, Z_, 1, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<X_, IgnoreAxis, Y_, IgnoreAxis>(b, a);
+				return shuffle2aabb<X, Z, Z_, W_>(tmp0, b);
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<1, X_, 1, Y_, 0, Z_, 0, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				return shuffle2aabb<X_, Y_, Z_, W_>(b, a);
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<1, X_, 1, Y_, 0, Z_, 1, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<Z_, IgnoreAxis, W_, IgnoreAxis>(a, b);
+				return shuffle2aabb<X_, Y_, X, Z>(b, tmp0);
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<1, X_, 1, Y_, 1, Z_, 0, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				auto tmp0 = shuffle2aabb<Z_, IgnoreAxis, W_, IgnoreAxis>(b, a);
+				return shuffle2aabb<X_, Y_, X, Z>(b, tmp0);
+			}
+		};
+		
+		template <Axis X_, Axis Y_, Axis Z_, Axis W_>
+		struct Shuffle2<1, X_, 1, Y_, 1, Z_, 1, W_> {
+			static fvec4 shuffle(fvec4 a, fvec4 b) {
+				return shuffle2aabb<X_, Y_, Z_, W_>(b, b);
+			}
+		};
+
+		template <size_t XVector, Axis X_, size_t YVector, Axis Y_, size_t ZVector, Axis Z_, size_t WVector = 1, Axis W_ = W>
+		fvec4 shuffle2(fvec4 a, fvec4 b) {
+			return Shuffle2<XVector, X_, YVector, Y_, ZVector, Z_, WVector, W_>::shuffle(a, b);
+		}
+		
+		template <size_t XVector, Axis X_, size_t YVector, Axis Y_>
+		fvec2 shuffle2(fvec2 a, fvec2 b) {
+			float32 x = XVector == 0 ? a[0] : b[0];
+			float32 y = YVector == 0 ? a[1] : b[1];
+			return (fvec2){x,y};
 		}
 		
 		ALWAYS_INLINE fvec4 hadd3(fvec4 v) {

@@ -19,6 +19,7 @@
 
 namespace falling {
 	enum Axis {
+		IgnoreAxis = 0,
 		X = 0,
 		Y = 1,
 		Z = 2,
