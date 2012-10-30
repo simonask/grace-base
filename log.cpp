@@ -32,7 +32,9 @@ namespace falling {
 		if (entry.level <= current_log_level()) {
 			get().on_log(entry);
 			
+#if !defined(DEBUG)
 			if (get().on_log.num_connections() == 0) {
+#endif
 				auto io = entry.level == LogLevelInformation ? stdout : stderr;
 				switch (entry.level) {
 					case LogLevelNone: break;
@@ -42,7 +44,9 @@ namespace falling {
 					case LogLevelDebug: fprintf(io, "DEBUG: "); break;
 				}
 				fprintf(io, "%s\n", entry.ss.str().c_str());
+#if !defined(DEBUG)
 			}
+#endif
 		}
 	}
 }
