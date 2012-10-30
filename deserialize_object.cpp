@@ -5,6 +5,9 @@
 #include "object/object_type.hpp"
 #include "object/universe.hpp"
 #include "object/object_template.hpp"
+#include "base/log.hpp"
+#include "io/resource_ptr.hpp"
+#include "io/resource_manager.hpp"
 #include <memory>
 
 namespace falling {
