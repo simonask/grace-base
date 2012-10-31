@@ -10,19 +10,16 @@
 #define falling_matrix_hpp
 
 #include "base/vector.hpp"
+#include <array>
+#include <initializer_list>
 
 namespace falling {
 	template <typename ElementType, size_t N /* width */, size_t M /* height */>
 	struct TMatrix {
 		// We use row-major notation.
+		typedef TMatrix<ElementType, N, M> Self;
 		typedef TVector<ElementType, N> Row;
 		typedef TVector<ElementType, M> Column;
-		
-		TMatrix() {}
-		TMatrix(ArrayRef<ElementType> array);
-		TMatrix(ArrayRef<Row> array);
-		TMatrix(const TMatrix<ElementType, N, M>&) = default;
-		TMatrix(TMatrix<ElementType, N, M>&&) = default;
 		
 		size_t height() const { return M; }
 		size_t width() const { return N; }
@@ -33,15 +30,24 @@ namespace falling {
 		Column column_at(size_t idx) const;
 		void set_column(size_t idx, Column col);
 		
-		// Convenience
-		static TMatrix<ElementType,N,M> identity();
+		static Self from_rows(ArrayRef<Row> rows);
+		static Self from_rows(ArrayRef<ElementType> row_elements);
+		static Self from_rows(std::initializer_list<Row> rows);
+		static Self from_rows(std::initializer_list<ElementType> row_elements);
+		static Self from_columns(ArrayRef<Column> columns);
+		static Self from_columns(ArrayRef<ElementType> column_elements);
+		
+		template <size_t N_ = N>
+		static typename std::enable_if<N_ == M, TMatrix<ElementType, N_, N_>>::type
+		identity();
 	private:
-		Row rows_[M];
+		std::array<Row, M> rows_;
 	};
 	
 	using matrix44 = TMatrix<float32, 4, 4>;
 	using matrix43 = TMatrix<float32, 4, 3>;
 	using matrix33 = TMatrix<float32, 3, 3>;
+	using matrix22 = TMatrix<float32, 2, 2>;
 	
 	template <typename T, size_t N, size_t M>
 	typename TMatrix<T, N, M>::Row TMatrix<T,N,M>::row_at(size_t idx) const {
@@ -75,17 +81,70 @@ namespace falling {
 		}
 	}
 	
+	template <typename T, size_t N> struct ComputeIdentity;
+	template <typename T> struct ComputeIdentity<T, 2> {
+		static TMatrix<T, 2, 2> compute() {
+			return TMatrix<T,2,2>::from_rows({
+				1, 0,
+				0, 1,
+			});
+		}
+	};
+	
+	template <typename T> struct ComputeIdentity<T, 3> {
+		static TMatrix<T, 3, 3> compute() {
+			return TMatrix<T,3,3>::from_rows({
+				1, 0, 0,
+				0, 1, 0,
+				0, 0, 1,
+			});
+		}
+	};
+	
+	template <typename T, size_t N> struct ComputeIdentity;
+	template <typename T> struct ComputeIdentity<T, 4> {
+		static TMatrix<T, 4, 4> compute() {
+			return TMatrix<T,4,4>::from_rows({
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				0, 0, 0, 1,
+			});
+		}
+	};
+	
 	template <typename T, size_t N, size_t M>
-	TMatrix<T,N,M> TMatrix<T,N,M>::identity() {
-		TMatrix<T,N,M> result;
-		Row v;
-		v[0] = 1;
-		size_t idx = 0;
-		do {
-			result.set_row(idx++, v);
-			v = shift_right(v);
-		} while (idx < M);
-		return result;
+	template <size_t N_>
+	typename std::enable_if<N_ == M, TMatrix<T,N_,N_>>::type
+	inline TMatrix<T,N,M>::identity() {
+		static Self m = ComputeIdentity<T, N>::compute();
+		return m;
+	}
+	
+	template <typename T, size_t N, size_t M>
+	TMatrix<T,N,M> TMatrix<T,N,M>::from_rows(std::initializer_list<Row> rows) {
+		ASSERT(rows.size() >= M); // Not enough elements
+		Self m;
+		auto it = rows.begin();
+		for (size_t row = 0; row < M; ++row) {
+			m.rows_[row] = *it;
+			++it;
+		}
+		return m;
+	}
+	
+	template <typename T, size_t N, size_t M>
+	TMatrix<T,N,M> TMatrix<T,N,M>::from_rows(std::initializer_list<T> row_elements) {
+		ASSERT(row_elements.size() >= N*M); // Not enough elements
+		Self m;
+		auto it = row_elements.begin();
+		for (size_t row = 0; row < M; ++row) {
+			for (size_t col = 0; col < N; ++col) {
+				m.rows_[row][col] = *it;
+				++it;
+			}
+		}
+		return m;
 	}
 	
 	
@@ -113,6 +172,15 @@ namespace falling {
 	TMatrix<ElementType, N, P>
 	matrix_multiply(const TMatrix<ElementType, N, M>& a, const TMatrix<ElementType, M, P>& b) {
 		return MatrixMultiplier<ElementType, N, M, P>::multiply(a, b);
+	}
+	
+	template <typename ElementType, size_t N, size_t M>
+	TVector<ElementType, M> matrix_transform(const TMatrix<ElementType, N, M>& matrix, TVector<ElementType, N> input) {
+		TVector<ElementType, M> result;
+		for (size_t row = 0; row < M; ++row) {
+			result[row] = sumv(matrix.row_at(row) * input).x;
+		}
+		return result;
 	}
 }
 
