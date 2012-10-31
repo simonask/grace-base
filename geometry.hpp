@@ -10,6 +10,8 @@
 #define falling_geometry_hpp
 
 #include "base/vector.hpp"
+#include "base/matrix.hpp"
+#include "base/math.hpp"
 #include "type/type.hpp"
 
 namespace falling {
@@ -36,6 +38,16 @@ namespace falling {
 	struct BuildTypeInfo<Rect> {
 		static const Type* build() { return detail::build_rect_type(); }
 	};
+	
+	inline matrix22 make_rotation_matrix22(float32 theta) {
+		vec2 v = vec2::replicate(theta);
+		vec2 cosv = cos(v);
+		vec2 sinv = sin(v);
+		vec2 msinv = -sinv;
+		vec2 r1 = shuffle2<0, X, 1, Y>(cosv, sinv);
+		vec2 r2 = shuffle2<0, X, 1, Y>(msinv, cosv);
+		return matrix22::from_rows({r1, r2});
+	}
 }
 
 #endif
