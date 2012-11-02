@@ -25,6 +25,7 @@ namespace falling {
 		size_t width() const { return N; }
 		
 		Row row_at(size_t idx) const;
+		Row& row_at(size_t idx);
 		void set_row(size_t idx, Row row);
 		
 		Column column_at(size_t idx) const;
@@ -51,6 +52,13 @@ namespace falling {
 	
 	template <typename T, size_t N, size_t M>
 	typename TMatrix<T, N, M>::Row TMatrix<T,N,M>::row_at(size_t idx) const {
+		ASSERT(idx < M);
+		// Fast.
+		return rows_[idx];
+	}
+	
+	template <typename T, size_t N, size_t M>
+	typename TMatrix<T, N, M>::Row& TMatrix<T,N,M>::row_at(size_t idx) {
 		ASSERT(idx < M);
 		// Fast.
 		return rows_[idx];
