@@ -31,6 +31,9 @@ namespace falling {
 		Column column_at(size_t idx) const;
 		void set_column(size_t idx, Column col);
 		
+		bool operator==(const Self& other) const;
+		bool operator!=(const Self& other) const { return !(*this == other); }
+		
 		static Self from_rows(ArrayRef<Row> rows);
 		static Self from_rows(ArrayRef<ElementType> row_elements);
 		static Self from_rows(std::initializer_list<Row> rows);
@@ -87,6 +90,14 @@ namespace falling {
 		for (size_t i = 0; i < N; ++i) {
 			rows_[i][idx] = col[i];
 		}
+	}
+	
+	template <typename T, size_t N, size_t M>
+	bool TMatrix<T,N,M>::operator==(const TMatrix<T,N,M>& other) const {
+		for (size_t row = 0; row < M; ++row) {
+			if (!rows_[row].all_equal(other.rows_[row])) return false;
+		}
+		return true;
 	}
 	
 	template <typename T, size_t N> struct ComputeIdentity;
