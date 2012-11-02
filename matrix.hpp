@@ -44,6 +44,14 @@ namespace falling {
 		template <size_t N_ = N>
 		static typename std::enable_if<N_ == M, TMatrix<ElementType, N_, N_>>::type
 		identity();
+		
+		// Scalar multiplication
+		Self operator*(ElementType scalar) const;
+		Self& operator*=(ElementType scalar);
+		
+		// Matrix multiplication
+		template <size_t P>
+		TMatrix<ElementType, N, P> operator*(const TMatrix<ElementType, P, N>& other) const;
 	private:
 		std::array<Row, M> rows_;
 	};
@@ -195,6 +203,13 @@ namespace falling {
 	TMatrix<ElementType, N, P>
 	matrix_multiply(const TMatrix<ElementType, N, M>& a, const TMatrix<ElementType, P, N>& b) {
 		return MatrixMultiplier<ElementType, N, M, P>::multiply(a, b);
+	}
+	
+	template <typename T, size_t N, size_t M>
+	template <size_t P>
+	TMatrix<T, N, P>
+	TMatrix<T,N,M>::operator*(const TMatrix<T, P, N>& other) const {
+		return matrix_multiply(*this, other);
 	}
 	
 	template <typename ElementType, size_t N, size_t M>
