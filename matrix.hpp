@@ -154,13 +154,17 @@ namespace falling {
 	// General implementation
 	template <typename T, size_t N, size_t M, size_t P>
 	struct MatrixMultiplier {
-		TMatrix<T, N, P>
-		multiply(const TMatrix<T, N, M>& a, const TMatrix<T, M, P>& b) {
+		static TMatrix<T, N, P>
+		multiply(const TMatrix<T, N, M>& a, const TMatrix<T, P, N>& b) {
 			TMatrix<T, N, P> result;
-			for (size_t i = 0; i < M; ++i) {
-				auto row = a.row_at(i);
-				auto col = b.column_at(i);
-				result.set_row(i, row.dot(col));
+			for (size_t col = 0; col < P; ++col) {
+				auto column = b.column_at(col);
+				for (size_t row = 0; row < M; ++row) {
+					auto r = a.row_at(row);
+					auto products = column * r;
+					auto sum = sumv(products).x;
+					result.row_at(row)[col] = sum;
+				}
 			}
 			return result;
 		}
@@ -170,7 +174,7 @@ namespace falling {
 	
 	template <typename ElementType, size_t N, size_t M, size_t P>
 	TMatrix<ElementType, N, P>
-	matrix_multiply(const TMatrix<ElementType, N, M>& a, const TMatrix<ElementType, M, P>& b) {
+	matrix_multiply(const TMatrix<ElementType, N, M>& a, const TMatrix<ElementType, P, N>& b) {
 		return MatrixMultiplier<ElementType, N, M, P>::multiply(a, b);
 	}
 	
