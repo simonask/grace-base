@@ -26,21 +26,6 @@ namespace falling {
 	static const float32 TwoOverSqrtPi = M_2_SQRTPI;
 	static const float32 Sqrt2 = M_SQRT2;
 	static const float32 OneOverSqrt2 = M_SQRT1_2;
-	
-	template <typename T, size_t N>
-	TVector<T,N> cos_precise(TVector<T,N> vec) {
-		TVector<T,N> r;
-		for (size_t i = 0; i < N; ++i) {
-			r[i] = std::cos(vec[i]);
-		}
-		return r;
-	}
-	
-	template <typename T, size_t N>
-	TVector<T,N> cos(TVector<T,N> vec) {
-		// TODO: Optimize with approximation
-		return cos_precise(vec);
-	}
 
 	template <typename T, size_t N>
 	TVector<T,N> sin_precise(TVector<T,N> vec) {
@@ -59,8 +44,8 @@ namespace falling {
 
 		auto add_mask = vec < LowerBound;
 		auto sub_mask = vec > UpperBound;
-		vec += (TVector<T,N>)(add_mask & ClampAdd.mask);
-		vec -= (TVector<T,N>)(sub_mask & ClampAdd.mask);
+		vec += ClampAdd & add_mask;
+		vec -= ClampAdd & sub_mask;
 
 		static const auto C1 = TVector<T,N>::replicate(1.27323954);
 		static const auto C2 = TVector<T,N>::replicate(0.405284735);
@@ -89,6 +74,23 @@ namespace falling {
 		auto r = select(vec < Zero, rb0, ra0);
 		return r;
 	}
+	
+	template <typename T, size_t N>
+	TVector<T,N> cos_precise(TVector<T,N> vec) {
+		TVector<T,N> r;
+		for (size_t i = 0; i < N; ++i) {
+			r[i] = std::cos(vec[i]);
+		}
+		return r;
+	}
+	
+	template <typename T, size_t N>
+	TVector<T,N> cos(TVector<T,N> vec) {
+		// TODO: Calculate cos with its own approximation instead of in terms of sin
+		// to avoid unnecessary fp math imprecision.
+		// cos(x) == -sin(x - π/2)
+		return -sin(vec - TVector<T,N>::replicate(PiOver2));
+	}
 
 	template <typename T, size_t N>
 	TVector<T,N> tan_precise(TVector<T,N> vec) {
@@ -101,8 +103,9 @@ namespace falling {
 	
 	template <typename T, size_t N>
 	TVector<T,N> tan(TVector<T,N> vec) {
-		// TODO: Optimize with approximation
-		return tan_precise(vec);
+		// TODO: Calculate tan with its own approximation instead of in terms of sin/cos
+		// to avoid unnecessary fp math imprecision (and excess computation).
+		return sin(vec) / cos(vec);
 	}
 
 	template <typename T, size_t N>
