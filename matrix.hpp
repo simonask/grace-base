@@ -220,6 +220,24 @@ namespace falling {
 		}
 		return result;
 	}
+	
+	template <typename ElementType, size_t N, size_t M>
+	TVector<ElementType, M-1> matrix_transform(const TMatrix<ElementType, N, M>& matrix, TVector<ElementType, N-1> input) {
+		// TODO: This is disingenious, especially for transforming 3-vectors with a 4x4 matrix on SSE, where the backend
+		// type is the same anyway. Check if we can actually rely on compiler optimizations to get rid of it.
+		TVector<ElementType, N> padded;
+		for (size_t i = 0; i < N-1; ++i) {
+			padded[i] = input[i];
+		}
+		padded[N-1] = 1;
+		auto result = matrix_transform(matrix, padded);
+		TVector<ElementType, M-1> truncated;
+		for (size_t i = 0; i < M-1; ++i) {
+			truncated[i] = result[i];
+		}
+		return truncated;
+	}
+	
 }
 
 #endif
