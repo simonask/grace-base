@@ -7,9 +7,11 @@ namespace falling {
 #define DEFINE_SIMPLE_TYPE(T, IS_FLOAT, IS_SIGNED) \
 const SimpleType* BuildTypeInfo<T>::build() {\
 	if (IS_FLOAT) { \
-		return new FloatType(#T, sizeof(T)); \
+		static const FloatType* t = new FloatType(#T, sizeof(T)); \
+		return t; \
 	} else { \
-		return new IntegerType(#T, sizeof(T), IS_SIGNED); \
+		static const IntegerType* t = new IntegerType(#T, sizeof(T)); \
+		return t; \
 	} \
 }
 
