@@ -13,6 +13,7 @@
 #include "type/maybe_type.hpp"
 #include "type/color_type.hpp"
 #include "type/vector_type.hpp"
+#include "type/matrix_type.hpp"
 #include "type/reference_type.hpp"
 #include "io/resource_ptr_type.hpp"
 #include "object/object_type.hpp"
