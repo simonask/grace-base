@@ -71,6 +71,13 @@ namespace falling {
 		ASSERT(trans.row_at(2).z == 1.f);
 		return trans;
 	}
+	
+	inline matrix33 make_2d_scaling_matrix(vec2 scale_axes) {
+		matrix33 scale = matrix33::identity();
+		scale.row_at(0).x = scale_axes.x;
+		scale.row_at(1).y = scale_axes.y;
+		return scale;
+	}
 }
 
 #endif
