@@ -78,6 +78,11 @@ namespace falling {
 		scale.row_at(1).y = scale_axes.y;
 		return scale;
 	}
+	
+	inline matrix33 make_2d_transform_matrix(vec2 translation, vec2 scale, float32 rotation) {
+		// TODO: Optimize
+		return make_2d_scaling_matrix(scale) * make_rotation_matrix33_z(rotation) * make_2d_translation_matrix33(translation);
+	}
 }
 
 #endif
