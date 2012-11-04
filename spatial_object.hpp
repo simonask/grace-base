@@ -19,9 +19,12 @@ namespace falling {
 	public:
 		virtual vec2 get_focus_point() const; // default: middle of bounds
 		
+		matrix33 transform() const;
+		
 		vec2 position;
 		vec2 size;
-		Rect bounds; // x, y, w, h
+		vec2 scale = vec2::one();
+		float32 rotation = 0.f;
 	};
 }
 

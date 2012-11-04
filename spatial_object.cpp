@@ -9,6 +9,7 @@
 #include "object/spatial_object.hpp"
 #include "type/vector_type.hpp"
 #include "object/reflect.hpp"
+#include "base/geometry.hpp"
 
 namespace falling {
 	BEGIN_TYPE_INFO(SpatialObject)
@@ -17,5 +18,9 @@ namespace falling {
 	
 	vec2 SpatialObject::get_focus_point() const {
 		return position + (size / vec2::two());
+	}
+	
+	matrix33 SpatialObject::transform() const {
+		return make_2d_transform_matrix(position, scale, rotation);
 	}
 }
