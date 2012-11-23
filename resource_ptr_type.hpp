@@ -24,8 +24,8 @@ namespace falling {
 	template <typename T>
 	class ResourcePtrTypeImpl : public TypeFor<ResourcePtr<T>, ResourcePtrType> {
 	public:
-		virtual void deserialize(ResourcePtr<T>& place, const ArchiveNode& node, IUniverse&) const final;
-		virtual void serialize(const ResourcePtr<T>& place, ArchiveNode& node, IUniverse&) const final;
+		virtual void deserialize(ResourcePtr<T>& place, const ArchiveNode& node, UniverseBase&) const final;
+		virtual void serialize(const ResourcePtr<T>& place, ArchiveNode& node, UniverseBase&) const final;
 	};
 	
 	template <typename T>
@@ -37,7 +37,7 @@ namespace falling {
 	};
 	
 	template <typename T>
-	void ResourcePtrTypeImpl<T>::deserialize(ResourcePtr<T>& place, const ArchiveNode& node, IUniverse&) const {
+	void ResourcePtrTypeImpl<T>::deserialize(ResourcePtr<T>& place, const ArchiveNode& node, UniverseBase&) const {
 		ResourceID rid;
 		if (node.get(rid)) {
 			place = load_resource<T>(rid);
@@ -45,7 +45,7 @@ namespace falling {
 	}
 	
 	template <typename T>
-	void ResourcePtrTypeImpl<T>::serialize(const ResourcePtr<T>& place, ArchiveNode& node, IUniverse&) const {
+	void ResourcePtrTypeImpl<T>::serialize(const ResourcePtr<T>& place, ArchiveNode& node, UniverseBase&) const {
 		if (place != nullptr) {
 			node = place->resource_id();
 		} else {
