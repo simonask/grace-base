@@ -4,7 +4,7 @@
 
 #include "base/basic.hpp"
 #include "base/array_ref.hpp"
-#include "base/allocator.hpp"
+#include "memory/allocator.hpp"
 
 #if defined(USE_STD_VECTOR)
 #include <vector>
@@ -22,13 +22,14 @@ namespace falling {
 	};
 
 template <typename T>
-class Array : private Allocator<T> {
+class Array {
 public:
 	typedef T value_type;
 	typedef T* iterator;
 	typedef const T* const_iterator;
 	
-	Array() : data_(nullptr), size_(0), alloc_size_(0) {}
+	Array() : allocator_(default_allocator()) {}
+	explicit Array(IAllocator& alloc) : allocator_(alloc) {}
 	Array(std::initializer_list<T> list);
 	Array(const Array<T>& other);
 	Array(Array<T>&& other);
@@ -39,6 +40,8 @@ public:
 	Array<T>& operator=(Array<T>&& other);
 	bool operator==(const Array<T>& other) const;
 	bool operator!=(const Array<T>& other) const { return !(*this == other); }
+	
+	IAllocator& allocator() const { return allocator_; }
 	
 	operator ArrayRef<T>() const {
 		return ArrayRef<T>(data_, data_ + size_);
@@ -75,26 +78,27 @@ public:
 	size_t erase(size_t idx);
 	iterator erase(iterator);
 private:
-	T* data_;
-	uint32 size_;
-	uint32 alloc_size_;
+	IAllocator& allocator_;
+	T* data_ = nullptr;
+	uint32 size_ = 0;
+	uint32 alloc_size_ = 0;
 	
 	void check_index_valid(size_t idx) const;
 };
 
 template <typename T>
-Array<T>::Array(std::initializer_list<T> list) : data_(nullptr), size_(0), alloc_size_(0) {
+Array<T>::Array(std::initializer_list<T> list) : allocator_(default_allocator()) {
 	insert(list.begin(), list.end());
 }
 
 template <typename T>
-Array<T>::Array(const Array<T>& other) : data_(nullptr), size_(0), alloc_size_(0) {
+Array<T>::Array(const Array<T>& other) : allocator_(other.allocator_) {
 	reserve(other.size());
 	insert(other.begin(), other.end());
 }
 
 template <typename T>
-Array<T>::Array(Array<T>&& other) : data_(other.data_), size_(other.size_), alloc_size_(other.alloc_size_) {
+Array<T>::Array(Array<T>&& other) : allocator_(other.allocator_), data_(other.data_), size_(other.size_), alloc_size_(other.alloc_size_) {
 	other.data_ = nullptr;
 	other.size_ = 0;
 	other.alloc_size_ = 0;
@@ -175,7 +179,13 @@ void Array<T>::reserve(size_t new_size) {
 		} else {
 			while (req_size < new_size) req_size *= 2;
 		}
-		data_ = this->reallocate(data_, size_, req_size);
+		T* new_data = (T*)allocator_.allocate(sizeof(T)*req_size, alignof(T));
+		for (size_t i = 0; i < size_; ++i) {
+			new(new_data+i) T(std::move(data_[i]));
+			data_[i].~T();
+		}
+		allocator_.free(data_);
+		data_ = new_data;
 		alloc_size_ = (uint32)req_size;
 	}
 }
@@ -245,7 +255,7 @@ void Array<T>::clear(bool deallocate) {
 	}
 	size_ = 0;
 	if (deallocate) {
-		this->deallocate(data_);
+		allocator_.free(data_);
 		data_ = nullptr;
 		alloc_size_ = 0;
 	}

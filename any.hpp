@@ -12,6 +12,7 @@
 #include "base/basic.hpp"
 #include "type/type.hpp"
 #include "base/maybe.hpp"
+#include "memory/allocator.hpp"
 
 #include <type_traits>
 
@@ -22,11 +23,14 @@ namespace falling {
 		static const size_t Alignment = 32;
 		
 		Any();
+		explicit Any(IAllocator& alloc);
 		template <typename T>
-		Any(T value);
-		Any(NothingType);
+		Any(T value, IAllocator& alloc = default_allocator());
+		Any(NothingType, IAllocator& alloc = default_allocator());
 		Any(const Any& other);
 		Any(Any&& other);
+		Any(const Any& other, IAllocator& alloc);
+		Any(Any&& other, IAllocator& alloc);
 		~Any();
 		
 		template <typename T>
@@ -37,6 +41,8 @@ namespace falling {
 		
 		bool operator==(const Any& other) const;
 		bool operator!=(const Any& other) const;
+		
+		IAllocator& allocator() const { return allocator_; }
 		
 		bool is_empty() const;
 		explicit operator bool() const { return is_empty(); }
@@ -61,6 +67,7 @@ namespace falling {
 		template <typename T>
 		T unsafe_get() const;
 	private:
+		IAllocator& allocator_;
 		typedef typename std::aligned_storage<Size, Alignment>::type Storage;
 		Storage memory_;
 		const Type* stored_type_ = nullptr;
@@ -71,26 +78,48 @@ namespace falling {
 		byte* ptr();
 	};
 	
-	inline Any::Any() {
+	inline Any::Any() : allocator_(default_allocator()) {
+		clear();
+	}
+	
+	inline Any::Any(IAllocator& alloc) : allocator_(alloc) {
 		clear();
 	}
 	
 	template <typename T>
-	Any::Any(T value) {
+	Any::Any(T value, IAllocator& alloc) : allocator_(alloc) {
 		assign(std::move(value));
 	}
 	
-	inline Any::Any(NothingType) {
+	inline Any::Any(NothingType, IAllocator& alloc) : allocator_(alloc) {
 		clear();
 	}
 	
-	inline Any::Any(const Any& other) {
+	// TODO: Use delegating constructor when available.
+	inline Any::Any(const Any& other) : allocator_(other.allocator_) {
 		assign(other);
 		allocate_storage();
 		stored_type_->copy_construct(ptr(), other.ptr());
 	}
 	
-	inline Any::Any(Any&& other) {
+	// TODO: Use delegating constructor when available.
+	inline Any::Any(Any&& other) : allocator_(other.allocator_) {
+		assign(other);
+		if (stored_type_ != nullptr) {
+			allocate_storage();
+			stored_type_->move_construct(ptr(), other.ptr());
+			other.deallocate_storage();
+			other.stored_type_ = nullptr;
+		}
+	}
+	
+	inline Any::Any(const Any& other, IAllocator& alloc) : allocator_(alloc) {
+		assign(other);
+		allocate_storage();
+		stored_type_->copy_construct(ptr(), other.ptr());
+	}
+	
+	inline Any::Any(Any&& other, IAllocator& alloc) : allocator_(alloc) {
 		assign(other);
 		if (stored_type_ != nullptr) {
 			allocate_storage();
@@ -162,7 +191,7 @@ namespace falling {
 	
 	inline void Any::clear() {
 		if (stored_type_ != nullptr) {
-			stored_type_->destruct(ptr(), *(IUniverse*)nullptr); // TODO: Remove IUniverse requirement, since this is undefined behavior...
+			stored_type_->destruct(ptr(), *(UniverseBase*)nullptr); // TODO: Remove UniverseBase requirement, since this is undefined behavior...
 			deallocate_storage();
 			stored_type_ = nullptr;
 		}
@@ -236,7 +265,7 @@ namespace falling {
 		ASSERT(stored_type_ != nullptr);
 		size_t sz = stored_type_->size();
 		if (sz > Size) {
-			byte* memory = new byte[sz];
+			byte* memory = (byte*)allocator_.allocate(sz, sz); // TODO: Type::alignment support?
 			*reinterpret_cast<byte**>(&memory_) = memory;
 		}
 	}
@@ -246,7 +275,7 @@ namespace falling {
 		size_t sz = stored_type_->size();
 		if (sz > Size) {
 			byte* memory = *reinterpret_cast<byte**>(&memory_);
-			delete[] memory;
+			allocator_.free(memory);
 		}
 	}
 }

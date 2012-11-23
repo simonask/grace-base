@@ -122,8 +122,8 @@ struct IsMoveAssignableNonRef {
 	};
 
 template <typename T>
-void destruct(T* ptr) {
-	ptr->~T();
+void destruct(void* ptr) {
+	reinterpret_cast<T*>(ptr)->~T();
 }
 	
 	template <typename T, typename... Args>
@@ -188,6 +188,8 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 #endif
 
 #define ASSERT(X) do{ if (!(X)) { fprintf(stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); TRAP(); } } while(0)
+
+#define UNREACHABLE() __builtin_unreachable()
 
 
 #if defined(__has_feature) && __has_feature(cxx_lambdas)
