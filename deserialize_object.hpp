@@ -5,10 +5,10 @@
 #include "object/objectptr.hpp"
 
 namespace falling {
-struct IUniverse;
+struct UniverseBase;
 struct ArchiveNode;
 
-ObjectPtr<> deserialize_object(const ArchiveNode& representation, IUniverse& universe);
+ObjectPtr<> deserialize_object(const ArchiveNode& representation, UniverseBase& universe);
 
 }
 

@@ -19,7 +19,7 @@ struct DeserializeReferenceBase;
 struct SerializeReferenceBase;
 struct DeserializeSignalBase;
 struct ArchiveNode;
-struct IUniverse;
+struct UniverseBase;
 
 struct Archive {
 	typedef ArchiveNodeType::Type NodeType;
@@ -35,8 +35,8 @@ struct Archive {
 	const ArchiveNode& operator[](const std::string& key) const;
 	ArchiveNode& operator[](const std::string& key);
 	
-	void serialize(ObjectPtr<> object, IUniverse& universe);
-	bool deserialize(IUniverse& universe, std::string& out_error);
+	void serialize(ObjectPtr<> object, UniverseBase& universe);
+	bool deserialize(UniverseBase& universe, std::string& out_error);
 	
 	void register_reference_for_deserialization(DeserializeReferenceBase* ref) { deserialize_references.push_back(ref); }
 	void register_reference_for_serialization(SerializeReferenceBase* ref) { serialize_references.push_back(ref); }

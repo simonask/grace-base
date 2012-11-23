@@ -15,7 +15,7 @@ struct Archive;
 struct DeserializeReferenceBase;
 struct SerializeReferenceBase;
 struct DeserializeSignalBase;
-struct IUniverse;
+struct UniverseBase;
 struct SlotBase;
 struct DerivedType;
 struct Object;
@@ -262,10 +262,10 @@ inline void ArchiveNode::clear(ArchiveNodeType::Type new_type) {
 struct DeserializeReferenceBase {
 	virtual ~DeserializeReferenceBase() {}
 	DeserializeReferenceBase(std::string object_id) : object_id_(object_id) {}
-	virtual void perform(IUniverse&) = 0;
+	virtual void perform(UniverseBase&) = 0;
 protected:
 	std::string object_id_;
-	Object* get_object(IUniverse&) const;
+	Object* get_object(UniverseBase&) const;
 };
 
 template <typename T>
@@ -274,7 +274,7 @@ public:
 	typedef typename T::PointeeType PointeeType;
 	
 	DeserializeReference(std::string object_id, T& reference) : DeserializeReferenceBase(object_id), reference_(reference) {}
-	void perform(IUniverse& universe) {
+	void perform(UniverseBase& universe) {
 		Object* object_ptr = get_object(universe);
 		if (object_ptr == nullptr) {
 			// TODO: Warn about non-existing object ID.
@@ -300,10 +300,10 @@ void ArchiveNode::register_reference_for_deserialization(T& reference) const {
 struct SerializeReferenceBase {
 	virtual ~SerializeReferenceBase() {}
 	SerializeReferenceBase(ArchiveNode& node) : node_(node) {}
-	virtual void perform(const IUniverse&) = 0;
+	virtual void perform(const UniverseBase&) = 0;
 protected:
 	ArchiveNode& node_;
-	std::string get_id(const IUniverse&, Object*) const;
+	std::string get_id(const UniverseBase&, Object*) const;
 };
 
 template <typename T>
@@ -311,7 +311,7 @@ struct SerializeReference : SerializeReferenceBase {
 	typedef typename T::PointeeType PointeeType;
 	
 	SerializeReference(ArchiveNode& node, const T& reference) : SerializeReferenceBase(node), reference_(reference) {}
-	void perform(const IUniverse& universe) {
+	void perform(const UniverseBase& universe) {
 		if (reference_ != nullptr) {
 			node_.set(get_id(universe, reference_.get()));
 		} else {
@@ -329,13 +329,13 @@ void ArchiveNode::register_reference_for_serialization(const T& reference) {
 
 struct DeserializeSignalBase {
 public:
-	virtual void perform(const IUniverse&) const = 0;
+	virtual void perform(const UniverseBase&) const = 0;
 protected:
 	DeserializeSignalBase(std::string receiver, std::string slot) : receiver_id_(std::move(receiver)), slot_id_(std::move(slot)) {}
 	std::string receiver_id_;
 	std::string slot_id_;
 	
-	Object* get_object(const IUniverse&) const;
+	Object* get_object(const UniverseBase&) const;
 	const SlotBase* get_slot(Object*) const;
 };
 
@@ -343,7 +343,7 @@ template <typename T>
 struct DeserializeSignal : DeserializeSignalBase {
 	DeserializeSignal(T* signal, std::string receiver, std::string slot) : DeserializeSignalBase(std::move(receiver), std::move(slot)), signal_(signal) {}
 	
-	void perform(const IUniverse& universe) const {
+	void perform(const UniverseBase& universe) const {
 		Object* object = get_object(universe);
 		if (object == nullptr) return;
 		const SlotBase* slot = get_slot(object);

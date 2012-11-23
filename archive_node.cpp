@@ -4,7 +4,7 @@
 #include "object/objectptr.hpp"
 
 namespace falling {
-class IUniverse;
+class UniverseBase;
 
 ArchiveNode& ArchiveNode::array_push() {
 	if (type() != Type::Array) {
@@ -67,15 +67,15 @@ void ArchiveNode::register_signal_for_deserialization_impl(DeserializeSignalBase
 	archive_.register_signal_for_deserialization(sig);
 }
 
-Object* DeserializeReferenceBase::get_object(IUniverse& universe) const {
+Object* DeserializeReferenceBase::get_object(UniverseBase& universe) const {
 	return universe.get_object(object_id_).get();
 }
 
-std::string SerializeReferenceBase::get_id(const IUniverse& universe, Object* obj) const {
+std::string SerializeReferenceBase::get_id(const UniverseBase& universe, Object* obj) const {
 	return universe.get_id(obj);
 }
 
-Object* DeserializeSignalBase::get_object(const IUniverse& universe) const {
+Object* DeserializeSignalBase::get_object(const UniverseBase& universe) const {
 	return universe.get_object(receiver_id_).get();
 }
 

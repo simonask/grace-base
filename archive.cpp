@@ -8,7 +8,7 @@
 
 namespace falling {
 
-void Archive::serialize(ObjectPtr<> object, IUniverse& universe) {
+void Archive::serialize(ObjectPtr<> object, UniverseBase& universe) {
 	falling::serialize(*object, root(), universe);
 	for (auto ref: serialize_references) {
 		ref->perform(universe);
@@ -16,7 +16,7 @@ void Archive::serialize(ObjectPtr<> object, IUniverse& universe) {
 	serialize_references.clear();
 }
 
-bool Archive::deserialize(IUniverse& universe, std::string& out_error) {
+bool Archive::deserialize(UniverseBase& universe, std::string& out_error) {
 	ObjectPtr<> ptr = deserialize_object(root(), universe);
 	
 	for (auto it: deserialize_references) {
