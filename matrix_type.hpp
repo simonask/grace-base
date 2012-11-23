@@ -29,8 +29,8 @@ namespace falling {
 		size_t num_columns() const { return N; }
 		size_t num_rows() const { return M; }
 		
-		virtual void deserialize(TMatrix<T,N,M>& place, const ArchiveNode&, IUniverse&) const;
-		virtual void serialize(const TMatrix<T,N,M>& place, ArchiveNode&, IUniverse&) const;
+		virtual void deserialize(TMatrix<T,N,M>& place, const ArchiveNode&, UniverseBase&) const;
+		virtual void serialize(const TMatrix<T,N,M>& place, ArchiveNode&, UniverseBase&) const;
 	};
 	
 	template <typename T, size_t N, size_t M>
@@ -42,7 +42,7 @@ namespace falling {
 	};
 	
 	template <typename T, size_t N, size_t M>
-	void MatrixTypeImpl<T,N,M>::deserialize(TMatrix<T, N, M> &place, const ArchiveNode& node, IUniverse&) const {
+	void MatrixTypeImpl<T,N,M>::deserialize(TMatrix<T, N, M> &place, const ArchiveNode& node, UniverseBase&) const {
 		if (node.is_array() && node.array_size() >= M) {
 			for (size_t r = 0; r < M; ++r) {
 				const ArchiveNode& row = node[r];
@@ -66,7 +66,7 @@ namespace falling {
 	}
 	
 	template <typename T, size_t N, size_t M>
-	void MatrixTypeImpl<T,N,M>::serialize(const TMatrix<T, N, M>& place, ArchiveNode& node, IUniverse&) const {
+	void MatrixTypeImpl<T,N,M>::serialize(const TMatrix<T, N, M>& place, ArchiveNode& node, UniverseBase&) const {
 		for (size_t r = 0; r < M; ++r) {
 			ArchiveNode& row = node.array_push();
 			for (size_t c = 0; c < N; ++c) {

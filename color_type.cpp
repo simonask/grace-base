@@ -11,7 +11,7 @@
 
 namespace falling {
 	
-	void ColorType::deserialize(Color& color, const ArchiveNode& node, IUniverse&) const {
+	void ColorType::deserialize(Color& color, const ArchiveNode& node, UniverseBase&) const {
 		if (node.is_map()) {
 			node["r"].get(color.red());
 			node["g"].get(color.green());
@@ -24,7 +24,7 @@ namespace falling {
 		color = Color::Pink;
 	}
 	
-	void ColorType::serialize(const Color& color, ArchiveNode& node, IUniverse&) const {
+	void ColorType::serialize(const Color& color, ArchiveNode& node, UniverseBase&) const {
 		auto& r = node["r"];
 		auto& g = node["g"];
 		auto& b = node["b"];

@@ -29,17 +29,17 @@ struct ReferenceTypeImpl : TypeFor<T, ReferenceType> {
 	const Type* pointee_type() const { return get_type<PointeeType>(); }
 	
 	// Type interface
-	void deserialize(T& ptr, const ArchiveNode& node, IUniverse&) const;
-	void serialize(const T& ptr, ArchiveNode& node, IUniverse&) const;
+	void deserialize(T& ptr, const ArchiveNode& node, UniverseBase&) const;
+	void serialize(const T& ptr, ArchiveNode& node, UniverseBase&) const;
 };
 
 template <typename T>
-void ReferenceTypeImpl<T>::deserialize(T& ptr, const ArchiveNode& node, IUniverse&) const {
+void ReferenceTypeImpl<T>::deserialize(T& ptr, const ArchiveNode& node, UniverseBase&) const {
 	node.register_reference_for_deserialization(ptr);
 }
 
 template <typename T>
-void ReferenceTypeImpl<T>::serialize(const T& ptr, ArchiveNode& node, IUniverse&) const {
+void ReferenceTypeImpl<T>::serialize(const T& ptr, ArchiveNode& node, UniverseBase&) const {
 	node.register_reference_for_serialization(ptr);
 }
 

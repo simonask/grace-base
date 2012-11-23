@@ -32,8 +32,8 @@ template <typename T>
 struct AttributeForObject : AttributeBase {
 	AttributeForObject(std::string name, std::string description) : AttributeBase(std::move(name), std::move(description)) {}
 	virtual ~AttributeForObject() {}
-	virtual bool deserialize_attribute(T* object, const ArchiveNode&, IUniverse&) const = 0;
-	virtual bool serialize_attribute(const T* object, ArchiveNode&, IUniverse&) const = 0;
+	virtual bool deserialize_attribute(T* object, const ArchiveNode&, UniverseBase&) const = 0;
+	virtual bool serialize_attribute(const T* object, ArchiveNode&, UniverseBase&) const = 0;
 };
 
 template <typename ObjectType, typename MemberType, typename GetterType = MemberType>
@@ -45,14 +45,14 @@ struct AttributeForObjectOfType : AttributeForObject<ObjectType>, Attribute<Memb
 	
 	const Type* type() const { return get_type<MemberType>(); }
 	
-	bool deserialize_attribute(ObjectType* object, const ArchiveNode& node, IUniverse& universe) const {
+	bool deserialize_attribute(ObjectType* object, const ArchiveNode& node, UniverseBase& universe) const {
 		MemberType value;
 		this->type()->deserialize_raw(reinterpret_cast<byte*>(&value), node, universe);
 		set(*object, std::move(value));
 		return true; // eh...
 	}
 	
-	bool serialize_attribute(const ObjectType* object, ArchiveNode& node, IUniverse& universe) const {
+	bool serialize_attribute(const ObjectType* object, ArchiveNode& node, UniverseBase& universe) const {
 		GetterType value = get(*object);
 		this->type()->serialize_raw(reinterpret_cast<const byte*>(&value), node, universe);
 		return true; // eh...
@@ -101,7 +101,7 @@ struct MemberAttribute : AttributeForObjectOfType<ObjectType, MemberType, const 
 	}
 	
 	// override deserialize_attribute so we can deserialize in-place
-	bool deserialize_attribute(ObjectType* object, const ArchiveNode& node, IUniverse& universe) const {
+	bool deserialize_attribute(ObjectType* object, const ArchiveNode& node, UniverseBase& universe) const {
 		MemberType* ptr = &(object->*member_);
 		this->type()->deserialize_raw(reinterpret_cast<byte*>(ptr), node, universe);
 		return true; // eh...

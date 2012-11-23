@@ -22,8 +22,8 @@ namespace falling {
 	struct VectorTypeImpl : public TypeFor<TVector<T, N>, VectorType> {
 		VectorTypeImpl(std::string name) : TypeFor<TVector<T,N>, VectorType>(std::move(name), sizeof(T)*N, sizeof(T), IsFloatingPoint<T>::Value, IsSigned<T>::Value) {}
 		
-		virtual void deserialize(TVector<T, N>&, const ArchiveNode&, IUniverse&) const override;
-		virtual void serialize(const TVector<T,N>&, ArchiveNode&, IUniverse&) const override;
+		virtual void deserialize(TVector<T, N>&, const ArchiveNode&, UniverseBase&) const override;
+		virtual void serialize(const TVector<T,N>&, ArchiveNode&, UniverseBase&) const override;
 		void* cast(const SimpleType* to, void* o) const {
 			if (to->size() == this->size() && to->num_components() == this->num_components()) {
 				return o;
@@ -33,7 +33,7 @@ namespace falling {
 	};
 	
 	template <typename T, size_t N>
-	void VectorTypeImpl<T,N>::deserialize(TVector<T, N>& vector, const ArchiveNode& node, IUniverse&) const {
+	void VectorTypeImpl<T,N>::deserialize(TVector<T, N>& vector, const ArchiveNode& node, UniverseBase&) const {
 		for (size_t i = 0; i < N; ++i) {
 			const ArchiveNode& component = node[VectorComponentNames[i]];
 			component.get(vector[i]);
@@ -41,7 +41,7 @@ namespace falling {
 	}
 	
 	template <typename T, size_t N>
-	void VectorTypeImpl<T,N>::serialize(const TVector<T, N>& vector, ArchiveNode& node, IUniverse&) const {
+	void VectorTypeImpl<T,N>::serialize(const TVector<T, N>& vector, ArchiveNode& node, UniverseBase&) const {
 		for (size_t i = 0; i < N; ++i) {
 			node[VectorComponentNames[i]] = vector[i];
 		}

@@ -27,8 +27,8 @@ public:
 	size_t offset_of_element(size_t idx) const { return idx * element_type_->size(); }
 	size_t size() const override { return element_type_->size() * num_elements_; }
 	
-	void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
-	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const override;
+	void deserialize_raw(byte* place, const ArchiveNode& node, UniverseBase&) const override;
+	void serialize_raw(const byte* place, ArchiveNode& node, UniverseBase&) const override;
 protected:
 	static std::string build_fixed_array_type_name(const Type* element_type);
 	size_t num_elements_;
@@ -44,8 +44,8 @@ public:
 	size_t num_elements() const { return SIZE_T_MAX; }
 	size_t offset_of_element(size_t idx) const { return idx * this->element_type_->size(); }
 	
-	void deserialize(Container& place, const ArchiveNode& node, IUniverse&) const;
-	void serialize(const Container& place, ArchiveNode& node, IUniverse&) const;
+	void deserialize(Container& place, const ArchiveNode& node, UniverseBase&) const;
+	void serialize(const Container& place, ArchiveNode& node, UniverseBase&) const;
 	Object* cast(const DerivedType* to, Object* o) const { return nullptr; }
 };
 
@@ -58,7 +58,7 @@ struct BuildTypeInfo<Array<T>> {
 };
 
 template <typename T>
-void VariableLengthArrayType<T>::deserialize(T& obj, const ArchiveNode& node, IUniverse& universe) const {
+void VariableLengthArrayType<T>::deserialize(T& obj, const ArchiveNode& node, UniverseBase& universe) const {
 	if (node.is_array()) {
 		size_t sz = node.array_size();
 		obj.reserve(sz);
@@ -71,7 +71,7 @@ void VariableLengthArrayType<T>::deserialize(T& obj, const ArchiveNode& node, IU
 }
 
 template <typename T>
-void VariableLengthArrayType<T>::serialize(const T& obj, ArchiveNode& node, IUniverse& universe) const {
+void VariableLengthArrayType<T>::serialize(const T& obj, ArchiveNode& node, UniverseBase& universe) const {
 	for (auto& it: obj) {
 		ArchiveNode& element = node.array_push();
 		get_type<ElementType>()->serialize_raw(reinterpret_cast<const byte*>(&it), element, universe);

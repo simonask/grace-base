@@ -15,16 +15,16 @@
 namespace falling {
 	
 struct ArchiveNode;
-struct IUniverse;
+struct UniverseBase;
 struct SlotBase;
 
 struct Type {
-	virtual void deserialize_raw(byte* place, const ArchiveNode&, IUniverse&) const = 0;
-	virtual void serialize_raw(const byte* place, ArchiveNode&, IUniverse&) const = 0;
-	virtual void construct(byte* place, IUniverse&) const = 0;
+	virtual void deserialize_raw(byte* place, const ArchiveNode&, UniverseBase&) const = 0;
+	virtual void serialize_raw(const byte* place, ArchiveNode&, UniverseBase&) const = 0;
+	virtual void construct(byte* place, UniverseBase&) const = 0;
 	virtual void copy_construct(byte* to, const byte* from) const = 0;
 	virtual void move_construct(byte* to, byte* from) const = 0;
-	virtual void destruct(byte* place, IUniverse&) const = 0;
+	virtual void destruct(byte* place, UniverseBase&) const = 0;
 	
 	virtual std::string name() const = 0;
 	virtual size_t size() const = 0;
@@ -42,22 +42,22 @@ struct TypeFor : TypeType {
 	TypeFor(Args&&... args) : TypeType(std::forward<Args>(args)...) {}
 	
 	// Override interface.
-	virtual void deserialize(ObjectType& place, const ArchiveNode&, IUniverse&) const = 0;
-	virtual void serialize(const ObjectType& place, ArchiveNode&, IUniverse&) const = 0;
+	virtual void deserialize(ObjectType& place, const ArchiveNode&, UniverseBase&) const = 0;
+	virtual void serialize(const ObjectType& place, ArchiveNode&, UniverseBase&) const = 0;
 
 
 	// Do not override.
-	void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse& universe) const {
+	void deserialize_raw(byte* place, const ArchiveNode& node, UniverseBase& universe) const {
 		this->deserialize(*reinterpret_cast<ObjectType*>(place), node, universe);
 	}
-	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse& universe) const {
+	void serialize_raw(const byte* place, ArchiveNode& node, UniverseBase& universe) const {
 		this->serialize(*reinterpret_cast<const ObjectType*>(place), node, universe);
 	}
 	
-	void construct(byte* place, IUniverse&) const {
+	void construct(byte* place, UniverseBase&) const {
 		this->construct_unless_abstract(place);
 	}
-	void destruct(byte* place, IUniverse&) const {
+	void destruct(byte* place, UniverseBase&) const {
 		reinterpret_cast<ObjectType*>(place)->~ObjectType();
 	}
 	void copy_construct(byte* to, const byte* from) const {
@@ -114,10 +114,10 @@ private:
 struct VoidType : Type {
 	static const VoidType* get();
 	
-	void deserialize_raw(byte* place, const ArchiveNode&, IUniverse&) const override {}
-	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override {}
-	virtual void construct(byte*, IUniverse&) const override {}
-	virtual void destruct(byte*, IUniverse&) const override {}
+	void deserialize_raw(byte* place, const ArchiveNode&, UniverseBase&) const override {}
+	void serialize_raw(const byte*, ArchiveNode&, UniverseBase&) const override {}
+	virtual void construct(byte*, UniverseBase&) const override {}
+	virtual void destruct(byte*, UniverseBase&) const override {}
 	virtual void copy_construct(byte*, const byte*) const override {}
 	virtual void move_construct(byte*, byte*) const override {}
 	static const char Name[];
@@ -131,8 +131,8 @@ private:
 struct SimpleType : Type {
 	SimpleType(std::string name, size_t width, size_t component_width, bool is_float, bool is_signed) : name_(std::move(name)), width_(width), component_width_(component_width), is_float_(is_float), is_signed_(is_signed) {}
 	std::string name() const override { return name_; }
-	void construct(byte* place, IUniverse&) const { std::fill(place, place + size(), 0); }
-	void destruct(byte*, IUniverse&) const {}
+	void construct(byte* place, UniverseBase&) const { std::fill(place, place + size(), 0); }
+	void destruct(byte*, UniverseBase&) const {}
 	void copy_construct(byte* place, const byte* from) const { std::copy(from, from + size(), place); }
 	void move_construct(byte* place, byte* from) const { copy_construct(place, from); }
 	
@@ -159,8 +159,8 @@ struct EnumType : SimpleType {
 	bool name_for_value(ssize_t value, std::string& out_name) const;
 	bool value_for_name(const std::string& name, ssize_t& out_value) const;
 	
-	void deserialize_raw(byte*, const ArchiveNode&, IUniverse&) const override;
-	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
+	void deserialize_raw(byte*, const ArchiveNode&, UniverseBase&) const override;
+	void serialize_raw(const byte*, ArchiveNode&, UniverseBase&) const override;
 	void* cast(const SimpleType* to, void* o) const;
 private:
 	Array<std::tuple<std::string, ssize_t, std::string>> entries_;
@@ -170,8 +170,8 @@ private:
 
 struct IntegerType : SimpleType {
 	IntegerType(std::string name, size_t width, bool is_signed = true) : SimpleType(name, width, width, false, is_signed) {}
-	void deserialize_raw(byte*, const ArchiveNode&, IUniverse&) const override;
-	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
+	void deserialize_raw(byte*, const ArchiveNode&, UniverseBase&) const override;
+	void serialize_raw(const byte*, ArchiveNode&, UniverseBase&) const override;
 	void* cast(const SimpleType* to, void* o) const;
 	size_t max() const;
 	ssize_t min() const;
@@ -179,16 +179,16 @@ struct IntegerType : SimpleType {
 
 struct FloatType : SimpleType {
 	FloatType(std::string name, size_t width) : SimpleType(name, width, width, true, true) {}
-	void deserialize_raw(byte*, const ArchiveNode& node, IUniverse&) const override;
-	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
+	void deserialize_raw(byte*, const ArchiveNode& node, UniverseBase&) const override;
+	void serialize_raw(const byte*, ArchiveNode&, UniverseBase&) const override;
 	void* cast(const SimpleType* to, void* o) const;
 };
 
 struct StringType : TypeFor<std::string> {
 	static const StringType* get();
 	
-	void deserialize(std::string& place, const ArchiveNode&, IUniverse&) const override;
-	void serialize(const std::string& place, ArchiveNode&, IUniverse&) const override;
+	void deserialize(std::string& place, const ArchiveNode&, UniverseBase&) const override;
+	void serialize(const std::string& place, ArchiveNode&, UniverseBase&) const override;
 	
 	std::string name() const override;
 	size_t size() const override { return sizeof(std::string); }
