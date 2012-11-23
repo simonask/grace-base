@@ -24,13 +24,27 @@ namespace falling {
 		}
 	}
 	
+	static byte stdout_stream_memory[sizeof(StdOutputStream)];
+	static byte stderr_stream_memory[sizeof(StdOutputStream)];
+	
 	StdOutputStream& get_stdout_stream(StandardOStreamType type) {
-		static StdOutputStream* stream[NumStandardOutputStreamTypes] = {nullptr};
-		StdOutputStream*& ptr = stream[type];
-		if (ptr == nullptr) {
-			ptr = new StdOutputStream(type);
+		static StdOutputStream* stdout_ = nullptr;
+		static StdOutputStream* stderr_ = nullptr;
+		switch (type) {
+			case StandardOutputStreamType: {
+				if (stdout_ == nullptr) {
+					stdout_ = new(stdout_stream_memory) StdOutputStream(type);
+				}
+				return *stdout_;
+			}
+			case StandardErrorStreamType: {
+				if (stderr_ == nullptr) {
+					stderr_ = new(stderr_stream_memory) StdOutputStream(type);
+				}
+				return *stderr_;
+			}
+			default: UNREACHABLE();
 		}
-		return *ptr;
 	}
 	
 	StdOutputStream::StdOutputStream(StandardOStreamType type) : FormattedStream(stream_) {
