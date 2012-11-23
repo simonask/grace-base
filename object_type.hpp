@@ -53,7 +53,7 @@ template <typename T>
 struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	ObjectType(const ObjectTypeBase* super, std::string name, std::string description) : TypeFor<T, ObjectTypeBase>(super, std::move(name), std::move(description)) {}
 	
-	void construct(byte* place, IUniverse& universe) const {
+	void construct(byte* place, UniverseBase& universe) const {
 		TypeFor<T,ObjectTypeBase>::construct(place, universe);
 		Object* p = reinterpret_cast<Object*>(place);
 		p->set_object_type__(this);
@@ -75,8 +75,8 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	const Type* type_of_element(size_t idx) const { return properties_[idx]->attribute_type(); }
 	size_t offset_of_element(size_t idx) const { return 0; /* TODO */ }
 	
-	void deserialize(T& object, const ArchiveNode&, IUniverse&) const;
-	void serialize(const T& object, ArchiveNode&, IUniverse&) const;
+	void deserialize(T& object, const ArchiveNode&, UniverseBase&) const;
+	void serialize(const T& object, ArchiveNode&, UniverseBase&) const;
 	
 	const SlotBase* find_slot_by_name(const std::string& name) const {
 		for (auto& it: slots_) {
@@ -92,7 +92,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 
 template <typename T>
 struct IntrusiveListRegistrarForObject {
-	virtual void link_object_in_universe(T& object, IUniverse& universe) const = 0;
+	virtual void link_object_in_universe(T& object, UniverseBase& universe) const = 0;
 };
 
 template <typename T, typename ObjectType, size_t MemberOffset>
@@ -102,7 +102,7 @@ struct IntrusiveListRegistrarImpl : IntrusiveListRegistrarForObject<T> {
 	
 	IntrusiveListRegistrarImpl(LinkMemberType link) : link_(link) {}
 	
-	void link_object_in_universe(T& object, IUniverse& universe) const {
+	void link_object_in_universe(T& object, UniverseBase& universe) const {
 		auto& list = universe.get_intrusive_list<ObjectType, MemberOffset>();
 		IntrusiveListLink<ObjectType>* link = &(object.*link_);
 		list.link_tail(link);
@@ -111,7 +111,7 @@ struct IntrusiveListRegistrarImpl : IntrusiveListRegistrarForObject<T> {
 
 
 template <typename T>
-void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& universe) const {
+void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, UniverseBase& universe) const {
 	auto s = this->super();
 	if (s) s->deserialize_raw(reinterpret_cast<byte*>(&object), node, universe);
 	
@@ -125,7 +125,7 @@ void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& u
 }
 
 template <typename T>
-void ObjectType<T>::serialize(const T& object, ArchiveNode& node, IUniverse& universe) const {
+void ObjectType<T>::serialize(const T& object, ArchiveNode& node, UniverseBase& universe) const {
 	auto s = this->super();
 	if (s) s->serialize_raw(reinterpret_cast<const byte*>(&object), node, universe);
 	

@@ -7,7 +7,7 @@
 
 namespace falling {
 
-struct IUniverse;
+struct UniverseBase;
 struct Type;
 struct DerivedType;
 struct ObjectTypeBase;
@@ -34,8 +34,8 @@ struct Object {
 	Object* find_topmost_object();
 	const Object* find_topmost_object() const;
 	
-	IUniverse* universe() const { return universe_; }
-	void set_universe__(IUniverse* universe) { universe_ = universe; }
+	UniverseBase* universe() const { return universe_; }
+	void set_universe__(UniverseBase* universe) { universe_ = universe; }
 	uint32 universe_data__() const { return universe_data_; }
 	void set_universe_data__(uint32 data) { universe_data_ = data; }
 	
@@ -49,7 +49,7 @@ struct Object {
 
 private:
 	const DerivedType* type_;
-	IUniverse* universe_;
+	UniverseBase* universe_;
 	uint32 offset_; // offset within composite
 	uint32 universe_data_;
 };

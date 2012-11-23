@@ -17,7 +17,7 @@
 
 namespace falling {
 	struct ArchiveNode;
-	struct IUniverse;
+	struct UniverseBase;
 
 	void warn_signal_receiver_type_mismatch(ObjectPtr<> receiver, const Type* expected_type);
 	
@@ -27,7 +27,7 @@ namespace falling {
 		const std::string& name() const { return name_; }
 		const std::string& description() const { return description_; }
 		virtual std::string signature_description() const = 0;
-		virtual void invoke_with_serialized_arguments(ObjectPtr<> object, const ArchiveNode& arg_list, IUniverse& universe) const = 0;
+		virtual void invoke_with_serialized_arguments(ObjectPtr<> object, const ArchiveNode& arg_list, UniverseBase& universe) const = 0;
 	private:
 		std::string name_;
 		std::string description_;
@@ -68,7 +68,7 @@ namespace falling {
 			}
 		}
 		
-		void invoke_with_serialized_arguments(ObjectPtr<> object, const ArchiveNode& arg_list, IUniverse& universe) const {
+		void invoke_with_serialized_arguments(ObjectPtr<> object, const ArchiveNode& arg_list, UniverseBase& universe) const {
 			std::tuple<Args...> deserialized_args;
 			deserialize_list_into_tuple<0, 0>(arg_list, deserialized_args, universe);
 			T* ptr = this->get_object_polymorphic(object);

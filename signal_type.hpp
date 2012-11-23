@@ -27,8 +27,8 @@ namespace falling {
 	
 	template <typename... Args>
 	struct SignalType : TypeFor<Signal<Args...>, SignalTypeBase> {
-		void deserialize(Signal<Args...>& place, const ArchiveNode&, IUniverse&) const;
-		void serialize(const Signal<Args...>& place, ArchiveNode&, IUniverse&) const;
+		void deserialize(Signal<Args...>& place, const ArchiveNode&, UniverseBase&) const;
+		void serialize(const Signal<Args...>& place, ArchiveNode&, UniverseBase&) const;
 		
 		SignalType() {
 			build_signature<Args...>(this->signature_);
@@ -45,7 +45,7 @@ namespace falling {
 	};
 	
 	template <typename... Args>
-	void SignalType<Args...>::deserialize(Signal<Args...>& signal, const ArchiveNode& node, IUniverse&) const {
+	void SignalType<Args...>::deserialize(Signal<Args...>& signal, const ArchiveNode& node, UniverseBase&) const {
 		if (node.is_array()) {
 			for (size_t i = 0; i < node.array_size(); ++i) {
 				const ArchiveNode& connection = node[i];
@@ -67,7 +67,7 @@ namespace falling {
 	}
 	
 	template <typename... Args>
-	void SignalType<Args...>::serialize(const Signal<Args...>& signal, ArchiveNode& node, IUniverse& universe) const {
+	void SignalType<Args...>::serialize(const Signal<Args...>& signal, ArchiveNode& node, UniverseBase& universe) const {
 		for (size_t i = 0; i < signal.num_connections(); ++i) {
 			const SignalInvoker<Args...>* invoker = signal.connection_at(i);
 			ObjectPtr<Object> receiver = invoker->receiver();

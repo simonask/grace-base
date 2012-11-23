@@ -19,7 +19,7 @@ ObjectPtr<> BasicUniverse::create_root(const DerivedType* type, std::string id) 
 
 ObjectPtr<> BasicUniverse::create_object(const DerivedType* type, std::string id) {
 	size_t sz = type->size();
-	byte* memory = new byte[sz];
+	byte* memory = (byte*)allocator_.allocate(sz, 1);
 	type->construct(memory, *this);
 	Object* object = reinterpret_cast<Object*>(memory);
 	memory_map_.push_back(object);
@@ -91,6 +91,7 @@ void BasicUniverse::clear() {
 	for (auto object: memory_map_) {
 		const DerivedType* type = object->object_type();
 		type->destruct(reinterpret_cast<byte*>(object), *this);
+		allocator_.free(object);
 	}
 	// TODO: Test for references?
 	object_map_.clear();

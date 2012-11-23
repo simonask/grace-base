@@ -20,8 +20,8 @@ struct ChildList : Array<ObjectPtr<>> {
 struct ChildListType : VariableLengthArrayType<ChildList> {
 	ChildListType() : VariableLengthArrayType("ChildList") {}
 	virtual ~ChildListType() {}
-	void deserialize(ChildList& place, const ArchiveNode& node, IUniverse&) const;
-	void serialize(const ChildList& place, ArchiveNode& node, IUniverse&) const override;
+	void deserialize(ChildList& place, const ArchiveNode& node, UniverseBase&) const;
+	void serialize(const ChildList& place, ArchiveNode& node, UniverseBase&) const override;
 };
 
 template <>

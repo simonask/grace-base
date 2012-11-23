@@ -4,7 +4,7 @@
 
 namespace falling {
 
-void ChildListType::deserialize(ChildList& list, const ArchiveNode& node, IUniverse& universe) const {
+void ChildListType::deserialize(ChildList& list, const ArchiveNode& node, UniverseBase& universe) const {
 	if (node.is_array()) {
 		for (size_t i = 0; i < node.array_size(); ++i) {
 			const ArchiveNode& child = node[i];
@@ -16,7 +16,7 @@ void ChildListType::deserialize(ChildList& list, const ArchiveNode& node, IUnive
 	}
 }
 
-void ChildListType::serialize(const ChildList& list, ArchiveNode& node, IUniverse& universe) const {
+void ChildListType::serialize(const ChildList& list, ArchiveNode& node, UniverseBase& universe) const {
 	for (auto& child: list) {
 		ArchiveNode& child_node = node.array_push();
 		falling::serialize(*child, child_node, universe);

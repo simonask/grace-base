@@ -8,6 +8,7 @@
 #include "object/objectptr.hpp"
 #include "base/array_ref.hpp"
 #include "base/intrusive_list.hpp"
+#include "memory/allocator.hpp"
 
 namespace falling {
 
@@ -15,7 +16,7 @@ struct DerivedType;
 void error_category_already_initialized_with_different_type(const std::string& name);
 void warn_attempt_to_get_objects_of_unindexed_type(const ObjectTypeBase*);
 
-struct IUniverse {
+struct UniverseBase {
 	virtual ObjectPtr<> create_object(const DerivedType* type, std::string id) = 0;
 	virtual ObjectPtr<> create_root(const DerivedType* type, std::string id) = 0;
 	virtual ObjectPtr<> get_object(const std::string& id) const = 0;
@@ -24,7 +25,7 @@ struct IUniverse {
 	virtual ObjectPtr<> root() const = 0;
 	virtual void set_root(ObjectPtr<> root) = 0;
 	virtual void initialize_all() = 0;
-	virtual ~IUniverse() {}
+	virtual ~UniverseBase() {}
 	
 	template <typename T>
 	ObjectPtr<T> create(std::string id) {
@@ -54,7 +55,7 @@ private:
 };
 
 template <typename T, size_t MemberOffset>
-IntrusiveList<T, MemberOffset>& IUniverse::get_intrusive_list() {
+IntrusiveList<T, MemberOffset>& UniverseBase::get_intrusive_list() {
 	VirtualIntrusiveListBase* base_ptr = nullptr;
 	const Type* type = get_type<T>();
 	auto it1 = intrusive_lists.find(type);
@@ -83,7 +84,7 @@ IntrusiveList<T, MemberOffset>& IUniverse::get_intrusive_list() {
 	return *ptr;
 }
 
-struct BasicUniverse : IUniverse {
+struct BasicUniverse : UniverseBase {
 	ObjectPtr<> create_object(const DerivedType* type, std::string) override;
 	ObjectPtr<> create_root(const DerivedType* type, std::string) override;
 	ObjectPtr<> get_object(const std::string& id) const override {
@@ -98,10 +99,11 @@ struct BasicUniverse : IUniverse {
 	}
 	void initialize_all();
 	
-	BasicUniverse() : root_(nullptr) {}
+	BasicUniverse(IAllocator& alloc = default_allocator()) : allocator_(alloc) {}
 	~BasicUniverse() { clear(); }
 	void clear();
 private:
+	IAllocator& allocator_;
 	std::map<std::string, ObjectPtr<>> object_map_;
 	std::map<ObjectPtr<const Object>, std::string> reverse_object_map_;
 	Array<Object*> memory_map_;

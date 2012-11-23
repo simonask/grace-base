@@ -22,12 +22,12 @@ struct CompositeType : DerivedType {
 	Object* find_aspect_of_type(Object* composite_object, const DerivedType* aspect, const DerivedType* skip_in_search = nullptr) const;
 	
 	// Type interface
-	void construct(byte* place, IUniverse&) const override;
-	void destruct(byte* place, IUniverse&) const override;
+	void construct(byte* place, UniverseBase&) const override;
+	void destruct(byte* place, UniverseBase&) const override;
 	void copy_construct(byte* place, const byte* original) const override { ASSERT(false); }
 	void move_construct(byte* place, byte* original) const override { ASSERT(false); }
-	void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
-	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const override;
+	void deserialize_raw(byte* place, const ArchiveNode& node, UniverseBase&) const override;
+	void serialize_raw(const byte* place, ArchiveNode& node, UniverseBase&) const override;
 	std::string name() const override { return name_; }
 	size_t size() const override { return size_; }
 	
