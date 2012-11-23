@@ -20,11 +20,17 @@ namespace falling {
 		MemoryStream(const byte* begin, const byte* end) : begin_(begin), end_(end), current_(begin) {}
 		// MemoryStream is safe to copy, because it doesn't own its data.
 		MemoryStream(MemoryStream&& other) = default;
+		~MemoryStream() {}
 		MemoryStream& operator=(const MemoryStream& other) = default;
 		
 		// InputStream API
 		bool is_readable() const override { return current_ < end_; }
-		size_t read(byte* buffer, size_t max) override;
+		size_t read(byte* buffer, size_t max) override {
+			size_t to_copy = data_available() < max ? data_available() : max;
+			std::copy(current_, current_ + to_copy, buffer);
+			current_ += to_copy;
+			return to_copy;
+		}
 		size_t tell_read() const { return current_ - begin_; }
 		bool seek_read(size_t position) {
 			if (position > size()) {
@@ -141,8 +147,10 @@ namespace falling {
 		ssize_t enlarge_by = (ssize_t)n - (ssize_t)bytes_until_end;
 		if (enlarge_by > 0) {
 			size_t wp = tell_write();
+			size_t rp = tell_read();
 			buffer_.resize(buffer_.size() + enlarge_by);
 			seek_write(wp);
+			seek_read(rp);
 		}
 		size_t i = 0;
 		for (auto it = write_pos_; i < n; ++i, ++it) {
