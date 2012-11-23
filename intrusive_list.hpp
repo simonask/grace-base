@@ -41,6 +41,12 @@ namespace falling {
 			end_sentinel.previous = &begin_sentinel;
 		}
 		
+		void force_reset() {
+			// WARNING: This may cause circular references! Use with caution.
+			begin_sentinel.next = &end_sentinel;
+			end_sentinel.previous = &begin_sentinel;
+		}
+		
 		IntrusiveList(const IntrusiveList<T, MemberOffset>&) = delete;
 		IntrusiveList<T,MemberOffset>& operator=(const IntrusiveList<T, MemberOffset>&) = delete;
 		
@@ -57,6 +63,10 @@ namespace falling {
 			l->previous = end_sentinel.previous;
 			end_sentinel.previous = l;
 			l->next = &end_sentinel;
+		}
+		
+		bool empty() const {
+			return begin_sentinel.next == &end_sentinel;
 		}
 		
 		struct iterator {
