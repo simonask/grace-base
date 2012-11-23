@@ -9,6 +9,8 @@
 #ifndef falling_array_ref_hpp
 #define falling_array_ref_hpp
 
+#include <initializer_list>
+
 namespace falling {
 	struct Empty {};
 
@@ -17,6 +19,8 @@ namespace falling {
 	public:
 		ArrayRef() : begin_(nullptr), end_(nullptr) {}
 		ArrayRef(Empty e) : begin_(nullptr), end_(nullptr) {}
+		template <size_t N>
+		ArrayRef(const T(&data)[N]) : begin_(data), end_(data + N) { }
 		ArrayRef(T* begin, T* end) : begin_(begin), end_(end) { ASSERT(begin_ <= end_); }
 		ArrayRef(const ArrayRef<T>& other) = default;
 		ArrayRef(ArrayRef<T>&& other) = default;
