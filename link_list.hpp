@@ -1,5 +1,5 @@
 //
-//  intrusive_list.hpp
+//  link_list.hpp
 //  falling
 //
 //  Created by Simon Ask Ulsnes on 12/10/12.

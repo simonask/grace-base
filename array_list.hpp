@@ -11,7 +11,7 @@
 
 #include "base/basic.hpp"
 #include "memory/allocator.hpp"
-#include "base/intrusive_list.hpp"
+#include "base/link_list.hpp"
 
 namespace falling {
 	template <typename T>
