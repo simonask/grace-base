@@ -9,7 +9,7 @@
 #include "type/attribute.hpp"
 #include "object/slot.hpp"
 #include "object/universe.hpp"
-#include "base/intrusive_list.hpp"
+#include "base/link_list.hpp"
 
 namespace falling {
 

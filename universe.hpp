@@ -7,7 +7,7 @@
 #include "object/object.hpp"
 #include "object/objectptr.hpp"
 #include "base/array_ref.hpp"
-#include "base/intrusive_list.hpp"
+#include "base/link_list.hpp"
 #include "memory/allocator.hpp"
 
 namespace falling {
