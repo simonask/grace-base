@@ -10,7 +10,7 @@
 #define falling_allocator_hpp
 
 #include "base/basic.hpp"
-#include "base/intrusive_list.hpp"
+#include "base/link_list.hpp"
 
 namespace falling {
 	class FormattedStream;
