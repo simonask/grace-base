@@ -44,42 +44,42 @@ struct UniverseBase {
 	}
 	
 	template <typename T, size_t MemberOffset>
-	IntrusiveList<T, MemberOffset>& get_intrusive_list();
+	AutoList<T, MemberOffset>& get_auto_list();
 	
-	template <typename IntrusiveListType>
-	IntrusiveListType& get_intrusive_list() {
-		return get_intrusive_list<typename IntrusiveListType::ValueType, IntrusiveListType::LinkOffset>();
+	template <typename AutoListType>
+	AutoListType& get_auto_list() {
+		return get_auto_list<typename AutoListType::ValueType, AutoListType::LinkOffset>();
 	}
 private:
-	std::map<const Type*, std::map<size_t, VirtualIntrusiveListBase*>> intrusive_lists;
+	std::map<const Type*, std::map<size_t, VirtualAutoListBase*>> auto_lists;
 };
 
 template <typename T, size_t MemberOffset>
-IntrusiveList<T, MemberOffset>& UniverseBase::get_intrusive_list() {
-	VirtualIntrusiveListBase* base_ptr = nullptr;
+AutoList<T, MemberOffset>& UniverseBase::get_auto_list() {
+	VirtualAutoListBase* base_ptr = nullptr;
 	const Type* type = get_type<T>();
-	auto it1 = intrusive_lists.find(type);
-	if (it1 != intrusive_lists.end()) {
+	auto it1 = auto_lists.find(type);
+	if (it1 != auto_lists.end()) {
 		auto& map2 = it1->second;
 		auto it2 = map2.find(MemberOffset);
 		if (it2 != map2.end()) {
 			base_ptr = it2->second;
 		} else {
-			base_ptr = new VirtualIntrusiveList<T, MemberOffset>;
+			base_ptr = new VirtualAutoList<T, MemberOffset>;
 			map2[MemberOffset] = base_ptr;
 		}
 	} else {
-		base_ptr = new VirtualIntrusiveList<T, MemberOffset>;
-		std::map<size_t, VirtualIntrusiveListBase*> m = {{MemberOffset, base_ptr}};
-		intrusive_lists[type] = std::move(m);
+		base_ptr = new VirtualAutoList<T, MemberOffset>;
+		std::map<size_t, VirtualAutoListBase*> m = {{MemberOffset, base_ptr}};
+		auto_lists[type] = std::move(m);
 	}
 	
-	IntrusiveList<T, MemberOffset>* ptr = nullptr;
+	AutoList<T, MemberOffset>* ptr = nullptr;
 #if DEBUG
-	ptr = dynamic_cast<VirtualIntrusiveList<T, MemberOffset>*>(base_ptr);
+	ptr = dynamic_cast<VirtualAutoList<T, MemberOffset>*>(base_ptr);
 	ASSERT(ptr != nullptr);
 #else
-	ptr = static_cast<VirtualIntrusiveList<T, MemberOffset>*>(base_ptr);
+	ptr = static_cast<VirtualAutoList<T, MemberOffset>*>(base_ptr);
 #endif
 	return *ptr;
 }

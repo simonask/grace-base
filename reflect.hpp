@@ -11,7 +11,7 @@
 
 namespace falling {
 
-template <typename T> struct IntrusiveListLink;
+template <typename T> struct AutoListLink;
 
 template <typename T>
 struct ObjectTypeBuilder {
@@ -69,8 +69,8 @@ struct ObjectTypeBuilder {
 	}
 	
 	template <typename ObjectType, size_t MemberOffset>
-	Self& intrusive_list(IntrusiveListLink<ObjectType> ObjectType::* member) {
-		type_->lists_.push_back(new IntrusiveListRegistrarImpl<T, ObjectType, MemberOffset>(member));
+	Self& auto_list(AutoListLink<ObjectType> ObjectType::* member) {
+		type_->lists_.push_back(new AutoListRegistrarImpl<T, ObjectType, MemberOffset>(member));
 		return *this;
 	}
 	
@@ -85,7 +85,7 @@ struct ObjectTypeBuilder {
 	ObjectType<T>* type_;
 };
 
-#define REFLECT_INTRUSIVE_LIST(T, MEMBER) intrusive_list<T, offsetof(T, MEMBER)>(&T::MEMBER)
+#define REFLECT_AUTO_LIST(T, MEMBER) auto_list<T, offsetof(T, MEMBER)>(&T::MEMBER)
 
 #define BEGIN_TYPE_INFO(TYPE) \
 const ObjectTypeBase* TYPE::build_type_info__() { \
