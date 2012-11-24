@@ -14,7 +14,6 @@
 #include "io/formatted_stream.hpp"
 #include "io/formatters.hpp"
 
-#define DETECT_MEMORY_LEAKS 1
 #define DETECT_OVERRUN 0
 #define DETECT_REUSE_AFTER_FREE 0
 
