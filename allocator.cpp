@@ -16,6 +16,7 @@
 
 #define DETECT_MEMORY_LEAKS 1
 #define DETECT_OVERRUN 0
+#define DETECT_REUSE_AFTER_FREE 0
 
 namespace falling {
 #if !defined(PAGE_SIZE)
@@ -57,7 +58,7 @@ namespace falling {
 
 	namespace {
 		void* system_alloc(size_t nbytes, size_t alignment) {
-#if DETECT_OVERRUN
+#if DETECT_OVERRUN || DETECT_REUSE_AFTER_FREE
 			size_t object_size = PAGE_SIZE;
 			while (nbytes > object_size) object_size += PAGE_SIZE;
 			byte* pages = (byte*)::mmap(nullptr, object_size + PAGE_SIZE, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
@@ -95,20 +96,59 @@ namespace falling {
 		}
 		
 		void system_free(void* ptr) {
-#if DETECT_OVERRUN
-			void* page = (void*)((intptr_t)ptr & ~(PAGE_SIZE-1));
-			detail::poison_memory((byte*)page, (byte*)page + PAGE_SIZE, detail::FREED_MEMORY_PATTERN);
-			::mprotect(page, PAGE_SIZE, PROT_NONE);
+#if DETECT_OVERRUN || DETECT_REUSE_AFTER_FREE
+            void* begin = (void*)((intptr_t)ptr & ~(PAGE_SIZE-1));
+            size_t allocated_size = PAGE_SIZE;
 #else
-			size_t allocated_size = ::malloc_size(ptr);
-			detail::poison_memory((byte*)ptr, (byte*)ptr + allocated_size, detail::FREED_MEMORY_PATTERN);
-			::free(ptr);
+            void* begin = ptr;
+            size_t allocated_size = ::malloc_size(ptr);
+#endif
+            detail::poison_memory((byte*)begin, (byte*)begin + allocated_size, detail::FREED_MEMORY_PATTERN);
+            
+#if DETECT_REUSE_AFTER_FREE
+            ::mprotect(begin, allocated_size, PROT_NONE);
+#elsif DETECT_OVERRUN
+            ::munmap(begin, allocated_size + PAGE_SIZE);
+#else
+            ::free(ptr);
 #endif
 		}
 		
 		size_t system_alloc_size(void* ptr) {
 			return ::malloc_size(ptr);
 		}
+        
+        void* system_alloc_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) {
+            size_t object_size = PAGE_SIZE;
+			while (nbytes > object_size) object_size += PAGE_SIZE;
+            size_t to_allocate = object_size;
+#if DETECT_OVERRUN
+            to_allocate += PAGE_SIZE;
+#endif
+            byte* pages = (byte*)::mmap(nullptr, to_allocate, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+            if (pages == nullptr) {
+				throw OutOfMemoryError();
+			}
+            void* object = pages;
+            detail::poison_memory(pages, pages + object_size, detail::UNINITIALIZED_MEMORY_PATTERN);
+#if DETECT_OVERRUN
+            ::mprotect(pages + object_size, PAGE_SIZE, PROT_NONE);
+#endif
+            out_actually_allocated = object_size;
+            return object;
+        }
+        
+        void system_free_large(void* ptr, size_t actual_size) {
+            byte* o = (byte*)ptr;
+            detail::poison_memory(o, o + actual_size, detail::FREED_MEMORY_PATTERN);
+#if DETECT_REUSE_AFTER_FREE
+            ::mprotect(o, actual_size, PROT_NONE);
+#elsif DETECT_OVERRUN
+            ::munmap(ptr, actual_size + PAGE_SIZE);
+#else
+            ::munmap(ptr, actual_size);
+#endif
+        }
 	}
 	
 	void* SystemAllocator::allocate(size_t nbytes, size_t alignment) {
@@ -118,6 +158,14 @@ namespace falling {
 	void SystemAllocator::free(void* ptr) {
 		system_free(ptr);
 	}
+    
+    void* SystemAllocator::allocate_large(size_t nbytes, size_t alignment, size_t& out_actual_size) {
+        return system_alloc_large(nbytes, alignment, out_actual_size);
+    }
+    
+    void SystemAllocator::free_large(void *ptr, size_t actual_size) {
+        system_free_large(ptr, actual_size);
+    }
 	
 	SystemAllocator::~SystemAllocator() {
 		// TODO: Do leak checks.

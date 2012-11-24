@@ -30,6 +30,8 @@ namespace falling {
 		virtual ~IAllocator() {}
 		virtual void* allocate(size_t nbytes, size_t alignment) = 0;
 		virtual void free(void* ptr) = 0; // Should not call finalizer!
+        virtual void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) = 0;
+        virtual void free_large(void* ptr, size_t actual_size) = 0;
 	private:
 		IAllocator(const IAllocator&) = delete;
 		IAllocator(IAllocator&&) = delete;
@@ -44,6 +46,8 @@ namespace falling {
 		~SystemAllocator();
 		void* allocate(size_t nbytes, size_t alignment) final;
 		void free(void* ptr) final;
+        void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) final;
+        void free_large(void* ptr, size_t actual_size) final;
 	};
 	
 	SystemAllocator& default_allocator();
@@ -59,6 +63,8 @@ namespace falling {
 		
 		void* allocate(size_t nbytes, size_t alignment) final;
 		void free(void* ptr) final;
+        void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) final;
+        void free_large(void* ptr, size_t actual_size) final;
 		
 		byte* current() const;
 		void reset(byte* p);
@@ -82,6 +88,8 @@ namespace falling {
 		void* allocate_with_finalizer(size_t nbytes, size_t alignment, void(*finalize)(void*));
 		void* allocate(size_t nbytes, size_t alignment) final;
 		void free(void* ptr) final { /* no-op */ }
+        void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) final;
+        void free_large(void* ptr, size_t actual_size) final { /* no-op */ }
 		
 		template <typename T, typename... Args>
 		typename std::enable_if<std::is_pod<T>::value, T*>::type
@@ -134,10 +142,19 @@ namespace falling {
 		detail::poison_memory((byte*)ptr, (byte*)ptr + nbytes, detail::UNINITIALIZED_MEMORY_PATTERN);
 		return ptr;
 	}
+    
+    inline void* LinearAllocator::allocate_large(size_t nbytes, size_t alignment, size_t &out_actually_allocated) {
+        out_actually_allocated = nbytes;
+        return allocate(nbytes, alignment);
+    }
 	
 	inline void LinearAllocator::free(void*) {
 		// no-op
 	}
+    
+    inline void LinearAllocator::free_large(void* ptr, size_t actual_size) {
+        // no-op
+    }
 	
 	inline byte* LinearAllocator::current() const {
 		return current_;
@@ -165,6 +182,10 @@ namespace falling {
 		finalizers_ = f;
 		return ptr;
 	}
+    
+    inline void* ScratchAllocator::allocate_large(size_t nbytes, size_t alignment, size_t &out_actually_allocated) {
+        return base_.allocate_large(nbytes, alignment, out_actually_allocated);
+    }
 	
 	inline ScratchAllocator::~ScratchAllocator() {
 		// The following is a check for asymmetric allocators — i.e., this scratch allocator goes out of scope
