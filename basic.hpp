@@ -64,7 +64,7 @@ auto METHOD_NAME(ForwardArgs_&&... args) const -> decltype(((const ForwardType_)
 return MEMBER.METHOD_NAME(std::forward<ForwardArgs_>(args)...); \
 }
 	
-#if __has_attribute(always_inline)
+#if !defined(DEBUG) && __has_attribute(always_inline)
 #define ALWAYS_INLINE inline __attribute__((always_inline))
 #else
 #define ALWAYS_INLINE inline
