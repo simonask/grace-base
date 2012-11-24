@@ -6,8 +6,8 @@
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_intrusive_list_hpp
-#define falling_intrusive_list_hpp
+#ifndef falling_auto_list_hpp
+#define falling_auto_list_hpp
 
 #include "base/basic.hpp"
 #include "memory/allocator.hpp"
@@ -184,60 +184,61 @@ namespace falling {
     }
     
 	template <typename T>
-	struct IntrusiveListLink {
-		IntrusiveListLink<T>* next = nullptr;
-		IntrusiveListLink<T>* previous = nullptr;
+	struct AutoListLink {
+		AutoListLink<T>* next = nullptr;
+		AutoListLink<T>** prev_next_ptr = nullptr;
 		
-		~IntrusiveListLink() {
+		~AutoListLink() {
 			unlink();
 		}
 		
 		void unlink() {
-			if (previous)
-				previous->next = next;
-			if (next)
-				next->previous = previous;
+			if (next) {
+				next->prev_next_ptr = prev_next_ptr;
+			}
+			*prev_next_ptr = next;
 		}
 	};
 	
 	template <typename T, size_t MemberOffset>
-	struct IntrusiveList {
+	struct AutoList {
 		typedef T ValueType;
 		static const size_t LinkOffset = MemberOffset;
-		IntrusiveListLink<T> begin_sentinel;
-		IntrusiveListLink<T> end_sentinel;
 		
-		IntrusiveList() {
-			begin_sentinel.next = &end_sentinel;
-			end_sentinel.previous = &begin_sentinel;
-		}
+		AutoList() {}
+		AutoList(const AutoList<T, MemberOffset>&) = delete;
+		AutoList<T,MemberOffset>& operator=(const AutoList<T, MemberOffset>&) = delete;
 		
-		void force_reset() {
-			// WARNING: This may cause circular references! Use with caution.
-			begin_sentinel.next = &end_sentinel;
-			end_sentinel.previous = &begin_sentinel;
-		}
-		
-		IntrusiveList(const IntrusiveList<T, MemberOffset>&) = delete;
-		IntrusiveList<T,MemberOffset>& operator=(const IntrusiveList<T, MemberOffset>&) = delete;
-		
-		T* convert_link_to_object(IntrusiveListLink<T>* link) const {
+		T* convert_link_to_object(AutoListLink<T>* link) const {
 			ASSERT(link != nullptr);
 			byte* pl = reinterpret_cast<byte*>(link);
 			byte* po = pl - MemberOffset;
 			return reinterpret_cast<T*>(po);
 		}
 		
-		void link_tail(IntrusiveListLink<T>* l) {
-			ASSERT(l->next == nullptr && l->previous == nullptr); // Already in a list
-			end_sentinel.previous->next = l;
-			l->previous = end_sentinel.previous;
-			end_sentinel.previous = l;
-			l->next = &end_sentinel;
+		T* head() const {
+			if (head_) {
+				return convert_link_to_object(head_);
+			} else {
+				return nullptr;
+			}
+		}
+		
+		void link_head(AutoListLink<T>* l) {
+			if (head_) {
+				head_->prev_next_ptr = &l->next;
+			}
+			l->next = head_;
+			l->prev_next_ptr = &head_;
+			head_ = l;
+		}
+		
+		void unlink(AutoListLink<T>* l) {
+			l->unlink();
 		}
 		
 		bool empty() const {
-			return begin_sentinel.next == &end_sentinel;
+			return head_ == nullptr;
 		}
 		
 		struct iterator {
@@ -251,24 +252,26 @@ namespace falling {
 			iterator operator++(int) { iterator copy = *this; current = current->next; return copy; }
 			T* operator*() const { return self->convert_link_to_object(current); }
 		private:
-			template <typename, size_t> friend class IntrusiveList;
-			iterator(IntrusiveList<T,MemberOffset>* self, IntrusiveListLink<T>* current) : self(self), current(current) {}
-			IntrusiveList<T,MemberOffset>* self = nullptr;
-			IntrusiveListLink<T>* current = nullptr;
+			template <typename, size_t> friend class AutoList;
+			iterator(AutoList<T,MemberOffset>* self, AutoListLink<T>* current) : self(self), current(current) {}
+			AutoList<T,MemberOffset>* self = nullptr;
+			AutoListLink<T>* current = nullptr;
 		};
 		
-		iterator begin() { return iterator(this, begin_sentinel.next); }
-		iterator end() { return iterator(this, &end_sentinel); }
+		iterator begin() { return iterator(this, head_); }
+		iterator end() { return iterator(this, nullptr); }
+	private:
+		AutoListLink<T>* head_ = nullptr;
 	};
 	
-#define INTRUSIVE_LIST_TYPE(T, MEMBER) IntrusiveList<T, offsetof(T, MEMBER)>
+#define AUTO_LIST_TYPE(T, MEMBER) AutoList<T, offsetof(T, MEMBER)>
 
-	struct VirtualIntrusiveListBase {
-		virtual ~VirtualIntrusiveListBase() {}
+	struct VirtualAutoListBase {
+		virtual ~VirtualAutoListBase() {}
 	};
 	
 	template <typename T, size_t MemberOffset>
-	struct VirtualIntrusiveList : VirtualIntrusiveListBase, IntrusiveList<T, MemberOffset> {
+	struct VirtualAutoList : VirtualAutoListBase, AutoList<T, MemberOffset> {
 		
 	};
 }
