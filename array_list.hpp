@@ -57,15 +57,13 @@ namespace falling {
         
         IAllocator& allocator_;
         
-        struct Block {
-            Block* next;
+        struct Block : ListLinkBase<Block> {
             T* begin;
             T* end;
             T* current;
         };
         
-        Block* head_ = nullptr;
-        Block* tail_ = nullptr;
+        BareLinkList<Block> blocks_;
         size_t size_ = 0;
         
         Block* create_and_append_block();
@@ -91,7 +89,7 @@ namespace falling {
     
     template <typename T>
     void ArrayList<T>::push_back(const T& object) {
-        Block* b = tail_;
+        Block* b = blocks_.tail();
         if (b == nullptr || b->end - b->current == 0) {
             b = create_and_append_block();
         }
@@ -104,18 +102,14 @@ namespace falling {
     
     template <typename T>
     void ArrayList<T>::clear() {
-        Block* b = head_;
-        while (b) {
-            Block* tmp = b->next;
-            for (T* p = b->begin; p < b->current; ++p) {
-                p->~T();
-            }
+        for (auto it = blocks_.begin(); it != blocks_.end();) {
+            Block* b = it.get();
+            it = blocks_.erase(it);
             size_t block_size = (byte*)b->end - (byte*)b;
             allocator_.free_large(b, block_size);
-            b = tmp;
         }
-        head_ = nullptr;
-        tail_ = nullptr;
+        ASSERT(blocks_.head() == nullptr);
+        ASSERT(blocks_.tail() == nullptr);
     }
     
     template <typename T>
@@ -131,15 +125,8 @@ namespace falling {
         b->begin = reinterpret_cast<T*>(begin);
         b->end = reinterpret_cast<T*>(memory + actual_allocation_size);
         b->current = b->begin;
-        b->next = nullptr;
         
-        if (head_ == nullptr) {
-            head_ = b;
-        }
-        if (tail_ != nullptr) {
-            tail_->next = b;
-        }
-        tail_ = b;
+        blocks_.link_tail(b);
         
         return b;
     }
@@ -152,6 +139,9 @@ namespace falling {
         using Owner = typename std::conditional<IsConst, const ArrayList<T>, ArrayList<T>>::type;
         using ValueType = typename std::conditional<IsConst, const T, T>::type;
         using value_type = ValueType;
+        using Block = typename Owner::Block;
+        using BlockList = BareLinkList<Block>;
+        using BlockListIterator = typename std::conditional<IsConst, typename BlockList::const_iterator, typename BlockList::iterator>::type;
         
         ValueType& operator*() const {
             return *current_;
@@ -164,8 +154,8 @@ namespace falling {
         Self& operator++() {
             ++current_;
             if (current_ >= block_->current) {
-                block_ = block_->next;
-                if (block_) {
+                ++block_;
+                if (block_ != owner_->blocks_.end()) {
                     current_ = block_->begin;
                 } else {
                     current_ = nullptr;
@@ -206,34 +196,32 @@ namespace falling {
             return *this;
         }
     private:
-        iterator_impl(Owner& owner, Block* b, ValueType* c) : owner_(&owner), block_(b), current_(c) {}
-        
+        iterator_impl(Owner& owner, BlockListIterator b, ValueType* c) : owner_(&owner), block_(b), current_(c) {}
         friend class ArrayList<T>;
         friend struct iterator_impl<!IsConst>;
-        using Block = typename Owner::Block;
         Owner* owner_;
-        Block* block_;
+        BlockListIterator block_;
         ValueType* current_;
     };
     
     template <typename T>
     typename ArrayList<T>::iterator ArrayList<T>::begin() {
-        return iterator(*this, head_, head_ ? head_->begin : nullptr);
+        return iterator(*this, blocks_.begin(), blocks_.head() ? blocks_.head()->begin : nullptr);
     }
     
     template <typename T>
     typename ArrayList<T>::iterator ArrayList<T>::end() {
-        return iterator(*this, nullptr, nullptr);
+        return iterator(*this, blocks_.end(), nullptr);
     }
     
     template <typename T>
     typename ArrayList<T>::const_iterator ArrayList<T>::begin() const {
-        return const_iterator(*this, head_, head_ ? head_->begin : nullptr);
+        return const_iterator(*this, blocks_.begin(), blocks_.head() ? blocks_.head()->begin : nullptr);
     }
     
     template <typename T>
     typename ArrayList<T>::const_iterator ArrayList<T>::end() const {
-        return const_iterator(*this, nullptr, nullptr);
+        return const_iterator(*this, blocks_.end(), nullptr);
     }
 }
 
