@@ -10,7 +10,6 @@
 #define falling_allocator_hpp
 
 #include "base/basic.hpp"
-#include "base/link_list.hpp"
 
 namespace falling {
 	class FormattedStream;
@@ -222,6 +221,14 @@ inline void operator delete(void* ptr) {
 }
 inline void operator delete[](void* ptr) {
 	falling::default_allocator().free(ptr);
+}
+
+inline void* operator new(size_t nbytes, falling::IAllocator& alloc, size_t alignment = 0) {
+	return alloc.allocate(nbytes, alignment ? alignment : 16);
+}
+
+inline void operator delete(void* ptr, falling::IAllocator& alloc) {
+	alloc.free(ptr);
 }
 
 #endif
