@@ -10,6 +10,7 @@
 #define falling_array_ref_hpp
 
 #include <initializer_list>
+#include "base/iterators.hpp"
 
 namespace falling {
 	struct Empty {};
@@ -35,12 +36,15 @@ namespace falling {
 		const T& operator[](size_t idx) const { ASSERT(idx < size()); return begin_[idx]; }
 		
 		typedef T value_type;
-		typedef T* iterator;
-		typedef const T* const_iterator;
+		using iterator = LinearMemoryIterator<ArrayRef<T>, T, false>;
+		using const_iterator = LinearMemoryIterator<ArrayRef<T>, T, true>;
 		iterator begin() { return begin_; }
 		iterator end() { return end_; }
 		const_iterator begin() const { return begin_; }
 		const_iterator end() const { return end_; }
+		
+		T* data() { return begin_; }
+		const T* data() const { return begin_; }
 	private:
 		T* begin_;
 		T* end_;
