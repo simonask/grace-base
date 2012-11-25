@@ -85,11 +85,11 @@ namespace falling {
 		}
 	}
 	
-	size_t FileStreamBase::file_size() {
-		size_t pos = tell();
-		seek_end();
-		size_t len = tell();
-		seek(pos);
+	size_t FileStreamBase::file_size() const {
+		size_t pos = ftell(impl().fp);
+		fseek(impl().fp, 0, SEEK_END);
+		size_t len = ftell(impl().fp);
+		fseek(impl().fp, pos, SEEK_SET);
 		return len;
 	}
 	
@@ -122,6 +122,14 @@ namespace falling {
 	
 	bool InputFileStream::seek_read(size_t pos) {
 		return seek(pos);
+	}
+	
+	bool InputFileStream::has_length() const {
+		return true;
+	}
+	
+	size_t InputFileStream::length() const {
+		return file_size();
 	}
 	
 	OutputFileStream OutputFileStream::open(std::string path, FileWriteMode mode) {

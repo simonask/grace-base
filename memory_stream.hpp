@@ -39,6 +39,10 @@ namespace falling {
 			current_ = begin_ + position;
 			return true;
 		}
+		bool has_length() const final { return true; }
+		size_t length() const final {
+			return size();
+		}
 		
 		// MemoryStream API
 		size_t size() const { return end_ - begin_; }
@@ -74,6 +78,8 @@ namespace falling {
 		size_t read(byte* buffer, size_t max) final;
 		size_t tell_read() const final;
 		bool seek_read(size_t pos) final;
+		bool has_length() const final;
+		size_t length() const final;
 		
 		// OutputStream API
 		bool is_writable() const final;
@@ -136,6 +142,14 @@ namespace falling {
 		}
 		read_pos_ = buffer_.begin() + pos;
 		return true;
+	}
+	
+	inline bool MemoryBufferStream::has_length() const {
+		return true;
+	}
+	
+	inline size_t MemoryBufferStream::length() const {
+		return buffer_.size();
 	}
 	
 	inline bool MemoryBufferStream::is_writable() const {

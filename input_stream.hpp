@@ -18,6 +18,8 @@ namespace falling {
 		virtual size_t read(byte* buffer, size_t max) = 0;
 		virtual size_t tell_read() const = 0;
 		virtual bool seek_read(size_t position) = 0;
+		virtual bool has_length() const = 0;
+		virtual size_t length() const = 0;
 	};
 }
 

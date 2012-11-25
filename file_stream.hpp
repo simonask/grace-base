@@ -31,7 +31,7 @@ namespace falling {
 		size_t tell() const;
 		bool seek(size_t pos);
 		void seek_end();
-		size_t file_size();
+		size_t file_size() const;
 		bool sync() const { return synchronize_; }
 		void set_sync(bool b) { synchronize_ = b; }
 		
@@ -62,6 +62,8 @@ namespace falling {
 		size_t read(byte* buffer, size_t n) override;
 		size_t tell_read() const override;
 		bool seek_read(size_t pos) override;
+		bool has_length() const final;
+		size_t length() const final;
 	};
 		
 	class OutputFileStream : public OutputStream, public FileStreamBase {
