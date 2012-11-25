@@ -135,6 +135,12 @@ namespace falling {
 		stream << ']';
 		return stream;
 	}
+	
+	template <typename Owner, typename T, bool C>
+	FormattedStream& operator<<(FormattedStream& stream, const LinearMemoryIterator<Owner, T, C>& it) {
+		stream << it.get();
+		return stream;
+	}
 }
 
 #endif
