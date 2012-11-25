@@ -23,7 +23,7 @@ struct JSONArchive : Archive {
 	ArchiveNode& root() override;
 	const ArchiveNode& root() const override;
 	void write(OutputStream& os) const override;
-	size_t read(const byte* begin, const byte* end, std::string& out_error) override;
+	size_t read(InputStream& is, std::string& out_error) override;
 	ArchiveNode* make(ArchiveNode::Type t = ArchiveNodeType::Empty) override { return make_internal(t); }
 	
 	const ArchiveNode& empty() const { return *empty_; }

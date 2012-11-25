@@ -8,6 +8,7 @@
 
 #include "serialization/binary_archive.hpp"
 #include "base/log.hpp"
+#include "io/util.hpp"
 
 namespace falling {
 	namespace {
@@ -180,19 +181,26 @@ namespace falling {
 		FormattedStream(os) << data;
 	}
 	
-	size_t BinaryArchive::read(const byte* begin, const byte* end, std::string& out_error) {
+	size_t BinaryArchive::read(InputStream& is, std::string& out_error) {
 		clear();
-		uint32 stream_length;
-		const byte* p = begin;
-		if (!read_bytes(p, end, &stream_length)) {
-			out_error = "Wrong stream length, or not all data is available yet.";
-			return 0;
+		if (is.has_length()) {
+			size_t stream_length = is.length();
+			Array<byte> buffer = read_all(is);
+			const byte* p = buffer.data();
+			const byte* end = p + stream_length;
+			if (!read_bytes(p, end, &stream_length)) {
+				out_error = "Wrong stream length, or not all data is available yet.";
+				return 0;
+			}
+			
+			if (!static_cast<BinaryArchiveNode&>(root()).read(p, end, out_error)) {
+				clear();
+				return 0;
+			}
+			
+			return p - buffer.data();
 		}
-		if (!static_cast<BinaryArchiveNode&>(root()).read(p, end, out_error)) {
-			clear();
-			return 0;
-		}
-		return p - begin;
+		return 0;
 	}
 	
 	bool BinaryArchive::can_parse(const byte* begin, const byte* end) const {

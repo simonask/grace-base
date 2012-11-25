@@ -27,8 +27,7 @@ struct Archive {
 	virtual ArchiveNode& root() = 0;
 	virtual const ArchiveNode& root() const = 0;
 	virtual void write(OutputStream& os) const = 0;
-	virtual size_t read(const byte* begin, const byte* end, std::string& out_error) = 0;
-	size_t read_stream(InputFileStream& input, std::string& out_error);
+	virtual size_t read(InputStream& is, std::string& out_error) = 0;
 	virtual ArchiveNode* make(NodeType type = NodeType::Empty) = 0;
 	virtual const ArchiveNode& empty() const = 0;
 	
@@ -48,14 +47,6 @@ private:
 	Array<SerializeReferenceBase*> serialize_references;
 	Array<DeserializeSignalBase*> deserialize_signals;
 };
-	
-	// TODO: Rewrite serializers with streams as primary read API.
-	inline size_t Archive::read_stream(InputFileStream &input, std::string &out_error) {
-		size_t length = input.file_size();
-		DEFINE_STACK_ARRAY(byte, buffer, length);
-		input.read(buffer.begin(), length);
-		return this->read(buffer.begin(), buffer.end(), out_error);
-	}
 
 }
 

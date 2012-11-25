@@ -114,7 +114,7 @@ bool JSONArchiveNode::read(const byte *&p, const byte *end, std::string &out_err
 	return false;
 }
 	
-size_t JSONArchive::read(const byte* begin, const byte* end, std::string& out_error) {
+size_t JSONArchive::read(InputStream&, std::string& out_error) {
 	out_error = "JSONArchive::read not implemented.";
 	return 0;
 }

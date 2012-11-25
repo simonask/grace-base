@@ -7,6 +7,7 @@
 //
 
 #include "serialization/yaml_archive.hpp"
+#include "io/util.hpp"
 
 #include <yaml.h>
 #include <deque>
@@ -294,7 +295,11 @@ namespace falling {
 		yaml_emitter_delete(&emitter);
 	}
 	
-	size_t YAMLArchive::read(const byte* begin, const byte* end, std::string& out_error) {
+	size_t YAMLArchive::read(InputStream& is, std::string& out_error) {
+		Array<byte> buffer = read_all(is);
+		const byte* begin = buffer.data();
+		const byte* end = begin + buffer.size();
+	
 		if (end < begin) {
 			out_error = "Malformed parameters.";
 			return 0;
@@ -366,7 +371,8 @@ namespace falling {
 		// There's no way to check but to actually parse it.
 		YAMLArchive other;
 		std::string error;
-		if (other.read(begin, end, error) > 0 && error == "") {
+		auto stream = MemoryStream(begin, end);
+		if (other.read(stream, error) > 0 && error == "") {
 			return true;
 		}
 		return false;
