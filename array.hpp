@@ -5,6 +5,7 @@
 #include "base/basic.hpp"
 #include "base/array_ref.hpp"
 #include "memory/allocator.hpp"
+#include "base/iterators.hpp"
 
 #if defined(USE_STD_VECTOR)
 #include <vector>
@@ -25,8 +26,8 @@ template <typename T>
 class Array {
 public:
 	typedef T value_type;
-	typedef T* iterator;
-	typedef const T* const_iterator;
+	using iterator = LinearMemoryIterator<Array<T>, T, false>;
+	using const_iterator = LinearMemoryIterator<Array<T>, T, true>;
 	
 	Array() : allocator_(default_allocator()) {}
 	explicit Array(IAllocator& alloc) : allocator_(alloc) {}
@@ -74,6 +75,8 @@ public:
 	iterator end() { return data_ + size_; }
 	const_iterator begin() const { return data_; }
 	const_iterator end() const { return data_ + size_; }
+	T* data() { return data_; }
+	const T* data() const { return data_; }
 	
 	size_t erase(size_t idx);
 	iterator erase(iterator);
@@ -220,7 +223,7 @@ void Array<T>::insert(InputIterator b, InputIterator e, iterator before) {
 		iterator dst = move_target_end - i - 1;
 		if (dst >= end()) {
 			// moving to uninitialized memory
-			new(dst) T(std::move(*src));
+			new(dst.get()) T(std::move(*src));
 		} else {
 			// moving to previously initialized memory
 			*dst = std::move(*src);
@@ -234,7 +237,7 @@ void Array<T>::insert(InputIterator b, InputIterator e, iterator before) {
 			*dst = *it;
 		} else {
 			// moving to uninitialized memory
-			new(dst) T(*it);
+			new(dst.get()) T(*it);
 		}
 	}
 	size_ += add_len;

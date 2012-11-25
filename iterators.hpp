@@ -77,6 +77,112 @@ namespace falling {
 		
 		Node* current_;
 	};
+	
+	
+	template <class Owner, typename T, bool IsConst>
+	struct LinearMemoryIterator {
+	public:
+		using Self = LinearMemoryIterator<Owner, T, IsConst>;
+		using ValueType = typename std::conditional<IsConst, const T, T>::type;
+		
+		LinearMemoryIterator() {}
+		LinearMemoryIterator(const LinearMemoryIterator<Owner, T, false>& other) : current_(other.current_) {}
+		template <bool IsConst_ = IsConst>
+		LinearMemoryIterator(const typename std::enable_if<IsConst_, Self>::type& other) : current_(other.current_) {}
+		
+		Self& operator=(const LinearMemoryIterator<Owner, T, false>& other) {
+			current_ = other.current_;
+			return *this;
+		}
+		template <bool IsConst_ = IsConst>
+		Self& operator=(const typename std::enable_if<IsConst_, Self>::type& other) {
+			current_ = other.current_;
+			return *this;
+		}
+		
+		ValueType* get() const { return current_; }
+		ValueType* operator->() const { return current_; }
+		ValueType& operator*() const { return *current_; }
+		
+		Self& operator++() {
+			++current_;
+			return *this;
+		}
+		Self operator++(int) {
+			Self s = *this;
+			++(*this);
+			return s;
+		}
+		
+		Self& operator--() {
+			--current_;
+			return *this;
+		}
+		Self operator--(int) {
+			Self s = *this;
+			++(*this);
+			return s;
+		}
+		
+		Self& operator+=(ptrdiff_t d) {
+			current_ += d;
+			return *this;
+		}
+		
+		Self& operator-=(ptrdiff_t d) {
+			current_ -= d;
+			return *this;
+		}
+		
+		Self operator+(ptrdiff_t d) {
+			Self s = *this;
+			s += d;
+			return s;
+		}
+		
+		Self operator-(ptrdiff_t d) {
+			Self s = *this;
+			s -= d;
+			return s;
+		}
+		
+		template <bool B>
+		ptrdiff_t operator-(const LinearMemoryIterator<Owner, T, B>& other) {
+			return current_ - other.current_;
+		}
+		
+		template <bool B>
+		bool operator==(const LinearMemoryIterator<Owner, T, B>& other) {
+			return current_ == other.current_;
+		}
+		template <bool B>
+		bool operator!=(const LinearMemoryIterator<Owner, T, B>& other) {
+			return current_ != other.current_;
+		}
+		template <bool B>
+		bool operator>=(const LinearMemoryIterator<Owner, T, B>& other) {
+			return current_ >= other.current_;
+		}
+		template <bool B>
+		bool operator>(const LinearMemoryIterator<Owner, T, B>& other) {
+			return current_ > other.current_;
+		}
+		template <bool B>
+		bool operator<=(const LinearMemoryIterator<Owner, T, B>& other) {
+			return current_ <= other.current_;
+		}
+		template <bool B>
+		bool operator<(const LinearMemoryIterator<Owner, T, B>& other) {
+			return current_ < other.current_;
+		}
+		
+	private:
+		friend Owner;
+		friend struct LinearMemoryIterator<Owner, T, !IsConst>;
+		ValueType* current_ = nullptr;
+		
+		LinearMemoryIterator(ValueType* x) : current_(x) {}
+	};
 }
 
 #endif
