@@ -267,7 +267,7 @@ namespace falling {
 		int yaml_write_handler_t(void *data, unsigned char *buffer, size_t size);
 	}
 	
-	YAMLArchive::YAMLArchive() : root_(nullptr), empty_(*this, ArchiveNodeType::Empty) {
+	YAMLArchive::YAMLArchive(IAllocator& alloc) : Archive(alloc), root_(nullptr), empty_(*this, ArchiveNodeType::Empty), nodes_(alloc) {
 		clear();
 	}
 	

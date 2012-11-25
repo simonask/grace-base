@@ -2,7 +2,7 @@
 
 namespace falling {
 
-JSONArchive::JSONArchive() : root_(nullptr) {
+JSONArchive::JSONArchive(IAllocator& alloc) : Archive(alloc), root_(nullptr), nodes_(alloc) {
 	empty_ = make_internal();
 }
 

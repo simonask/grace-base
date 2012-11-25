@@ -25,7 +25,7 @@ namespace falling {
 	};
 	
 	struct BinaryArchive : Archive {
-		BinaryArchive();
+		explicit BinaryArchive(IAllocator& alloc = default_allocator());
 		~BinaryArchive() { clear(); }
 		ArchiveNode& root() override { return root_; }
 		const ArchiveNode& root() const override { return root_; }

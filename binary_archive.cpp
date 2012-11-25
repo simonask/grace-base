@@ -168,7 +168,7 @@ namespace falling {
 		}
 	}
 	
-	BinaryArchive::BinaryArchive() : root_(*this, ArchiveNodeType::Map), empty_(*this, ArchiveNodeType::Empty) {
+	BinaryArchive::BinaryArchive(IAllocator& alloc) : Archive(alloc), root_(*this, ArchiveNodeType::Map), empty_(*this, ArchiveNodeType::Empty), nodes_(alloc) {
 		clear();
 	}
 	

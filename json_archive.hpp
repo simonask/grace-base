@@ -19,7 +19,7 @@ struct JSONArchiveNode : ArchiveNode {
 };
 
 struct JSONArchive : Archive {
-	JSONArchive();
+	explicit JSONArchive(IAllocator& alloc = default_allocator());
 	ArchiveNode& root() override;
 	const ArchiveNode& root() const override;
 	void write(OutputStream& os) const override;

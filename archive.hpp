@@ -42,7 +42,12 @@ struct Archive {
 	void register_signal_for_deserialization(DeserializeSignalBase* sig) {
 		deserialize_signals.push_back(sig);
 	}
+	
+	IAllocator& allocator() const { return allocator_; }
+protected:
+	Archive(IAllocator& alloc) : allocator_(alloc), deserialize_references(alloc), serialize_references(alloc), deserialize_signals(alloc) {}
 private:
+	IAllocator& allocator_;
 	Array<DeserializeReferenceBase*> deserialize_references;
 	Array<SerializeReferenceBase*> serialize_references;
 	Array<DeserializeSignalBase*> deserialize_signals;

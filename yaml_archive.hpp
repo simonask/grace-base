@@ -22,7 +22,7 @@ namespace falling {
 	};
 	
 	struct YAMLArchive : public Archive {
-		YAMLArchive();
+		explicit YAMLArchive(IAllocator& alloc = default_allocator());
 		~YAMLArchive() { clear(); }
 		ArchiveNode& root() override;
 		const ArchiveNode& root() const override { return root_ ? *root_ : empty_; }
