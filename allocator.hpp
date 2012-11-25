@@ -224,10 +224,12 @@ inline void operator delete[](void* ptr) {
 }
 
 inline void* operator new(size_t nbytes, falling::IAllocator& alloc, size_t alignment = 0) {
-	return alloc.allocate(nbytes, alignment ? alignment : 16);
+	return alloc.allocate(nbytes, alignment ? alignment : 1);
 }
 
-inline void operator delete(void* ptr, falling::IAllocator& alloc) {
+template <typename T>
+inline void destroy(T* ptr, falling::IAllocator& alloc) {
+	ptr->~T();
 	alloc.free(ptr);
 }
 
