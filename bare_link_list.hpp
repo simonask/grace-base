@@ -9,6 +9,8 @@
 #ifndef falling_bare_link_list_hpp
 #define falling_bare_link_list_hpp
 
+#include "base/iterators.hpp"
+
 namespace falling {
 	template <typename T> class BareLinkList;
     
@@ -16,9 +18,25 @@ namespace falling {
     struct ListLinkBase {
     private:
         friend class BareLinkList<T>;
+		friend struct GetNextNode<ListLinkBase<T>>;
         T* next = nullptr;
         T* previous = nullptr;
     };
+	
+	template <typename T>
+	struct GetNextNode<ListLinkBase<T>> {
+		static T* get(ListLinkBase<T>* x) { return x->next; }
+	};
+	
+	template <typename T>
+	struct GetValueForNode<ListLinkBase<T>> {
+		static T* get(ListLinkBase<T>* x) { return static_cast<T*>(x); }
+	};
+	
+	template <typename T>
+	struct GetNodeValueType<ListLinkBase<T>> {
+		using Type = T;
+	};
     
     /*
 	 A BareLinkList is a linked list that doesn't manage its own memory.
@@ -39,7 +57,7 @@ namespace falling {
         void link_head(T* element);
         void unlink(T* element);
         
-        template <bool IsConst> struct iterator_impl;
+        template <bool IsConst> using iterator_impl = ForwardLinkListIterator<BareLinkList<T>, ListLinkBase<T>, IsConst>;
         using iterator = iterator_impl<false>;
         using const_iterator = iterator_impl<true>;
         iterator begin();
@@ -92,66 +110,7 @@ namespace falling {
             tail_ = element->next;
         }
     }
-    
-    template <typename T>
-    template <bool IsConst>
-    struct BareLinkList<T>::iterator_impl {
-    public:
-        using Owner = typename std::conditional<IsConst, const BareLinkList<T>, BareLinkList<T>>::type;
-        using ValueType = typename std::conditional<IsConst, const T, T>::type;
-        using value_type = ValueType;
-        using Self = iterator_impl<IsConst>;
         
-        iterator_impl(const iterator_impl<false>& other) : current_(other.current_) {}
-        template <bool IsConst_>
-        iterator_impl(const typename std::enable_if<IsConst_, iterator_impl<true>>::type& other) : current_(other.current_) {}
-        
-        Self& operator++() {
-            current_ = current_->next;
-            return *this;
-        }
-        
-        Self operator++(int) {
-            Self s = *this;
-            ++s;
-            return s;
-        }
-        
-        Self& operator--() {
-            current_ = current_->previous;
-            return *this;
-        }
-        
-        Self operator--(int) {
-            Self s = *this;
-            --s;
-            return s;
-        }
-        
-        ValueType& operator*() const {
-            return *current_;
-        }
-        
-        ValueType* operator->() const {
-            return current_;
-        }
-        
-        ValueType* get() const {
-            return current_;
-        }
-        
-        template <bool B>
-        bool operator==(const iterator_impl<B>& other) const { return current_ == other.current_; }
-        template <bool B>
-        bool operator!=(const iterator_impl<B>& other) const { return !(*this == other); }
-    private:
-        friend struct iterator_impl<!IsConst>;
-        friend class BareLinkList<T>;
-        ValueType* current_;
-        
-        iterator_impl(ValueType* current) : current_(current) {}
-    };
-    
     template <typename T>
     typename BareLinkList<T>::iterator BareLinkList<T>::begin() {
         return iterator(head_);
