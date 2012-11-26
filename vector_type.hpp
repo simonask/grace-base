@@ -59,7 +59,7 @@ namespace falling {
 				}
 			}
 			ss << "vec" << N;
-			return new VectorTypeImpl<T,N>(ss.str());
+			return new_static VectorTypeImpl<T,N>(ss.str());
 		}
 		
 		static const VectorTypeImpl<T,N>* build() {

@@ -36,7 +36,7 @@ namespace falling {
 	template <typename T, size_t N, size_t M>
 	struct BuildTypeInfo<TMatrix<T,N,M>> {
 		static const MatrixTypeImpl<T,N,M>* build() {
-			static const auto p = new MatrixTypeImpl<T,N,M>();
+			static const auto p = new_static MatrixTypeImpl<T,N,M>();
 			return p;
 		}
 	};

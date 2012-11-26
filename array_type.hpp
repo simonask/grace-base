@@ -52,7 +52,7 @@ public:
 template <typename T>
 struct BuildTypeInfo<Array<T>> {
 	static const ArrayType* build() {
-		static const auto type = new VariableLengthArrayType<Array<T>>("Array");
+		static const auto type = new_static VariableLengthArrayType<Array<T>>("Array");
 		return type;
 	}
 };

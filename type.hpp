@@ -5,6 +5,7 @@
 #include "base/basic.hpp"
 #include "base/array.hpp"
 #include "base/vector.hpp"
+#include "memory/static_allocator.hpp"
 #include <string>
 #include <map>
 #include "io/string_stream.hpp"

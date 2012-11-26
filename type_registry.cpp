@@ -10,7 +10,7 @@ struct TypeRegistry::Impl {
 };
 
 TypeRegistry::Impl* TypeRegistry::impl() {
-	static Impl* i = new Impl;
+	static Impl* i = new_static Impl;
 	return i;
 }
 
