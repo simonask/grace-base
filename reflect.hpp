@@ -39,7 +39,7 @@ struct ObjectTypeBuilder {
 	template <typename MemberType>
 	Self& property(MemberType T::* member, std::string name, std::string description/*, MemberType default_value = MemberType()*/) {
 		check_attribute_name_(name);
-		type_->properties_.push_back(new MemberAttribute<T, MemberType>(std::move(name), std::move(description), member));
+		type_->properties_.push_back(new_static MemberAttribute<T, MemberType>(std::move(name), std::move(description), member));
 		return *this;
 	}
 	
@@ -47,7 +47,7 @@ struct ObjectTypeBuilder {
 	Self& property(GetterReturnType (T::*getter)() const, SetterReturnType (T::*setter)(SetterArgumentType), std::string name, std::string description) {
 		check_attribute_name_(name);
 		typedef typename RemoveConstRef<GetterReturnType>::Type RawType;
-		type_->properties_.push_back(new MethodAttribute<T, RawType, GetterReturnType, SetterArgumentType, SetterReturnType>(std::move(name), std::move(description), getter, setter));
+		type_->properties_.push_back(new_static MethodAttribute<T, RawType, GetterReturnType, SetterArgumentType, SetterReturnType>(std::move(name), std::move(description), getter, setter));
 		return *this;
 	}
 	
@@ -58,26 +58,26 @@ struct ObjectTypeBuilder {
 	
 	template <typename R, typename... Args>
 	Self& slot(R(T::*function)(Args...), std::string name, std::string description) {
-		type_->slots_.push_back(new SlotForTypeWithSignature<T, R, Args...>(std::move(name), std::move(description), function));
+		type_->slots_.push_back(new_static SlotForTypeWithSignature<T, R, Args...>(std::move(name), std::move(description), function));
 		return *this;
 	}
 	
 	template <typename R, typename... Args>
 	Self& slot(R(T::*function)(Args...) const, std::string name, std::string description) {
-		type_->slots_.push_back(new SlotForTypeWithSignature<const T, R, Args...>(std::move(name), std::move(description), function));
+		type_->slots_.push_back(new_static SlotForTypeWithSignature<const T, R, Args...>(std::move(name), std::move(description), function));
 		return *this;
 	}
 	
 	template <typename ObjectType, size_t MemberOffset>
 	Self& auto_list(AutoListLink<ObjectType> ObjectType::* member) {
-		type_->lists_.push_back(new AutoListRegistrarImpl<T, ObjectType, MemberOffset>(member));
+		type_->lists_.push_back(new_static AutoListRegistrarImpl<T, ObjectType, MemberOffset>(member));
 		return *this;
 	}
 	
 	virtual void define__() = 0;
 	
 	ObjectType<T>* build__() {
-		type_ = new ObjectType<T>(nullptr, "", "");
+		type_ = new_static ObjectType<T>(nullptr, "", "");
 		define__();
 		return type_;
 	}

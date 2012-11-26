@@ -51,7 +51,7 @@ private:
 template <typename T>
 struct BuildTypeInfo<ObjectPtr<T>> {
 	static const ReferenceTypeImpl<ObjectPtr<T>>* build() {
-		static auto type = new ReferenceTypeImpl<ObjectPtr<T>>("ObjectPtr");
+		static auto type = new_static ReferenceTypeImpl<ObjectPtr<T>>("ObjectPtr");
 		return type;
 	}
 };

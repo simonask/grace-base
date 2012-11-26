@@ -39,7 +39,7 @@ namespace falling {
 	template <typename... Args>
 	struct BuildTypeInfo<Signal<Args...>> {
 		static const SignalType<Args...>* build() {
-			static const SignalType<Args...>* p = new SignalType<Args...>();
+			static const SignalType<Args...>* p = new_static SignalType<Args...>();
 			return p;
 		}
 	};
