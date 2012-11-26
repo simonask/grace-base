@@ -16,6 +16,8 @@
 namespace falling {
 	struct ObjectTemplate : public Resource {
 		YAMLArchive archive;
+		
+		ObjectTemplate(IAllocator& alloc) : archive(alloc) {}
 	};
 }
 
