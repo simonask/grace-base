@@ -16,6 +16,7 @@ namespace falling {
 	
 	class ResourceLoaderBase {
 	public:
+		IAllocator& allocator() const;
 		virtual Resource* allocate() = 0;
 		virtual void free(Resource*) = 0;
 		virtual bool load_resource(Resource* resource, InputStream& input) = 0;
@@ -25,8 +26,8 @@ namespace falling {
 	class ResourceLoader : public ResourceLoaderBase {
 	public:
 		virtual ~ResourceLoader() {}
-		Resource* allocate() override { return new T; }
-		void free(Resource* resource) override { delete resource; }
+		Resource* allocate() override { return new(allocator()) T(allocator()); }
+		void free(Resource* resource) override { destroy(resource, allocator()); }
 		virtual bool load(T& resource, InputStream& input) = 0;
 	private:
 		bool load_resource(Resource* resource, InputStream& input) override {

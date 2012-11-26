@@ -16,6 +16,8 @@
 #include "io/file_stream.hpp"
 
 namespace falling {
+	static const size_t RESOURCE_ARENA_SIZE = 0x2000000; // 32 Mb
+
 	struct ResourceLoaderFiberManager : IFiberManager {
 		ResourceLoaderFiberManager() {}
 		ResourceLoaderFiberManager(const ResourceLoaderFiberManager&) = delete;
@@ -54,6 +56,9 @@ namespace falling {
 		std::map<ResourceLoaderID, ResourceLoaderBase*> resource_loaders;
 		bool is_in_resource_loader_fiber = false;
 		ResourceLoaderFiberManager fiber_manager;
+		LinearAllocator allocator;
+		
+		Impl() : allocator(RESOURCE_ARENA_SIZE) {}
 	};
 	
 	ResourceManager::Impl& ResourceManager::impl() {
@@ -151,6 +156,7 @@ namespace falling {
 	}
 	
 	void ResourceManager::garbage_collect() {
+		bool any_leaked = false;
 		for (auto it = impl().resource_cache.begin(); it != impl().resource_cache.end();) {
 			if (it->second->refcount() == 0) {
 				it->second->loader_->free(it->second);
@@ -158,9 +164,19 @@ namespace falling {
 			} else {
 				if (it->second->refcount() < 0) {
 					Error() << "Invalid resource refcount for resource: " << it->second->resource_id();
+				} else {
+					Error() << "Resource leaked: " << it->second->resource_id();
 				}
+				any_leaked = true;
 				++it;
 			}
 		}
+		if (!any_leaked) {
+			impl().allocator.reset(impl().allocator.begin());
+		}
+	}
+	
+	IAllocator& ResourceManager::allocator() {
+		return impl().allocator;
 	}
 }

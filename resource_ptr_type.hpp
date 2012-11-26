@@ -31,7 +31,7 @@ namespace falling {
 	template <typename T>
 	struct BuildTypeInfo<ResourcePtr<T>> {
 		static const ResourcePtrType* build() {
-			static const ResourcePtrTypeImpl<T>* type = new ResourcePtrTypeImpl<T>();
+			static const ResourcePtrTypeImpl<T>* type = new_static ResourcePtrTypeImpl<T>();
 			return type;
 		}
 	};

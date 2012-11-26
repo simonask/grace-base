@@ -24,13 +24,14 @@ namespace falling {
 	
 	template <typename ResourceType>
 	__attribute__((noinline)) ResourceLoaderID get_loader_id_for_type() {
-		static ResourceLoaderIDHolder<ResourceType>* holder = new ResourceLoaderIDHolder<ResourceType>;
+		static ResourceLoaderIDHolder<ResourceType>* holder = new_static ResourceLoaderIDHolder<ResourceType>;
 		return reinterpret_cast<ResourceLoaderID>(holder);
 	}
 	
 	class ResourceManager {
 	public:
 		static void initialize_with_path(const std::string& path_to_resources);
+		static IAllocator& allocator();
 		
 		template <typename T>
 		static ResourcePtr<T> load_resource(ResourceID rid);
@@ -41,7 +42,7 @@ namespace falling {
 		template <typename ResourceType, typename ResourceLoaderType>
 		static void add_loader() {
 			ResourceLoaderID lid = get_loader_id_for_type<ResourceType>();
-			add_loader(lid, new ResourceLoaderType);
+			add_loader(lid, new_static ResourceLoaderType);
 		}
 		
 		static void garbage_collect();
