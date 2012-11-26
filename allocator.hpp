@@ -31,6 +31,8 @@ namespace falling {
 		virtual void free(void* ptr) = 0; // Should not call finalizer!
         virtual void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) = 0;
         virtual void free_large(void* ptr, size_t actual_size) = 0;
+		virtual size_t usage() const = 0;
+		virtual size_t capacity() const = 0;
 	private:
 		IAllocator(const IAllocator&) = delete;
 		IAllocator(IAllocator&&) = delete;
@@ -47,6 +49,11 @@ namespace falling {
 		void free(void* ptr) final;
         void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) final;
         void free_large(void* ptr, size_t actual_size) final;
+		
+		size_t usage() const final { return usage_; }
+		size_t capacity() const final { return SIZE_MAX; }
+	private:
+		size_t usage_ = 0;
 	};
 	
 	SystemAllocator& default_allocator();
@@ -65,7 +72,12 @@ namespace falling {
         void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) final;
         void free_large(void* ptr, size_t actual_size) final;
 		
+		size_t usage() const final { return current_ - begin_; }
+		size_t capacity() const final { return end_ - begin_; }
+		
 		byte* current() const;
+		byte* begin() const { return begin_; }
+		byte* end() const { return end_; }
 		void reset(byte* p);
 	private:
 		byte* begin_ = nullptr;
@@ -89,6 +101,9 @@ namespace falling {
 		void free(void* ptr) final { /* no-op */ }
         void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) final;
         void free_large(void* ptr, size_t actual_size) final { /* no-op */ }
+		
+		size_t usage() const final { return base_.current() - reset_; }
+		size_t capacity() const final { return base_.end() - reset_; }
 		
 		template <typename T, typename... Args>
 		typename std::enable_if<std::is_pod<T>::value, T*>::type
@@ -131,7 +146,9 @@ namespace falling {
 	
 	inline void* LinearAllocator::allocate(size_t nbytes, size_t alignment) {
 		intptr_t c = (intptr_t)current_;
-		c += alignment - ((c % (alignment-1)) & ~(alignment-1));
+		if (alignment > 1) {
+			c += alignment - ((c % alignment) & ~(alignment-1));
+		}
 		current_ = (byte*)c;
 		void* ptr = current_;
 		current_ += nbytes;

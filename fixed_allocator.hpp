@@ -29,6 +29,7 @@ namespace falling {
 		void* allocate(size_t nbytes, size_t alignment) final {
 			ASSERT(nbytes <= Max);
 			ASSERT(alignment <= Alignment);
+			usage_ += Max;
 			if (free_list_) {
 				void* p = *free_list_;
 				free_list_ = *(void***)p;
@@ -39,6 +40,7 @@ namespace falling {
 		}
 		
 		void free(void* ptr) final {
+			usage_ -= Max;
 			*(void**)ptr = free_list_;
 			free_list_ = (void**)ptr;
 		}
@@ -52,9 +54,13 @@ namespace falling {
 			ASSERT(actual_size <= Max);
 			this->free(ptr);
 		}
+		
+		size_t usage() const { return usage_; }
+		size_t capacity() const { return base_.capacity(); }
 	private:
 		IAllocator& base_;
 		void** free_list_ = nullptr;
+		size_t usage_ = 0;
 	};
 }
 

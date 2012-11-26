@@ -151,18 +151,25 @@ namespace falling {
 	}
 	
 	void* SystemAllocator::allocate(size_t nbytes, size_t alignment) {
+		void* ptr = system_alloc(nbytes, alignment);
+		usage_ += system_alloc_size(ptr);
 		return system_alloc(nbytes, alignment);
 	}
 		
 	void SystemAllocator::free(void* ptr) {
+		size_t sz = system_alloc_size(ptr);
+		usage_ -= sz;
 		system_free(ptr);
 	}
     
     void* SystemAllocator::allocate_large(size_t nbytes, size_t alignment, size_t& out_actual_size) {
-        return system_alloc_large(nbytes, alignment, out_actual_size);
+        void* ptr = system_alloc_large(nbytes, alignment, out_actual_size);
+		usage_ += out_actual_size;
+		return ptr;
     }
     
     void SystemAllocator::free_large(void *ptr, size_t actual_size) {
+		usage_ -= actual_size;
         system_free_large(ptr, actual_size);
     }
 	
