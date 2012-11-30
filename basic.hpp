@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <memory>
 #include <type_traits>
+#include <string>
 
 namespace falling {
 
@@ -24,6 +25,10 @@ typedef double float64;
 typedef uint8 byte;
 
 static struct NothingType {} Nothing;
+
+struct IndexOutOfBoundsException {
+	std::string what() { return "Index out of bounds."; }
+};
 
 template <typename T, typename NameGetter>
 struct HasMember {

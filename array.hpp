@@ -14,13 +14,7 @@ template <typename T> using Array = std::vector<T>;
 }
 #else
 
-#include <string>
-
 namespace falling {
-	
-	struct IndexOutOfBoundsException {
-		std::string what() { return "Index out of bounds."; }
-	};
 
 template <typename T>
 class Array {
