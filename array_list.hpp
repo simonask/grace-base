@@ -14,18 +14,22 @@
 #include "base/link_list.hpp"
 
 namespace falling {
+	struct FormattedStream;
+
 	template <typename T>
     class ArrayList {
     public:
         explicit ArrayList(IAllocator& allocator = default_allocator());
-        ArrayList(IAllocator& allocator, const ArrayList<T>& other);
-        ArrayList(const ArrayList& other);
+        ArrayList(const ArrayList<T>& other, IAllocator& allocator = default_allocator());
+		ArrayList(std::initializer_list<T> init, IAllocator& allocator = default_allocator());
         ArrayList(ArrayList&& other);
         ~ArrayList();
         
         IAllocator& allocator() const;
         
         size_t size() const;
+		bool operator==(const ArrayList<T>& other) const;
+		bool operator!=(const ArrayList<T>& other) const;
         
         void push_back(const T& x);
         void push_back(T&& x);
@@ -51,7 +55,8 @@ namespace falling {
         void insert(InputIterator i0, InputIterator i1);
         template <typename InputIterator>
         void insert(InputIterator i0, InputIterator i1, iterator before);
-        iterator erase(iterator it);
+        void erase(iterator it);
+		void resize(size_t new_size, T filler = T());
     private:
         template <bool> friend struct iterator_impl;
         
@@ -67,10 +72,28 @@ namespace falling {
         size_t size_ = 0;
         
         Block* create_and_append_block();
+		void delete_and_remove_block(Block* b);
     };
     
     template <typename T>
     ArrayList<T>::ArrayList(IAllocator& alloc) : allocator_(alloc) {}
+	
+	template <typename T>
+	ArrayList<T>::ArrayList(const ArrayList<T>& other, IAllocator& alloc) : allocator_(alloc) {
+		for (auto& it: other) {
+			push_back(it);
+		}
+	}
+	
+	template <typename T>
+	ArrayList<T>::ArrayList(ArrayList<T>&& other) : allocator_(other.allocator_), blocks_(std::move(other.blocks_)), size_(other.size_) {}
+	
+	template <typename T>
+	ArrayList<T>::ArrayList(std::initializer_list<T> init, IAllocator& alloc) : allocator_(alloc) {
+		for (auto& it: init) {
+			push_back(it);
+		}
+	}
     
     template <typename T>
     ArrayList<T>::~ArrayList() {
@@ -86,19 +109,66 @@ namespace falling {
     size_t ArrayList<T>::size() const {
         return size_;
     }
+	
+	template <typename T>
+	bool ArrayList<T>::operator==(const ArrayList<T>& other) const {
+		if (size_ == other.size_) {
+			auto it0 = begin();
+			auto it1 = other.begin();
+			for (; it0 != end() && it1 != end(); ++it0, ++it1) {
+				if (*it0 != *it1) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	template <typename T>
+	bool ArrayList<T>::operator!=(const ArrayList<T>& other) const {
+		return !(*this == other);
+	}
     
     template <typename T>
     void ArrayList<T>::push_back(const T& object) {
-        Block* b = blocks_.tail();
-        if (b == nullptr || b->end - b->current == 0) {
-            b = create_and_append_block();
-        }
-        
-        ASSERT(b->end - b->current > 0);
-        T* ptr = b->current++;
-        ++size_;
-        new(ptr) T(object);
+		auto b_it = blocks_.last();
+		Block* b;
+		if (b_it == blocks_.end() || b_it->end - b_it->current == 0) {
+			b = create_and_append_block();
+		} else {
+			b = b_it.get();
+		}
+		
+		ASSERT(b->end - b->current > 0);
+		T* ptr = b->current++;
+		++size_;
+		new(ptr) T(object);
     }
+	
+	template <typename T>
+	void ArrayList<T>::push_back(T&& object) {
+		auto b_it = blocks_.last();
+		Block* b;
+		if (b_it == blocks_.end() || b_it->end - b_it->current == 0) {
+			b = create_and_append_block();
+		} else {
+			b = b_it.get();
+		}
+		
+		ASSERT(b->end - b->current > 0);
+		T* ptr = b->current++;
+		++size_;
+		new(ptr) T(std::move(object));
+	}
+	
+	template <typename T>
+	template <typename InputIterator>
+	void ArrayList<T>::insert(InputIterator a, InputIterator b) {
+		for (auto it = a; it != b; ++it) {
+			push_back(*a);
+		}
+	}
     
     template <typename T>
     void ArrayList<T>::clear() {
@@ -108,9 +178,72 @@ namespace falling {
             size_t block_size = (byte*)b->end - (byte*)b;
             allocator_.free_large(b, block_size);
         }
-        ASSERT(blocks_.head() == nullptr);
-        ASSERT(blocks_.tail() == nullptr);
+        ASSERT(blocks_.empty());
     }
+	
+	template <typename T>
+	void ArrayList<T>::resize(size_t new_size, T filler) {
+		if (new_size > size_) {
+			while (size_ < new_size) {
+				push_back(filler);
+			}
+		} else {
+			while (size_ > new_size) {
+				auto it = end();
+				--it;
+				erase(it);
+			}
+		}
+	}
+	
+	template <typename T>
+	T& ArrayList<T>::operator[](size_t idx) {
+		size_t i = idx;
+		for (const auto& b: blocks_) {
+			size_t sz = b.current - b.begin;
+			if (i < sz) {
+				return b.begin[i];
+			} else {
+				i -= sz;
+			}
+		}
+		throw IndexOutOfBoundsException();
+	}
+	
+	template <typename T>
+	const T& ArrayList<T>::operator[](size_t idx) const {
+		size_t i = idx;
+		for (const auto& b: blocks_) {
+			size_t sz = b.current - b.begin;
+			if (i < sz) {
+				return b.begin[i];
+			} else {
+				i -= sz;
+			}
+		}
+		throw IndexOutOfBoundsException();
+	}
+	
+	template <typename T>
+	void ArrayList<T>::erase(iterator it) {
+		if (it == end()) {
+			throw IndexOutOfBoundsException();
+		}
+		auto output_begin = it;
+		auto input_begin = it+1;
+		auto input_end = end();
+		std::move(input_begin, input_end, output_begin);
+		if (size_) {
+			auto last = end()-1;
+			last.get()->~T();
+			Block* b = blocks_.tail();
+			--b->current;
+			if (b->current == b->begin) {
+				delete_and_remove_block(b);
+			}
+		}
+		--size_;
+	}
     
     template <typename T>
     typename ArrayList<T>::Block* ArrayList<T>::create_and_append_block() {
@@ -130,6 +263,13 @@ namespace falling {
         
         return b;
     }
+	
+	template <typename T>
+	void ArrayList<T>::delete_and_remove_block(Block* b) {
+		ASSERT(b->current == b->begin); // Block has live objects.
+		blocks_.unlink(b);
+		allocator_.free_large(b, (byte*)b->end - (byte*)b);
+	}
     
     template <typename T>
     template <bool IsConst>
@@ -150,6 +290,10 @@ namespace falling {
         ValueType* operator->() const {
             return current_;
         }
+		
+		ValueType* get() const {
+			return current_;
+		}
         
         Self& operator++() {
             ++current_;
@@ -163,12 +307,52 @@ namespace falling {
             }
             return *this;
         }
+		
+		Self& operator--() {
+			--current_;
+			if (current_ < block_->begin) {
+				--block_;
+				if (block_ != owner_->blocks_.end()) {
+					current_ = block_->current - 1;
+				} else {
+					current_ = nullptr;
+				}
+			}
+			return *this;
+		}
         
         Self operator++(int) {
             Self s = *this;
             ++s;
             return s;
         }
+		
+		Self operator+(int n) const {
+			Self s = *this;
+			s += n;
+			return s;
+		}
+		
+		Self operator-(int n) const {
+			return this->operator+(-n);
+		}
+		
+		Self& operator+=(int n) {
+			if (n > 0) {
+				for (int i = 0; i < n; ++i) {
+					++(*this);
+				}
+			} else if (n < 0) {
+				for (int i = 0; i < -n; ++i) {
+					--(*this);
+				}
+			}
+			return *this;
+		}
+		
+		Self& operator-=(int n) {
+			return this->operator+=(-n);
+		}
         
         // TODO: Reverse iterators?
         
@@ -223,6 +407,14 @@ namespace falling {
     typename ArrayList<T>::const_iterator ArrayList<T>::end() const {
         return const_iterator(*this, blocks_.end(), nullptr);
     }
+	
+	template <typename T>
+	FormattedStream& operator<<(FormattedStream& stream, const ArrayList<T>& array) {
+		stream << "@[";
+		stream << join(array, ", ");
+		stream << ']';
+		return stream;
+	}
 }
 
 #endif
