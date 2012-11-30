@@ -24,6 +24,10 @@ namespace falling {
 	struct GetNextNode {
 		static T* get(T* x) { return x->next; }
 	};
+	template <typename T>
+	struct GetPreviousNode {
+		static T* get(T* x) { return x->previous; }
+	};
 
 	template <class Owner, typename Node, bool IsConst>
 	struct ForwardLinkListIterator {
@@ -55,10 +59,49 @@ namespace falling {
 			current_ = GetNextNode<Node>::get(current_);
 			return *this;
 		}
+		
+		Self& operator--() {
+			current_ = GetPreviousNode<Node>::get(current_);
+			return *this;
+		}
+		
 		Self operator++(int) {
 			Self s = *this;
 			++(*this);
 			return s;
+		}
+		
+		Self operator--(int) {
+			Self s = *this;
+			--(*this);
+			return s;
+		}
+		
+		Self operator+(int n) const {
+			Self s = *this;
+			s += n;
+			return s;
+		}
+		
+		Self& operator+=(int n) {
+			if (n > 0) {
+				for (int i = 0; i < n; ++i) {
+					++(*this);
+				}
+			} else if (n < 0) {
+				for (int i = 0; i < -n; ++i) {
+					--(*this);
+				}
+			}
+			return *this;
+		}
+		
+		Self operator-(int n) const {
+			return (*this) + (-n);
+		}
+		
+		Self& operator-=(int n) {
+			return (*this) += -n;
 		}
 		
 		template <bool B>

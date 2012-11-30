@@ -19,6 +19,7 @@ namespace falling {
     private:
         friend class BareLinkList<T>;
 		friend struct GetNextNode<ListLinkBase<T>>;
+		friend struct GetPreviousNode<ListLinkBase<T>>;
         T* next = nullptr;
         T* previous = nullptr;
     };
@@ -26,6 +27,11 @@ namespace falling {
 	template <typename T>
 	struct GetNextNode<ListLinkBase<T>> {
 		static T* get(ListLinkBase<T>* x) { return x->next; }
+	};
+	
+	template <typename T>
+	struct GetPreviousNode<ListLinkBase<T>> {
+		static T* get(ListLinkBase<T>* x) { return x->previous; }
 	};
 	
 	template <typename T>
@@ -44,91 +50,89 @@ namespace falling {
     template <typename T>
     struct BareLinkList {
     public:
-        BareLinkList() {}
+        BareLinkList() {
+			sentinel.next = (T*)&sentinel;
+			sentinel.previous = (T*)&sentinel;
+		}
         
-        T* head() const { return head_; }
-        T* tail() const { return tail_; }
-        T& front() { return *head_; }
-        const T& front() const { return *head_; }
-        T& back() { return *tail_; }
-        const T& back() const { return *tail_; }
+        T* head() const { ASSERT(!empty()); return sentinel.next; }
+        T* tail() const { ASSERT(!empty()); return sentinel.previous; }
+        T& front() { return *sentinel.next; }
+        const T& front() const { return *sentinel.next; }
+        T& back() { return *sentinel.previous; }
+        const T& back() const { return *sentinel.previous; }
         
         void link_tail(T* element);
         void link_head(T* element);
         void unlink(T* element);
+		
+		bool empty() const { return sentinel.next == (T*)&sentinel; }
         
         template <bool IsConst> using iterator_impl = ForwardLinkListIterator<BareLinkList<T>, ListLinkBase<T>, IsConst>;
         using iterator = iterator_impl<false>;
         using const_iterator = iterator_impl<true>;
         iterator begin();
+		iterator last();
         iterator end();
         const_iterator begin() const;
+		const_iterator last() const;
         const_iterator end() const;
         
         iterator erase(iterator it);
     private:
-        T* head_ = 0;
-        T* tail_ = 0;
+		ListLinkBase<T> sentinel; // previous = tail, next = head
     };
     
     template <typename T>
     void BareLinkList<T>::link_tail(T* element) {
-        element->previous = tail_;
-        if (tail_) {
-            tail_->previous = element;
-        }
-        tail_ = element;
-        if (head_ == nullptr) {
-            head_ = element;
-        }
+		element->next = (T*)&sentinel;
+		element->previous = sentinel.previous;
+		element->previous->next = element;
+		element->next->previous = element;
     }
     
     template <typename T>
     void BareLinkList<T>::link_head(T* element) {
-        element->next = head_;
-        if (head_) {
-            head_->next = element;
-        }
-        head_ = element;
-        if (tail_ == nullptr) {
-            tail_ = element;
-        }
+		element->previous = (T*)&sentinel;
+		element->next = sentinel.next;
+		element->next->previous = element;
+		element->previous->next = element;
     }
     
     template <typename T>
     void BareLinkList<T>::unlink(T* element) {
-        if (element->next) {
-            element->next->previous = element->previous;
-        }
-        if (element->previous) {
-            element->previous->next = element->next;
-        }
-        if (element == head_) {
-            head_ = element->previous;
-        }
-        if (element == tail_) {
-            tail_ = element->next;
-        }
+		element->next->previous = element->previous;
+		element->previous->next = element->next;
     }
         
     template <typename T>
     typename BareLinkList<T>::iterator BareLinkList<T>::begin() {
-        return iterator(head_);
+        return iterator(sentinel.next);
     }
+	
+	template <typename T>
+	typename BareLinkList<T>::iterator BareLinkList<T>::last() {
+		return iterator(sentinel.previous);
+	}
     
     template <typename T>
     typename BareLinkList<T>::iterator BareLinkList<T>::end() {
-        return iterator(nullptr);
+        return iterator((T*)&sentinel);
     }
     
     template <typename T>
     typename BareLinkList<T>::const_iterator BareLinkList<T>::begin() const {
-        return const_iterator(head_);
+        return const_iterator(sentinel.next);
     }
+	
+	template <typename T>
+	typename BareLinkList<T>::const_iterator BareLinkList<T>::last() const {
+		return const_iterator(sentinel.previous);
+	}
     
     template <typename T>
     typename BareLinkList<T>::const_iterator BareLinkList<T>::end() const {
-        return const_iterator(nullptr);
+        return const_iterator((T*)&sentinel);
     }
     
     template <typename T>
