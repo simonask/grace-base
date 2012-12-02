@@ -9,7 +9,7 @@
 #include "memory/static_allocator.hpp"
 
 namespace falling {
-	static const size_t STATIC_MEMORY_ARENA = 0x100000; // 1 MiB
+	static const size_t STATIC_MEMORY_ARENA = 0x080000; // 512 KiB
 
 	namespace {
 		byte static_allocator_mem[sizeof(LinearAllocator)];
