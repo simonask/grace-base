@@ -19,6 +19,8 @@ namespace falling {
 	
 	class String {
 	public:
+		static const size_t NPos = SIZE_MAX;
+	
 		explicit String(IAllocator& alloc = default_allocator()) : allocator_(alloc) {}
 		String(const char* utf8, IAllocator& alloc = default_allocator());
 		String(const char* utf8, size_t len, IAllocator& alloc = default_allocator());
@@ -28,6 +30,7 @@ namespace falling {
 		~String();
 		String& operator=(const char* utf8);
 		String& operator=(StringRef other);
+		String& operator=(const String& other);
 		String& operator=(String&& other);
 		
 		IAllocator& allocator() const { return allocator_; }
@@ -42,22 +45,33 @@ namespace falling {
 		char operator[](size_t idx) const;
 		
 		String operator+(StringRef other) const;
+		template <size_t N>
+		String operator+(const char(&other)[N]) const;
+		String operator+(const char* other) const;
+		String operator+(char) const;
 		
 		operator StringRef() const;
 		
 		const char* data() const { return data_; }
 		size_t size() const;
 		
+		char front() const { return (*this)[0]; }
+		char back() const { return (*this)[size()-1]; }
+		
+		StringRef substr(size_t pos, size_t len = NPos) const;
+		
 		using const_iterator = LinearMemoryIterator<String, char, true>;
 		using iterator = const_iterator;
 		const_iterator begin() const { return const_iterator(data_); }
 		const_iterator end() const { return const_iterator(data_ + size_); }
 		
+		static String take_ownership(IAllocator& alloc, const char* utf8, size_t size);
+		
 		struct Algorithms;
 		friend struct Algorithms;
 	private:
 		IAllocator& allocator_;
-		char* data_ = nullptr;
+		const char* data_ = nullptr;
 		size_t size_ = 0;
 		
 		void assign(const char* utf8);
@@ -114,6 +128,12 @@ namespace falling {
 		return *this;
 	}
 	
+	inline String& String::operator=(const String& other) {
+		clear();
+		assign(other.data(), other.size());
+		return *this;
+	}
+	
 	inline String& String::operator=(String&& other) {
 		clear();
 		if (&allocator_ == &other.allocator_) {
@@ -129,6 +149,13 @@ namespace falling {
 	
 	inline String::operator StringRef() const {
 		return StringRef(data_, data_ + size_);
+	}
+	
+	inline char String::operator[](size_t idx) const {
+		if (idx > size_) {
+			throw IndexOutOfBoundsException();
+		}
+		return data_[idx];
 	}
 	
 	inline ssize_t String::compare(StringRef other) const {
@@ -168,8 +195,35 @@ namespace falling {
 		return concatenate(*this, other, allocator_);
 	}
 	
+	template <size_t N>
+	inline String String::operator+(const char(&other)[N]) const {
+		return concatenate(*this, StringRef(other, other+N), allocator_);
+	}
+	
+	inline String String::operator+(const char* utf8) const {
+		return concatenate(*this, StringRef(utf8, utf8+strlen(utf8)), allocator_);
+	}
+	
+	inline String String::operator+(char c) const {
+		return concatenate(*this, StringRef(&c, &c+1), allocator_);
+	}
+	
 	inline size_t String::size() const {
 		return size_;
+	}
+	
+	inline StringRef String::substr(size_t b, size_t len) const {
+		if (b > size_) {
+			throw IndexOutOfBoundsException();
+		}
+		if (len == NPos) {
+			len = size_ - b;
+		}
+		size_t end_pos = b + len;
+		if (end_pos > size_) {
+			throw IndexOutOfBoundsException();
+		}
+		return StringRef(data_ + b, data_ + end_pos);
 	}
 	
 	inline void String::assign(const char* utf8) {
@@ -179,11 +233,11 @@ namespace falling {
 	inline void String::assign(const char* utf8, size_t len) {
 		data_ = len ? (char*)allocator_.allocate(len, 1) : nullptr;
 		size_ = len;
-		std::copy(utf8, utf8 + len, data_);
+		std::copy(utf8, utf8 + len, (char*)data_);
 	}
 	
 	inline void String::clear() {
-		allocator_.free(data_);
+		allocator_.free((void*)data_);
 		data_ = nullptr;
 		size_ = 0;
 	}
@@ -194,5 +248,10 @@ inline constexpr falling::StringRef operator "" _C(const char* str, size_t lengt
 	return falling::StringRef(str, str+length);
 }
 #endif
+
+template <size_t N>
+inline falling::String operator+(const char(&a)[N], const falling::String& b) {
+	return falling::String(a) + b;
+}
 
 #endif

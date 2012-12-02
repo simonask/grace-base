@@ -10,11 +10,11 @@
 #define falling_vector_errors_hpp
 
 #include "vector.hpp"
-#include <string>
+#include "base/string.hpp"
 
 namespace falling {
 	struct VectorNormalizeZeroLengthException {
-		std::string what() const { return "Tried to normalize a zero-length vector."; }
+		String what() const { return "Tried to normalize a zero-length vector."; }
 	};
 }
 

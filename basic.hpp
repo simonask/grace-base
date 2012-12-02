@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <memory>
 #include <type_traits>
-#include <string>
 
 namespace falling {
 
@@ -27,7 +26,7 @@ typedef uint8 byte;
 static struct NothingType {} Nothing;
 
 struct IndexOutOfBoundsException {
-	std::string what() { return "Index out of bounds."; }
+	const char* what() { return "Index out of bounds."; }
 };
 
 template <typename T, typename NameGetter>

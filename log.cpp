@@ -43,7 +43,10 @@ namespace falling {
 					case LogLevelInformation: fprintf(io, "INFO: "); break;
 					case LogLevelDebug: fprintf(io, "DEBUG: "); break;
 				}
-				fprintf(io, "%s\n", entry.ss.str().c_str());
+				ScratchAllocator scratch;
+				String str = entry.ss.string(scratch);
+				fwrite(str.data(), str.size(), 1, io);
+				fwrite("\n", 1, 1, io);
 #if !defined(DEBUG)
 			}
 #endif

@@ -30,6 +30,8 @@ public:
 	bool is_set() const { return *is_set_ptr() != 0; }
 	explicit operator bool() const { return is_set(); }
 	
+	T get_or(T default_value) const;
+	
 	// For use with decltype(...)
 	T& infer_value_type() { ASSERT(false); return *((T*)nullptr); }
 	const T& infer_value_type() const { ASSERT(false); return *((T*)nullptr); }
@@ -208,6 +210,14 @@ template <typename T>
 Maybe<T>& Maybe<T>::operator=(T&& other) {
 	assign(std::move(other));
 	return *this;
+}
+
+template <typename T>
+T Maybe<T>::get_or(T default_value) const {
+	if (is_set()) {
+		return *get();
+	}
+	return default_value;
 }
 
 template <typename T>

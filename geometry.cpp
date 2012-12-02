@@ -12,7 +12,7 @@
 namespace falling {
 	namespace detail {
 		struct RectType : TypeFor<Rect> {
-			std::string name() const { return "Rect"; }
+			String name() const { return "Rect"; }
 		
 			virtual void deserialize(Rect& place, const ArchiveNode& node, UniverseBase& universe) const {
 				auto vt = get_type<vec2>();

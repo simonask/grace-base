@@ -33,6 +33,7 @@ namespace falling {
 	falling::StackArrayHolder<T> NAME ## _holder_ ## __LINE__(NAME ## _data_ ## __LINE__, NAME ## _data_ ## __LINE__ + SIZE); \
 	falling::ArrayRef<T> NAME(NAME ## _data_ ## __LINE__, NAME ## _data_ ## __LINE__ + SIZE)
 
+#define COPY_STRING_REF_TO_CSTR_BUFFER(BUFFER_NAME, INPUT) DEFINE_STACK_ARRAY(char, BUFFER_NAME, (INPUT).size() + 1); std::copy((INPUT).begin(), (INPUT).end(), (BUFFER_NAME).begin()); (BUFFER_NAME)[(INPUT).size()] = '\0'
 }
 
 #endif

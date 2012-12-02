@@ -10,7 +10,7 @@
 #define falling_regex_hpp
 
 #include <regex>
-#include <string>
+#include "base/string.hpp"
 
 #include "base/basic.hpp"
 
@@ -28,13 +28,13 @@ namespace falling {
 	 string representation of the regex, so it can't be printed.
 	 */
 	struct Regex {
-		Regex(std::string definition, std::regex::flag_type flags = std::regex_constants::ECMAScript);
+		Regex(String definition, std::regex::flag_type flags = std::regex_constants::ECMAScript);
 		Regex(Regex&&) = default;
 		Regex(const Regex&) = default;
 		Regex& operator=(Regex&&) = default;
 		Regex& operator=(const Regex&) = default;
 		
-		operator const std::string&() const { return definition; }
+		operator const String&() const { return definition; }
 		operator const std::regex&() const { return regex; }
 		
 		FORWARD_TO_MEMBER(mark_count, regex, std::regex)
@@ -52,14 +52,14 @@ namespace falling {
 		template <typename OutputIterator, typename BidirectionalIterator>
 		OutputIterator replace(OutputIterator out, BidirectionalIterator begin, BidirectionalIterator end);
 	private:
-		std::string definition;
+		String definition;
 		std::regex regex;
 		friend void std::swap(Regex&, Regex&);
 	};
 	
-	inline Regex::Regex(std::string definition, std::regex::flag_type flags)
+	inline Regex::Regex(String definition, std::regex::flag_type flags)
 	: definition(std::move(definition))
-	, regex(this->definition.c_str(), this->definition.size(), flags)
+	, regex(this->definition.data(), this->definition.size(), flags)
 	{}
 	
 	template <typename BidirectionalIterator>
