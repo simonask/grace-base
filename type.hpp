@@ -6,7 +6,7 @@
 #include "base/array.hpp"
 #include "base/vector.hpp"
 #include "memory/static_allocator.hpp"
-#include <string>
+#include "base/string.hpp"
 #include <map>
 #include "io/string_stream.hpp"
 #include <algorithm>
@@ -27,7 +27,7 @@ struct Type {
 	virtual void move_construct(byte* to, byte* from) const = 0;
 	virtual void destruct(byte* place, UniverseBase&) const = 0;
 	
-	virtual std::string name() const = 0;
+	virtual String name() const = 0;
 	virtual size_t size() const = 0;
 	virtual bool is_abstract() const { return false; }
 	virtual bool is_copy_constructible() const { return true; }
@@ -122,7 +122,7 @@ struct VoidType : Type {
 	virtual void copy_construct(byte*, const byte*) const override {}
 	virtual void move_construct(byte*, byte*) const override {}
 	static const char Name[];
-	std::string name() const override { return Name; }
+	String name() const override { return Name; }
 	size_t size() const override { return 0; }
 	bool is_abstract() const override { return true; }
 private:
@@ -130,8 +130,8 @@ private:
 };
 
 struct SimpleType : Type {
-	SimpleType(std::string name, size_t width, size_t component_width, bool is_float, bool is_signed) : name_(std::move(name)), width_(width), component_width_(component_width), is_float_(is_float), is_signed_(is_signed) {}
-	std::string name() const override { return name_; }
+	SimpleType(String name, size_t width, size_t component_width, bool is_float, bool is_signed) : name_(std::move(name)), width_(width), component_width_(component_width), is_float_(is_float), is_signed_(is_signed) {}
+	String name() const override { return name_; }
 	void construct(byte* place, UniverseBase&) const { std::fill(place, place + size(), 0); }
 	void destruct(byte*, UniverseBase&) const {}
 	void copy_construct(byte* place, const byte* from) const { std::copy(from, from + size(), place); }
@@ -142,7 +142,7 @@ struct SimpleType : Type {
 	bool is_signed() const { return is_signed_; }
 	virtual void* cast(const SimpleType* to, void* o) const = 0;
 protected:
-	std::string name_;
+	String name_;
 	size_t width_;
 	size_t component_width_;
 	bool is_float_;
@@ -150,27 +150,27 @@ protected:
 };
 
 struct EnumType : SimpleType {
-	EnumType(std::string name, size_t width, bool is_signed = true) : SimpleType(name, width, width, false, is_signed), max_(1LL-SSIZE_MAX), min_(SSIZE_MAX) {}
-	void add_entry(std::string name, ssize_t value, std::string description) {
+	EnumType(String name, size_t width, bool is_signed = true) : SimpleType(name, width, width, false, is_signed), max_(1LL-SSIZE_MAX), min_(SSIZE_MAX) {}
+	void add_entry(String name, ssize_t value, String description) {
 		entries_.emplace_back(std::make_tuple(std::move(name), value, std::move(description)));
 	}
 	bool contains(ssize_t value) const;
 	ssize_t max() const { return max_; }
 	ssize_t min() const { return min_; }
-	bool name_for_value(ssize_t value, std::string& out_name) const;
-	bool value_for_name(const std::string& name, ssize_t& out_value) const;
+	bool name_for_value(ssize_t value, String& out_name) const;
+	bool value_for_name(const String& name, ssize_t& out_value) const;
 	
 	void deserialize_raw(byte*, const ArchiveNode&, UniverseBase&) const override;
 	void serialize_raw(const byte*, ArchiveNode&, UniverseBase&) const override;
 	void* cast(const SimpleType* to, void* o) const;
 private:
-	Array<std::tuple<std::string, ssize_t, std::string>> entries_;
+	Array<std::tuple<String, ssize_t, String>> entries_;
 	ssize_t max_;
 	ssize_t min_;
 };
 
 struct IntegerType : SimpleType {
-	IntegerType(std::string name, size_t width, bool is_signed = true) : SimpleType(name, width, width, false, is_signed) {}
+	IntegerType(String name, size_t width, bool is_signed = true) : SimpleType(name, width, width, false, is_signed) {}
 	void deserialize_raw(byte*, const ArchiveNode&, UniverseBase&) const override;
 	void serialize_raw(const byte*, ArchiveNode&, UniverseBase&) const override;
 	void* cast(const SimpleType* to, void* o) const;
@@ -179,24 +179,24 @@ struct IntegerType : SimpleType {
 };
 
 struct FloatType : SimpleType {
-	FloatType(std::string name, size_t width) : SimpleType(name, width, width, true, true) {}
+	FloatType(String name, size_t width) : SimpleType(name, width, width, true, true) {}
 	void deserialize_raw(byte*, const ArchiveNode& node, UniverseBase&) const override;
 	void serialize_raw(const byte*, ArchiveNode&, UniverseBase&) const override;
 	void* cast(const SimpleType* to, void* o) const;
 };
 
-struct StringType : TypeFor<std::string> {
+struct StringType : TypeFor<String> {
 	static const StringType* get();
 	
-	void deserialize(std::string& place, const ArchiveNode&, UniverseBase&) const override;
-	void serialize(const std::string& place, ArchiveNode&, UniverseBase&) const override;
+	void deserialize(String& place, const ArchiveNode&, UniverseBase&) const override;
+	void serialize(const String& place, ArchiveNode&, UniverseBase&) const override;
 	
-	std::string name() const override;
-	size_t size() const override { return sizeof(std::string); }
+	String name() const override;
+	size_t size() const override { return sizeof(String); }
 };
 
 struct DerivedType : Type {
-	virtual const SlotBase* find_slot_by_name(const std::string& name) const { return nullptr; }
+	virtual const SlotBase* find_slot_by_name(const String& name) const { return nullptr; }
 };
 
 // static downcast
@@ -235,7 +235,7 @@ template <> struct BuildTypeInfo<void> {
 	static const VoidType* build() { return VoidType::get(); }
 };
 
-template <> struct BuildTypeInfo<std::string> {
+template <> struct BuildTypeInfo<String> {
 	static const StringType* build() { return StringType::get(); }
 };
 
@@ -285,7 +285,7 @@ void append_type_names(FormattedStream& os) {
 }
 
 template <typename... Args>
-std::string get_signature_description() {
+String get_signature_description() {
 	StringStream ss;
 	ss << '(';
 	append_type_names<Args...>(ss);

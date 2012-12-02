@@ -8,22 +8,22 @@
 namespace falling {
 
 struct ReferenceType : Type {
-	ReferenceType(std::string name) : name_(std::move(name)) {}
+	ReferenceType(String name) : name_(std::move(name)) {}
 	
 	virtual const Type* pointee_type() const = 0;
 	
-	std::string name() const override { return name_; }
+	String name() const override { return name_; }
 protected:
-	static std::string build_reference_type_name(std::string base_name, const Type* pointee);
+	static String build_reference_type_name(String base_name, const Type* pointee);
 private:
-	std::string name_;
+	String name_;
 };
 
 template <typename T>
 struct ReferenceTypeImpl : TypeFor<T, ReferenceType> {
 	typedef typename T::PointeeType PointeeType;
 	
-	ReferenceTypeImpl(std::string base_name) : TypeFor<T, ReferenceType>(ReferenceType::build_reference_type_name(base_name, get_type<PointeeType>())) {}
+	ReferenceTypeImpl(String base_name) : TypeFor<T, ReferenceType>(ReferenceType::build_reference_type_name(base_name, get_type<PointeeType>())) {}
 	
 	// ReferenceType interface
 	const Type* pointee_type() const { return get_type<PointeeType>(); }

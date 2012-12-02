@@ -15,12 +15,12 @@
 
 namespace falling {
 	struct MatrixType : public SimpleType {
-		MatrixType(std::string name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(std::move(name), width, component_width, is_float, is_signed) {}
+		MatrixType(String name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(std::move(name), width, component_width, is_float, is_signed) {}
 		virtual size_t num_columns() const = 0;
 		virtual size_t num_rows() const = 0;
 		virtual void* cast(const SimpleType* to, void* o) const { ASSERT(false); return nullptr; /* NIY */ }
 	protected:
-		std::string build_type_name_for_matrix(size_t cols, size_t rows);
+		String build_type_name_for_matrix(size_t cols, size_t rows);
 	};
 	
 	template <typename T, size_t N, size_t M>

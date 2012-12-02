@@ -120,7 +120,7 @@ bool EnumType::contains(ssize_t value) const {
 	return false;
 }
 
-bool EnumType::name_for_value(ssize_t value, std::string& name) const {
+bool EnumType::name_for_value(ssize_t value, String& name) const {
 	if (value >= min() && value <= max()) {
 		for (auto& tuple: entries_) {
 			if (std::get<1>(tuple) == value) {
@@ -132,7 +132,7 @@ bool EnumType::name_for_value(ssize_t value, std::string& name) const {
 	return false;
 }
 
-bool EnumType::value_for_name(const std::string& name, ssize_t& out_value) const {
+bool EnumType::value_for_name(const String& name, ssize_t& out_value) const {
 	for (auto& tuple: entries_) {
 		if (std::get<0>(tuple) == name) {
 			out_value = std::get<1>(tuple);
@@ -143,7 +143,7 @@ bool EnumType::value_for_name(const std::string& name, ssize_t& out_value) const
 }
 
 void EnumType::deserialize_raw(byte* place, const ArchiveNode& node, UniverseBase&) const {
-	std::string name;
+	String name;
 	if (node.get(name)) {
 		ssize_t value;
 		ASSERT(width_ <= sizeof(ssize_t));
@@ -162,7 +162,7 @@ void EnumType::serialize_raw(const byte* place, ArchiveNode& node, UniverseBase&
 	ssize_t value = 0;
 	ASSERT(width_ <= sizeof(ssize_t));
 	memcpy(&value, place, width_);
-	std::string name;
+	String name;
 	if (name_for_value(value, name)) {
 		node.set(name);
 		// Success!
@@ -209,11 +209,11 @@ const VoidType* VoidType::get() {
 }
 
 
-void StringType::deserialize(std::string& place, const ArchiveNode& node, UniverseBase&) const {
+void StringType::deserialize(String& place, const ArchiveNode& node, UniverseBase&) const {
 	node.get(place);
 }
 
-void StringType::serialize(const std::string& place, ArchiveNode& node, UniverseBase&) const {
+void StringType::serialize(const String& place, ArchiveNode& node, UniverseBase&) const {
 	node.set(place);
 }
 
@@ -222,8 +222,8 @@ const StringType* StringType::get() {
 	return &type;
 }
 
-std::string StringType::name() const {
-	return "std::string";
+String StringType::name() const {
+	return "String";
 }
 
 }

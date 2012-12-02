@@ -15,12 +15,12 @@
 
 namespace falling {
 	struct VectorType : public SimpleType {
-		VectorType(std::string name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(name, width, component_width, is_float, is_signed) {}
+		VectorType(String name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(name, width, component_width, is_float, is_signed) {}
 	};
 	
 	template <typename T, size_t N>
 	struct VectorTypeImpl : public TypeFor<TVector<T, N>, VectorType> {
-		VectorTypeImpl(std::string name) : TypeFor<TVector<T,N>, VectorType>(std::move(name), sizeof(T)*N, sizeof(T), IsFloatingPoint<T>::Value, IsSigned<T>::Value) {}
+		VectorTypeImpl(String name) : TypeFor<TVector<T,N>, VectorType>(std::move(name), sizeof(T)*N, sizeof(T), IsFloatingPoint<T>::Value, IsSigned<T>::Value) {}
 		
 		virtual void deserialize(TVector<T, N>&, const ArchiveNode&, UniverseBase&) const override;
 		virtual void serialize(const TVector<T,N>&, ArchiveNode&, UniverseBase&) const override;

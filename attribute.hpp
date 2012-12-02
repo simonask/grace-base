@@ -9,15 +9,15 @@
 namespace falling {
 
 struct AttributeBase {
-	AttributeBase(std::string name, std::string description) : name_(std::move(name)), description_(std::move(description)) {}
+	AttributeBase(String name, String description) : name_(std::move(name)), description_(std::move(description)) {}
 	virtual ~AttributeBase() {}
 	
 	virtual const Type* type() const = 0;
-	const std::string& name() const { return name_; }
-	const std::string& description() const { return description_; }
+	const String& name() const { return name_; }
+	const String& description() const { return description_; }
 protected:
-	std::string name_;
-	std::string description_;
+	String name_;
+	String description_;
 };
 
 template <typename T>
@@ -30,7 +30,7 @@ struct Attribute {
 
 template <typename T>
 struct AttributeForObject : AttributeBase {
-	AttributeForObject(std::string name, std::string description) : AttributeBase(std::move(name), std::move(description)) {}
+	AttributeForObject(String name, String description) : AttributeBase(std::move(name), std::move(description)) {}
 	virtual ~AttributeForObject() {}
 	virtual bool deserialize_attribute(T* object, const ArchiveNode&, UniverseBase&) const = 0;
 	virtual bool serialize_attribute(const T* object, ArchiveNode&, UniverseBase&) const = 0;
@@ -38,7 +38,7 @@ struct AttributeForObject : AttributeBase {
 
 template <typename ObjectType, typename MemberType, typename GetterType = MemberType>
 struct AttributeForObjectOfType : AttributeForObject<ObjectType>, Attribute<MemberType> {
-	AttributeForObjectOfType(std::string name, std::string description) : AttributeForObject<ObjectType>(name, description) {}
+	AttributeForObjectOfType(String name, String description) : AttributeForObject<ObjectType>(name, description) {}
 	
 	virtual GetterType get(const ObjectType&) const = 0;
 	virtual void set(ObjectType&, MemberType value) const = 0;
@@ -90,7 +90,7 @@ template <typename ObjectType, typename MemberType>
 struct MemberAttribute : AttributeForObjectOfType<ObjectType, MemberType, const MemberType&> {
 	typedef MemberType ObjectType::* MemberPointer;
 	
-	MemberAttribute(std::string name, std::string description, MemberPointer member) : AttributeForObjectOfType<ObjectType, MemberType, const MemberType&>(name, description), member_(member) {}
+	MemberAttribute(String name, String description, MemberPointer member) : AttributeForObjectOfType<ObjectType, MemberType, const MemberType&>(name, description), member_(member) {}
 	
 	const MemberType& get(const ObjectType& object) const {
 		return object.*member_;
@@ -119,7 +119,7 @@ struct MethodAttribute : AttributeForObjectOfType<ObjectType, MemberType, Getter
 	typedef GetterReturnType(ObjectType::*GetterPointer)() const;
 	typedef SetterReturnTypeUnused(ObjectType::*SetterPointer)(SetterArgumentType);
 	
-	MethodAttribute(std::string name, std::string description, GetterPointer getter, SetterPointer setter) : AttributeForObjectOfType<ObjectType, MemberType, GetterReturnType>(name, description), getter_(getter), setter_(setter) {}
+	MethodAttribute(String name, String description, GetterPointer getter, SetterPointer setter) : AttributeForObjectOfType<ObjectType, MemberType, GetterReturnType>(name, description), getter_(getter), setter_(setter) {}
 	
 	GetterReturnType get(const ObjectType& object) const {
 		return (object.*getter_)();

@@ -9,7 +9,7 @@
 #include "type/matrix_type.hpp"
 
 namespace falling {
-	std::string MatrixType::build_type_name_for_matrix(size_t cols, size_t rows) {
+	String MatrixType::build_type_name_for_matrix(size_t cols, size_t rows) {
 		StringStream ss;
 		ss << "matrix" << cols << rows;
 		return ss.str();

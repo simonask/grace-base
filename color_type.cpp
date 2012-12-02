@@ -35,7 +35,7 @@ namespace falling {
 		a.set(color.alpha());
 	}
 	
-	std::string ColorType::name() const {
+	String ColorType::name() const {
 		return "Color";
 	}
 	

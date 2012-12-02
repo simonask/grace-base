@@ -9,13 +9,13 @@ namespace falling {
 
 struct ArrayType : DerivedType {
 public:
-	std::string name() const override { return name_; }
+	String name() const override { return name_; }
 	bool is_variable_length() const { return is_variable_length_; }
 	const Type* element_type() const { return element_type_; }
 	const Type* type_of_element(size_t idx) const { return element_type(); }
 protected:
-	ArrayType(std::string name, const Type* element_type, bool is_variable_length) : name_(std::move(name)), element_type_(element_type), is_variable_length_(is_variable_length) {}
-	std::string name_;
+	ArrayType(String name, const Type* element_type, bool is_variable_length) : name_(std::move(name)), element_type_(element_type), is_variable_length_(is_variable_length) {}
+	String name_;
 	const Type* element_type_;
 	bool is_variable_length_;
 };
@@ -30,17 +30,17 @@ public:
 	void deserialize_raw(byte* place, const ArchiveNode& node, UniverseBase&) const override;
 	void serialize_raw(const byte* place, ArchiveNode& node, UniverseBase&) const override;
 protected:
-	static std::string build_fixed_array_type_name(const Type* element_type);
+	static String build_fixed_array_type_name(const Type* element_type);
 	size_t num_elements_;
 };
 
-std::string build_variable_length_array_type_name(std::string base_container_name, const Type* element_type);
+String build_variable_length_array_type_name(String base_container_name, const Type* element_type);
 
 template <typename Container>
 struct VariableLengthArrayType : TypeFor<Container, ArrayType> {
 public:
 	typedef typename Container::value_type ElementType;
-	VariableLengthArrayType(std::string base_container_name) : TypeFor<Container, ArrayType>(build_variable_length_array_type_name(std::move(base_container_name), get_type<ElementType>()), get_type<ElementType>(), true) {}
+	VariableLengthArrayType(String base_container_name) : TypeFor<Container, ArrayType>(build_variable_length_array_type_name(std::move(base_container_name), get_type<ElementType>()), get_type<ElementType>(), true) {}
 	size_t num_elements() const { return SIZE_T_MAX; }
 	size_t offset_of_element(size_t idx) const { return idx * this->element_type_->size(); }
 	

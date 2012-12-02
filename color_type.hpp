@@ -21,7 +21,7 @@ namespace falling {
 		virtual void deserialize(Color& place, const ArchiveNode&, UniverseBase&) const;
 		virtual void serialize(const Color& place, ArchiveNode&, UniverseBase&) const;
 		
-		std::string name() const;
+		String name() const;
 		size_t size() const { return sizeof(Color); }
 	};
 	

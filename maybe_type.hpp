@@ -8,7 +8,7 @@
 
 namespace falling {
 
-std::string build_maybe_type_name(const Type* inner_type);
+String build_maybe_type_name(const Type* inner_type);
 
 template <typename T>
 struct MaybeType : TypeFor<Maybe<T>> {
@@ -17,11 +17,11 @@ struct MaybeType : TypeFor<Maybe<T>> {
 	void deserialize(Maybe<T>& place, const ArchiveNode&, UniverseBase&) const;
 	void serialize(const Maybe<T>& place, ArchiveNode&, UniverseBase&) const;
 	
-	const std::string& name() const { return name_; }
+	const String& name() const { return name_; }
 	
 	const Type* inner_type() const { return get_type<T>(); }
 private:
-	std::string name_;
+	String name_;
 };
 
 template <typename T>

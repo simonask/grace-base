@@ -5,7 +5,7 @@
 #include "object/object.hpp"
 #include "type/type.hpp"
 #include "object/objectptr.hpp"
-#include <string>
+#include "base/string.hpp"
 
 namespace falling {
 
@@ -15,7 +15,7 @@ public:
 	static void add();
 	static void add(const ObjectTypeBase* type);
 	
-	static const ObjectTypeBase* get(const std::string& name);
+	static const ObjectTypeBase* get(const String& name);
 private:
 	TypeRegistry();
 	struct Impl;

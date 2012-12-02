@@ -6,7 +6,7 @@
 namespace falling {
 
 struct TypeRegistry::Impl {
-	std::map<std::string, const ObjectTypeBase*> type_map;
+	std::map<String, const ObjectTypeBase*> type_map;
 };
 
 TypeRegistry::Impl* TypeRegistry::impl() {
@@ -18,7 +18,7 @@ void TypeRegistry::add(const ObjectTypeBase* type) {
 	impl()->type_map[type->name()] = type;
 }
 
-const ObjectTypeBase* TypeRegistry::get(const std::string& name) {
+const ObjectTypeBase* TypeRegistry::get(const String& name) {
 	return find_or(impl()->type_map, name, nullptr);
 }
 
