@@ -16,8 +16,10 @@
 namespace falling {
 	class StringStream : public FormattedStream {
 	public:
-		StringStream() : FormattedStream(buffer_) {}
+		StringStream(IAllocator& alloc = default_allocator()) : buffer_(alloc), FormattedStream(buffer_) {}
 		explicit StringStream(const std::string&);
+		StringStream(const StringStream& other, IAllocator& alloc = default_allocator()) : buffer_(other.buffer_, alloc), FormattedStream(buffer_) {}
+		StringStream(StringStream&& other) : buffer_(std::move(other.buffer_)), FormattedStream(buffer_) {}
 		
 		std::string string() const;
 		void set_string(const std::string&);

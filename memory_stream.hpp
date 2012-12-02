@@ -12,7 +12,7 @@
 #include "io/input_stream.hpp"
 #include "io/output_stream.hpp"
 
-#include <deque>
+#include "base/array_list.hpp"
 
 namespace falling {
 	class MemoryStream : public InputStream {
@@ -56,22 +56,23 @@ namespace falling {
 	
 	class MemoryBufferStream : public InputStream, public OutputStream {
 	public:
-		MemoryBufferStream() {
+		MemoryBufferStream(IAllocator& alloc = default_allocator()) : buffer_(alloc) {
 			read_pos_ = write_pos_ = buffer_.begin();
 		}
+		MemoryBufferStream(const MemoryBufferStream& other, IAllocator& alloc = default_allocator());
 		template <typename T>
-		explicit MemoryBufferStream(T container) {
+		explicit MemoryBufferStream(T container, IAllocator& alloc = default_allocator()) {
 			read_pos_ = write_pos_ = buffer_.begin();
 			insert(std::begin(container), std::end(container));
 		}
 		template <typename InputIterator>
-		MemoryBufferStream(InputIterator begin, InputIterator end) {
+		MemoryBufferStream(InputIterator begin, InputIterator end, IAllocator& alloc = default_allocator()) {
 			read_pos_ = write_pos_ = buffer_.begin();
 			insert(begin, end);
 		}
 
-		MemoryBufferStream(MemoryBufferStream&& other) = default;
-		MemoryBufferStream& operator=(MemoryBufferStream&& other) = default;
+		MemoryBufferStream(MemoryBufferStream&& other);
+		MemoryBufferStream& operator=(const MemoryBufferStream& other) = default;
 		
 		// InputStream API
 		bool is_readable() const final;
@@ -88,6 +89,7 @@ namespace falling {
 		bool seek_write(size_t pos) final;
 		
 		// MemoryBufferStream API
+		IAllocator& allocator() const { return buffer_.allocator(); }
 		void clear();
 		size_t size() const { return buffer_.size(); }
 		size_t data_available() const { return buffer_.end() - read_pos_; }
@@ -113,8 +115,8 @@ namespace falling {
 			return len;
 		}
 	private:
-		typedef typename std::deque<byte>::iterator Position;
-		std::deque<byte> buffer_; // TODO: Maybe use ArrayList<T>?
+		typedef typename ArrayList<byte>::iterator Position;
+		ArrayList<byte> buffer_;
 		Position read_pos_;
 		Position write_pos_;
 	};
