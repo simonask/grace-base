@@ -25,12 +25,12 @@ namespace falling {
 		T* next = nullptr;
 		T* previous = nullptr;
 		friend class LinkList<T>;
+		friend struct GetNextNode<T>;
+		friend struct GetPreviousNode<T>;
 	};
 	
 	template <typename T>
 	struct LinkListItemHolder {
-	public:
-		T value;
 	private:
 		template <typename... Args>
 		LinkListItemHolder(Args&&... args) : value(std::forward<Args>(args)...) {}
@@ -38,6 +38,9 @@ namespace falling {
 		LinkListItemHolder<T>* previous = nullptr;
 		friend class LinkList<T>;
 		friend struct GetNextNode<LinkListItemHolder<T>>;
+		friend struct GetPreviousNode<LinkListItemHolder<T>>;
+	public:
+		T value;
 	};
 	
 	template <typename T>
@@ -64,6 +67,13 @@ namespace falling {
 	};
 	
 	template <typename T>
+	struct GetPreviousNode<LinkListItemHolder<T>> {
+		static LinkListItemHolder<T>* get(LinkListItemHolder<T>* x) {
+			return x->previous;
+		}
+	};
+	
+	template <typename T>
 	typename GetLinkListItemType<T>::Type* get_next_from_link_list_node(LinkListItem<T>* item) {
 		return item->next;
 	}
@@ -73,7 +83,7 @@ namespace falling {
 	public:
 		using ItemType = typename GetLinkListItemType<T>::Type;
 		
-		LinkList(IAllocator& alloc = default_allocator()) : allocator_(alloc) {}
+		LinkList(IAllocator& alloc = default_allocator()) : allocator_(alloc) { setup_sentinel(); }
 		LinkList(IAllocator& alloc, const LinkList<T>& other);
 		LinkList(const LinkList<T>& other);
 		LinkList(LinkList<T>&& other);
@@ -91,6 +101,7 @@ namespace falling {
 		const T& front() const;
 		T& back();
 		const T& back() const;
+		bool empty() const;
 		
 		using iterator = ForwardLinkListIterator<LinkList<T>, ItemType, false>;
 		using const_iterator = ForwardLinkListIterator<LinkList<T>, ItemType, true>;
@@ -103,9 +114,9 @@ namespace falling {
 		void clear();
 	private:
 		IAllocator& allocator_;
-		ItemType* head_ = nullptr;
-		ItemType* tail_ = nullptr;
+		ItemType sentinel_;
 		
+		void setup_sentinel();
 		void link_after(ItemType* item, ItemType* after);
 		void link_before(ItemType* item, ItemType* before);
 		void unlink(ItemType* item);
@@ -125,7 +136,7 @@ namespace falling {
 	template <typename... Args>
 	T& LinkList<T>::emplace_back(Args&&... args) {
 		ItemType* n = new(allocator_) ItemType(std::forward<Args>(args)...);
-		link_after(n, tail_);
+		link_after(n, GetPreviousNode<ItemType>::get(&sentinel_));
 		return *GetValueForNode<ItemType>::get(n);
 	}
 	
@@ -133,78 +144,60 @@ namespace falling {
 	template <typename... Args>
 	T& LinkList<T>::emplace_front(Args&&... args) {
 		ItemType* n = new(allocator_) ItemType(std::forward<Args>(args)...);
-		link_before(n, head_);
+		link_before(n, GetNextNode<ItemType>::get(&sentinel_));
 		return *GetValueForNode<ItemType>::get(n);
 	}
 	
 	template <typename T>
 	typename LinkList<T>::iterator
 	LinkList<T>::begin() {
-		return iterator(head_);
+		return iterator(GetNextNode<ItemType>::get(&sentinel_));
 	}
 	
 	template <typename T>
 	typename LinkList<T>::iterator
 	LinkList<T>::end() {
-		return iterator(nullptr);
+		return iterator(&sentinel_);
 	}
 	
 	template <typename T>
 	typename LinkList<T>::const_iterator
 	LinkList<T>::begin() const {
-		return const_iterator(head_);
+		return const_iterator(GetNextNode<ItemType>::get(&sentinel_));
 	}
 	
 	template <typename T>
 	typename LinkList<T>::const_iterator
 	LinkList<T>::end() const {
-		return const_iterator(nullptr);
+		return const_iterator(&sentinel_);
 	}
 	
 	template <typename T>
 	void LinkList<T>::link_after(ItemType* it, ItemType* after) {
 		it->previous = after;
-		if (after) {
-			it->next = after->next;
-			after->next = it;
-			if (it->next) {
-				it->next->previous = it;
-			} else {
-				tail_ = it;
-			}
-		} else {
-			ASSERT(tail_ == nullptr && head_ == nullptr);
-			tail_ = head_ = it;
-		}
+		it->next = after->next;
+		it->previous->next = it;
+		it->next->previous = it;
 	}
 	
 	template <typename T>
 	void LinkList<T>::link_before(ItemType* it, ItemType* before) {
 		it->next = before;
-		if (before) {
-			it->previous = before->previous;
-			before->previous = it;
-			if (it->previous) {
-				it->previous->next = it;
-			} else {
-				head_ = it;
-			}
-		} else {
-			ASSERT(tail_ == nullptr && head_ == nullptr);
-			tail_ = head_ = it;
-		}
+		it->previous = before->previous;
+		it->previous->next = it;
+		it->next->previous = it;
 	}
 	
 	template <typename T>
 	void LinkList<T>::unlink(ItemType* it) {
-		if (it->previous) {
-			it->previous->next = it->next;
-		}
-		if (it->next) {
-			it->next->previous = it->previous;
-		}
-		it->next = nullptr;
-		it->previous = nullptr;
+		it->next->previous = it->previous;
+		it->previous->next = it->next;
+	}
+	
+	template <typename T>
+	void LinkList<T>::setup_sentinel() {
+		sentinel_.next = &sentinel_;
+		sentinel_.previous = &sentinel_;
 	}
 }
 
