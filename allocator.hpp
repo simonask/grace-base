@@ -200,7 +200,10 @@ namespace falling {
 	}
     
     inline void* ScratchAllocator::allocate_large(size_t nbytes, size_t alignment, size_t &out_actually_allocated) {
-        return base_.allocate_large(nbytes, alignment, out_actually_allocated);
+		byte* ptr = (byte*)base_.allocate_large(nbytes, alignment, out_actually_allocated);
+		last_current_ = base_.current();
+		detail::poison_memory(ptr, ptr + out_actually_allocated, detail::UNINITIALIZED_MEMORY_PATTERN);
+		return ptr;
     }
 	
 	inline ScratchAllocator::~ScratchAllocator() {
