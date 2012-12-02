@@ -16,9 +16,9 @@
 namespace falling {
 	class ResourcePtrType : public Type {
 	public:
-		std::string name() const { return "ResourcePtr"; }
+		String name() const { return "ResourcePtr"; }
 	private:
-		std::string name_;
+		String name_;
 	};
 	
 	template <typename T>

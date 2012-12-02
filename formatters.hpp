@@ -18,7 +18,7 @@
 namespace falling {
 	template <typename T>
 	struct PrintfFormatter : Formatter {
-		std::string v;
+		String v;
 		PrintfFormatter(const char* format_string, T value) {
 			char* ret;
 			asprintf(&ret, format_string, value);
@@ -37,7 +37,7 @@ namespace falling {
 	struct TruncateFormatter : Formatter {
 		const T& value;
 		uint32 width;
-		std::string ellipsis;
+		String ellipsis;
 	};
 	
 	struct ClosureFormatter : Formatter {
@@ -54,7 +54,7 @@ namespace falling {
 	}
 	
 	template <typename T>
-	ClosureFormatter truncate(const T& value, uint32 width, const std::string& ellipsis = "") {
+	ClosureFormatter truncate(const T& value, uint32 width, const String& ellipsis = "") {
 		return closure_formatter([=](FormattedStream& stream) {
 			StringStream ss;
 			ss << value;
@@ -82,7 +82,7 @@ namespace falling {
 		void write(FormattedStream& stream) const {
 			StringStream ss;
 			ss << value;
-			std::string s = ss.str();
+			String s = ss.str();
 			if (s.size() > width) {
 				stream << s.substr(0, width);
 			} else {

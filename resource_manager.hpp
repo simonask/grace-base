@@ -30,14 +30,14 @@ namespace falling {
 	
 	class ResourceManager {
 	public:
-		static void initialize_with_path(const std::string& path_to_resources);
+		static void initialize_with_path(const String& path_to_resources);
 		static IAllocator& allocator();
 		
 		template <typename T>
 		static ResourcePtr<T> load_resource(ResourceID rid);
 		
 		static ResourceLoaderBase* get_loader_for_resource_id(ResourceID rid);
-		static std::string path_for_resource(ResourceID rid);
+		static String path_for_resource(ResourceID rid);
 		
 		template <typename ResourceType, typename ResourceLoaderType>
 		static void add_loader() {

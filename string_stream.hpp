@@ -11,38 +11,44 @@
 
 #include "io/formatted_stream.hpp"
 #include "io/memory_stream.hpp"
-#include <string>
+#include "base/string.hpp"
 
 namespace falling {
 	class StringStream : public FormattedStream {
 	public:
 		StringStream(IAllocator& alloc = default_allocator()) : buffer_(alloc), FormattedStream(buffer_) {}
-		explicit StringStream(const std::string&);
+		explicit StringStream(StringRef);
 		StringStream(const StringStream& other, IAllocator& alloc = default_allocator()) : buffer_(other.buffer_, alloc), FormattedStream(buffer_) {}
 		StringStream(StringStream&& other) : buffer_(std::move(other.buffer_)), FormattedStream(buffer_) {}
 		
-		std::string string() const;
-		void set_string(const std::string&);
+		String string(IAllocator& alloc) const;
+		String string() const;
+		void set_string(StringRef);
 		
 		// StringStream-like
-		std::string str() const { return string(); }
-		void str(const std::string& s) { set_string(s); }
+		String str() const { return string(); }
+		void str(const String& s) { set_string(s); }
 	private:
 		MemoryBufferStream buffer_;
 	};
 	
-	inline StringStream::StringStream(const std::string& s) : FormattedStream(buffer_) {
+	inline StringStream::StringStream(StringRef s) : FormattedStream(buffer_) {
 		set_string(s);
 	}
 	
-	inline std::string StringStream::string() const {
-		std::string result;
-		result.resize(buffer_.size());
-		buffer_.copy_to(result.begin(), result.end());
-		return result;
+	inline String StringStream::string() const {
+		return string(buffer_.allocator());
 	}
 	
-	inline void StringStream::set_string(const std::string& s) {
+	inline String StringStream::string(IAllocator& alloc) const {
+		size_t len = buffer_.size();
+		char* buffer = (char*)alloc.allocate(len, 1);
+		char* end = buffer + len;
+		buffer_.copy_to(buffer, end);
+		return String::take_ownership(alloc, buffer, len);
+	}
+	
+	inline void StringStream::set_string(StringRef s) {
 		buffer_.clear();
 		buffer_.insert(s.begin(), s.end());
 	}

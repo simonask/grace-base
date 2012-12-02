@@ -14,7 +14,7 @@
 #include "base/vector.hpp"
 #include "base/string.hpp"
 #include <stdio.h>
-#include <string>
+#include "base/string.hpp"
 
 namespace falling {
 	class FormattedStream;
@@ -32,7 +32,7 @@ namespace falling {
 	};
 
 	FormattedStream& operator<<(FormattedStream& stream, const char* cstr);
-	FormattedStream& operator<<(FormattedStream& stream, const std::string&);
+	FormattedStream& operator<<(FormattedStream& stream, const String&);
 	FormattedStream& operator<<(FormattedStream& stream, StringRef);
 	FormattedStream& operator<<(FormattedStream& stream, bool b);
 	FormattedStream& operator<<(FormattedStream& stream, uint8);

@@ -11,7 +11,7 @@
 #include "io/resource_loader.hpp"
 #include "base/fiber.hpp"
 
-#include <string>
+#include "base/string.hpp"
 
 #include "io/file_stream.hpp"
 
@@ -51,7 +51,7 @@ namespace falling {
 	};
 	
 	struct ResourceManager::Impl {
-		std::string resource_path;
+		String resource_path;
 		std::map<ResourceID, Resource*> resource_cache;
 		std::map<ResourceLoaderID, ResourceLoaderBase*> resource_loaders;
 		bool is_in_resource_loader_fiber = false;
@@ -66,14 +66,14 @@ namespace falling {
 		return *p;
 	}
 	
-	void ResourceManager::initialize_with_path(const std::string &path_to_resources) {
+	void ResourceManager::initialize_with_path(const String &path_to_resources) {
 		if (impl().resource_path != "") {
 			Warning() << "Resource path already initialized!";
 		}
 		impl().resource_path = path_to_resources;
 		
 		if (impl().resource_path.back() != '/') { // TODO: Win32?
-			impl().resource_path += '/';
+			impl().resource_path = impl().resource_path + '/';
 		}
 	}
 	
@@ -121,7 +121,7 @@ namespace falling {
 		
 		// TODO: Consider derived resources.
 		
-		std::string path = path_for_resource(rid);
+		String path = path_for_resource(rid);
 		InputFileStream f = InputFileStream::open(path);
 		if (f.is_open()) {
 			Resource* resource = loader->allocate();
@@ -138,7 +138,7 @@ namespace falling {
 		return nullptr;
 	}
 	
-	std::string ResourceManager::path_for_resource(ResourceID rid) {
+	String ResourceManager::path_for_resource(ResourceID rid) {
 		if (impl().resource_path == "") {
 			Warning() << "No resource path has been set.";
 		}

@@ -12,10 +12,10 @@
 #include "base/basic.hpp"
 #include "object/object.hpp"
 
-#include <string>
+#include "base/string.hpp"
 
 namespace falling {
-	typedef std::string ResourceID;
+	typedef String ResourceID;
 	
 	class ResourceLoaderBase;
 	

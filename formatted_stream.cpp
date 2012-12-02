@@ -17,8 +17,8 @@ namespace falling {
 		return stream;
 	}
 	
-	FormattedStream& operator<<(FormattedStream& stream, const std::string& str) {
-		stream.write((const byte*)str.c_str(), str.size());
+	FormattedStream& operator<<(FormattedStream& stream, const String& str) {
+		stream.write((const byte*)str.data(), str.size());
 		return stream;
 	}
 	

@@ -11,7 +11,7 @@
 
 #include "io/input_stream.hpp"
 #include "io/output_stream.hpp"
-#include <string>
+#include "base/string.hpp"
 
 namespace falling {
 	enum FileWriteMode : uint8 {
@@ -24,7 +24,7 @@ namespace falling {
 		// FileStream API
 		~FileStreamBase();
 		FileStreamBase& operator=(FileStreamBase&& other);
-		const std::string& path() const { return path_; }
+		const String& path() const { return path_; }
 		void close();
 		bool is_open() const;
 		bool eof() const;
@@ -45,13 +45,13 @@ namespace falling {
 		byte impl_data_[ImplSize];
 		Impl& impl();
 		const Impl& impl() const;
-		std::string path_;
+		String path_;
 		bool synchronize_;
 	};
 		
 	class InputFileStream : public InputStream, public FileStreamBase {
 	public:
-		static InputFileStream open(std::string path);
+		static InputFileStream open(String path);
 		static InputFileStream wrap_file_pointer(void* os_fp);
 		InputFileStream() {}
 		InputFileStream(InputFileStream&& other) = default;
@@ -68,7 +68,7 @@ namespace falling {
 		
 	class OutputFileStream : public OutputStream, public FileStreamBase {
 	public:
-		static OutputFileStream open(std::string path, FileWriteMode mode = FileWriteMode::Truncate);
+		static OutputFileStream open(String path, FileWriteMode mode = FileWriteMode::Truncate);
 		static OutputFileStream wrap_file_pointer(void* os_fp);
 		OutputFileStream() {}
 		OutputFileStream(OutputFileStream&& other) = default;

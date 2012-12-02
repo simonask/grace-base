@@ -7,6 +7,7 @@
 //
 
 #include "io/file_stream.hpp"
+#include "base/stack_array.hpp"
 
 #include <stdio.h>
 
@@ -93,8 +94,9 @@ namespace falling {
 		return len;
 	}
 	
-	InputFileStream InputFileStream::open(std::string path) {
-		FILE* fp = fopen(path.c_str(), "r");
+	InputFileStream InputFileStream::open(String path) {
+		COPY_STRING_REF_TO_CSTR_BUFFER(path_buffer, path);
+		FILE* fp = fopen(path_buffer.data(), "r");
 		return wrap_file_pointer(fp);
 	}
 	
@@ -132,9 +134,10 @@ namespace falling {
 		return file_size();
 	}
 	
-	OutputFileStream OutputFileStream::open(std::string path, FileWriteMode mode) {
+	OutputFileStream OutputFileStream::open(String path, FileWriteMode mode) {
 		const char* m = mode == FileWriteMode::Truncate ? "w" : "a";
-		FILE* fp = fopen(path.c_str(), m);
+		COPY_STRING_REF_TO_CSTR_BUFFER(path_buffer, path);
+		FILE* fp = fopen(path_buffer.data(), m);
 		return wrap_file_pointer(fp);
 	}
 	
