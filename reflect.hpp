@@ -20,31 +20,31 @@ struct ObjectTypeBuilder {
 	ObjectTypeBuilder() : type_(nullptr) {}
 	
 	Self& abstract(bool a = true) { type_->is_abstract_ = a; return *this; }
-	Self& name(std::string n) { type_->name_ = std::move(n); return *this; }
-	Self& description(std::string d) { type_->description_ = std::move(d); return *this; }
+	Self& name(String n) { type_->name_ = std::move(n); return *this; }
+	Self& description(String d) { type_->description_ = std::move(d); return *this; }
 	Self& super(const ObjectTypeBase* t) { type_->super_ = t; return *this; }
 	template <typename SuperClass>
 	Self& super() { return super(get_type<SuperClass>()); }
 	
-	void check_attribute_name_(const std::string& name) {
+	void check_attribute_name_(const String& name) {
 		const char* reserved_names[] = {"class", "aspects"};
 		for (auto it: reserved_names) {
 			if (name == it) {
-				fprintf(stderr, "The attribute name '%s' is reserved.\n", name.c_str());
+				Error() << "The attribute name '" << name << "' is reserved.";
 				ASSERT(false);
 			}
 		}
 	}
 	
 	template <typename MemberType>
-	Self& property(MemberType T::* member, std::string name, std::string description/*, MemberType default_value = MemberType()*/) {
+	Self& property(MemberType T::* member, String name, String description/*, MemberType default_value = MemberType()*/) {
 		check_attribute_name_(name);
 		type_->properties_.push_back(new_static MemberAttribute<T, MemberType>(std::move(name), std::move(description), member));
 		return *this;
 	}
 	
 	template <typename GetterReturnType, typename SetterArgumentType, typename SetterReturnType>
-	Self& property(GetterReturnType (T::*getter)() const, SetterReturnType (T::*setter)(SetterArgumentType), std::string name, std::string description) {
+	Self& property(GetterReturnType (T::*getter)() const, SetterReturnType (T::*setter)(SetterArgumentType), String name, String description) {
 		check_attribute_name_(name);
 		typedef typename RemoveConstRef<GetterReturnType>::Type RawType;
 		type_->properties_.push_back(new_static MethodAttribute<T, RawType, GetterReturnType, SetterArgumentType, SetterReturnType>(std::move(name), std::move(description), getter, setter));
@@ -52,18 +52,18 @@ struct ObjectTypeBuilder {
 	}
 	
 	template <typename... Args>
-	Self& signal(Signal<Args...> T::* member, std::string name, std::string description) {
+	Self& signal(Signal<Args...> T::* member, String name, String description) {
 		return property(member, name, description);
 	}
 	
 	template <typename R, typename... Args>
-	Self& slot(R(T::*function)(Args...), std::string name, std::string description) {
+	Self& slot(R(T::*function)(Args...), String name, String description) {
 		type_->slots_.push_back(new_static SlotForTypeWithSignature<T, R, Args...>(std::move(name), std::move(description), function));
 		return *this;
 	}
 	
 	template <typename R, typename... Args>
-	Self& slot(R(T::*function)(Args...) const, std::string name, std::string description) {
+	Self& slot(R(T::*function)(Args...) const, String name, String description) {
 		type_->slots_.push_back(new_static SlotForTypeWithSignature<const T, R, Args...>(std::move(name), std::move(description), function));
 		return *this;
 	}

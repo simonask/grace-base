@@ -3,7 +3,7 @@
 
 namespace falling {
 
-CompositeType::CompositeType(std::string name, const ObjectTypeBase* base_type) : base_type_(base_type), name_(std::move(name)), frozen_(false) {
+CompositeType::CompositeType(String name, const ObjectTypeBase* base_type) : base_type_(base_type), name_(std::move(name)), frozen_(false) {
 	size_ = this->base_type()->size();
 }
 	

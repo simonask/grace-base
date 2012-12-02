@@ -14,13 +14,13 @@
 namespace falling {
 
 struct ObjectTypeBase : DerivedType {
-	std::string name() const override { return name_; }
-	const std::string& description() const { return description_; }
+	String name() const override { return name_; }
+	const String& description() const { return description_; }
 	const ObjectTypeBase* super() const;
 	virtual Array<const AttributeBase*> attributes() const = 0;
 	virtual size_t num_slots() const = 0;
 	virtual const SlotBase* slot_at(size_t idx) const = 0;
-	virtual const SlotBase* find_slot_by_name(const std::string& name) const = 0;
+	virtual const SlotBase* find_slot_by_name(const String& name) const = 0;
 	
 	template <typename T, typename R, typename... Args>
 	const SlotForTypeWithSignature<T,R,Args...>* find_slot_for_method(typename GetMemberFunctionPointerType<T, R, Args...>::Type method) const {
@@ -37,11 +37,11 @@ struct ObjectTypeBase : DerivedType {
 		return nullptr;
 	}
 	
-	ObjectTypeBase(const ObjectTypeBase* super, std::string name, std::string description) : super_(super), name_(std::move(name)), description_(std::move(description)), is_abstract_(false) {}
+	ObjectTypeBase(const ObjectTypeBase* super, String name, String description) : super_(super), name_(std::move(name)), description_(std::move(description)), is_abstract_(false) {}
 	
 	const ObjectTypeBase* super_;
-	std::string name_;
-	std::string description_;
+	String name_;
+	String description_;
 	bool is_abstract_;
 	
 	void set_abstract(bool b) { this->is_abstract_ = b; }
@@ -51,7 +51,7 @@ template <typename T> struct AutoListRegistrarForObject;
 
 template <typename T>
 struct ObjectType : TypeFor<T, ObjectTypeBase> {
-	ObjectType(const ObjectTypeBase* super, std::string name, std::string description)
+	ObjectType(const ObjectTypeBase* super, String name, String description)
 		: TypeFor<T, ObjectTypeBase>(super, std::move(name), std::move(description))
 		, properties_(static_allocator())
 		, slots_(static_allocator())
@@ -83,7 +83,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	void deserialize(T& object, const ArchiveNode&, UniverseBase&) const;
 	void serialize(const T& object, ArchiveNode&, UniverseBase&) const;
 	
-	const SlotBase* find_slot_by_name(const std::string& name) const {
+	const SlotBase* find_slot_by_name(const String& name) const {
 		for (auto& it: slots_) {
 			if (it->name() == name) return it;
 		}

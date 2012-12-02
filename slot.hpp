@@ -23,14 +23,14 @@ namespace falling {
 	
 	struct SlotBase {
 		virtual ~SlotBase() {}
-		SlotBase(std::string name, std::string description) : name_(std::move(name)), description_(std::move(description)) {}
-		const std::string& name() const { return name_; }
-		const std::string& description() const { return description_; }
-		virtual std::string signature_description() const = 0;
+		SlotBase(String name, String description) : name_(std::move(name)), description_(std::move(description)) {}
+		const String& name() const { return name_; }
+		const String& description() const { return description_; }
+		virtual String signature_description() const = 0;
 		virtual void invoke_with_serialized_arguments(ObjectPtr<> object, const ArchiveNode& arg_list, UniverseBase& universe) const = 0;
 	private:
-		std::string name_;
-		std::string description_;
+		String name_;
+		String description_;
 	};
 	
 	template <typename... Args>
@@ -40,7 +40,7 @@ namespace falling {
 	
 	template <typename T>
 	struct SlotForType : SlotBase {
-		SlotForType(std::string name, std::string description) : SlotBase(std::move(name), std::move(description)) {}
+		SlotForType(String name, String description) : SlotBase(std::move(name), std::move(description)) {}
 		T* get_object_polymorphic(ObjectPtr<> receiver) const {
 			return dynamic_cast<T*>(receiver.get());
 		}
@@ -53,12 +53,12 @@ namespace falling {
 		
 		FunctionPointer method() const { return member_; }
 		
-		SlotForTypeWithSignature(std::string name, std::string description, FunctionPointer function)
+		SlotForTypeWithSignature(String name, String description, FunctionPointer function)
 		: SlotForType<typename std::remove_const<T>::type>(std::move(name), std::move(description))
 		, member_(function)
 		{}
 		
-		std::string signature_description() const { return get_signature_description<Args...>(); }
+		String signature_description() const { return get_signature_description<Args...>(); }
 		void invoke_polymorphic(ObjectPtr<> receiver, Args... args) const {
 			T* object = this->get_object_polymorphic(receiver);
 			if (object != nullptr) {

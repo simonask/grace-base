@@ -18,11 +18,11 @@ namespace falling {
 	struct SignalTypeBase : Type {
 	public:
 		ArrayRef<const Type*> signature() const { return signature_; }
-		std::string name() const { return name_; }
+		String name() const { return name_; }
 	protected:
-		std::string name_;
+		String name_;
 		Array<const Type*> signature_;
-		static std::string build_signal_name(ArrayRef<const Type*> signature);
+		static String build_signal_name(ArrayRef<const Type*> signature);
 	};
 	
 	template <typename... Args>
@@ -52,8 +52,8 @@ namespace falling {
 				if (connection.is_map()) {
 					auto& receiver_node = connection["receiver"];
 					auto& slot_node = connection["slot"];
-					std::string receiver;
-					std::string slot;
+					String receiver;
+					String slot;
 					if (receiver_node.get(receiver) && slot_node.get(slot)) {
 						node.register_signal_for_deserialization(&signal, receiver, slot);
 					} else {

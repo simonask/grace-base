@@ -39,8 +39,8 @@ struct Object {
 	uint32 universe_data__() const { return universe_data_; }
 	void set_universe_data__(uint32 data) { universe_data_ = data; }
 	
-	const std::string& object_id() const;
-	bool set_object_id(std::string new_id);
+	const String& object_id() const;
+	bool set_object_id(String new_id);
 	
 	const DerivedType* object_type() const { return type_; }
 	void set_object_type__(const DerivedType* t) { type_ = t; }

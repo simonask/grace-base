@@ -11,7 +11,7 @@
 namespace falling {
 
 struct CompositeType : DerivedType {
-	CompositeType(std::string name, const ObjectTypeBase* base_type = nullptr);
+	CompositeType(String name, const ObjectTypeBase* base_type = nullptr);
 	
 	const ObjectTypeBase* base_type() const;
 	size_t base_size() const;
@@ -28,7 +28,7 @@ struct CompositeType : DerivedType {
 	void move_construct(byte* place, byte* original) const override { ASSERT(false); }
 	void deserialize_raw(byte* place, const ArchiveNode& node, UniverseBase&) const override;
 	void serialize_raw(const byte* place, ArchiveNode& node, UniverseBase&) const override;
-	std::string name() const override { return name_; }
+	String name() const override { return name_; }
 	size_t size() const override { return size_; }
 	
 	// DerivedType interface
@@ -37,7 +37,7 @@ struct CompositeType : DerivedType {
 	const Type* type_of_element(size_t idx) const { return aspects_[idx]; }
 private:
 	const ObjectTypeBase* base_type_;
-	std::string name_;
+	String name_;
 	Array<const DerivedType*> aspects_;
 	bool frozen_;
 	size_t size_;

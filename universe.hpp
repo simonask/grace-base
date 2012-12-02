@@ -2,7 +2,7 @@
 #ifndef UNIVERSE_HPP_VHU9428R
 #define UNIVERSE_HPP_VHU9428R
 
-#include <string>
+#include "base/string.hpp"
 #include <map>
 #include "object/object.hpp"
 #include "object/objectptr.hpp"
@@ -13,22 +13,22 @@
 namespace falling {
 
 struct DerivedType;
-void error_category_already_initialized_with_different_type(const std::string& name);
+void error_category_already_initialized_with_different_type(const String& name);
 void warn_attempt_to_get_objects_of_unindexed_type(const ObjectTypeBase*);
 
 struct UniverseBase {
-	virtual ObjectPtr<> create_object(const DerivedType* type, std::string id) = 0;
-	virtual ObjectPtr<> create_root(const DerivedType* type, std::string id) = 0;
-	virtual ObjectPtr<> get_object(const std::string& id) const = 0;
-	virtual const std::string& get_id(ObjectPtr<const Object> object) const = 0;
-	virtual bool rename_object(ObjectPtr<> object, std::string new_id) = 0;
+	virtual ObjectPtr<> create_object(const DerivedType* type, String id) = 0;
+	virtual ObjectPtr<> create_root(const DerivedType* type, String id) = 0;
+	virtual ObjectPtr<> get_object(const String& id) const = 0;
+	virtual const String& get_id(ObjectPtr<const Object> object) const = 0;
+	virtual bool rename_object(ObjectPtr<> object, String new_id) = 0;
 	virtual ObjectPtr<> root() const = 0;
 	virtual void set_root(ObjectPtr<> root) = 0;
 	virtual void initialize_all() = 0;
 	virtual ~UniverseBase() {}
 	
 	template <typename T>
-	ObjectPtr<T> create(std::string id) {
+	ObjectPtr<T> create(String id) {
 		ObjectPtr<> o = this->create_object(get_type<T>(), std::move(id));
 		ObjectPtr<T> ptr = o.cast<T>();
 		ASSERT(ptr != nullptr); // create_object did not create an instance of T.
@@ -36,7 +36,7 @@ struct UniverseBase {
 	}
 	
 	template <typename T>
-	ObjectPtr<T> create_root(std::string id) {
+	ObjectPtr<T> create_root(String id) {
 		ObjectPtr<> o = this->create_root(get_type<T>(), std::move(id));
 		ObjectPtr<T> ptr = o.cast<T>();
 		ASSERT(ptr != nullptr);
@@ -85,13 +85,13 @@ AutoList<T, MemberOffset>& UniverseBase::get_auto_list() {
 }
 
 struct BasicUniverse : UniverseBase {
-	ObjectPtr<> create_object(const DerivedType* type, std::string) override;
-	ObjectPtr<> create_root(const DerivedType* type, std::string) override;
-	ObjectPtr<> get_object(const std::string& id) const override {
+	ObjectPtr<> create_object(const DerivedType* type, String) override;
+	ObjectPtr<> create_root(const DerivedType* type, String) override;
+	ObjectPtr<> get_object(const String& id) const override {
 		return find_or(object_map_, id, nullptr);
 	}
-	const std::string& get_id(ObjectPtr<const Object> object) const override;
-	bool rename_object(ObjectPtr<> object, std::string) override;
+	const String& get_id(ObjectPtr<const Object> object) const override;
+	bool rename_object(ObjectPtr<> object, String) override;
 	ObjectPtr<> root() const override { return root_; }
 	void set_root(ObjectPtr<> r) {
 		ASSERT(r != nullptr && r->universe() == this);
@@ -104,11 +104,11 @@ struct BasicUniverse : UniverseBase {
 	void clear();
 private:
 	IAllocator& allocator_;
-	std::map<std::string, ObjectPtr<>> object_map_;
-	std::map<ObjectPtr<const Object>, std::string> reverse_object_map_;
+	std::map<String, ObjectPtr<>> object_map_;
+	std::map<ObjectPtr<const Object>, String> reverse_object_map_;
 	Array<Object*> memory_map_;
 	ObjectPtr<> root_;
-	std::string empty_id_;
+	String empty_id_;
 };
 	
 typedef BasicUniverse TestUniverse;

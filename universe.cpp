@@ -2,22 +2,23 @@
 #include "object/object_type.hpp"
 #include "io/formatters.hpp"
 #include "base/log.hpp"
+#include "base/parse.hpp"
 
 #include <sstream>
 
 namespace falling {
 	
-	void error_category_already_initialized_with_different_type(const std::string& name) {
+	void error_category_already_initialized_with_different_type(const String& name) {
 		Error() << "Object category has already been initialized with a different type: " << name;
 	}
 
-ObjectPtr<> BasicUniverse::create_root(const DerivedType* type, std::string id) {
+ObjectPtr<> BasicUniverse::create_root(const DerivedType* type, String id) {
 	clear();
 	root_ = create_object(type, std::move(id));
 	return root_;
 }
 
-ObjectPtr<> BasicUniverse::create_object(const DerivedType* type, std::string id) {
+ObjectPtr<> BasicUniverse::create_object(const DerivedType* type, String id) {
 	size_t sz = type->size();
 	byte* memory = (byte*)allocator_.allocate(sz, 1);
 	type->construct(memory, *this);
@@ -27,7 +28,7 @@ ObjectPtr<> BasicUniverse::create_object(const DerivedType* type, std::string id
 	return object;
 }
 
-bool BasicUniverse::rename_object(ObjectPtr<> object, std::string new_id) {
+bool BasicUniverse::rename_object(ObjectPtr<> object, String new_id) {
 	ASSERT(object->universe() == this);
 	
 	// erase old name from database
@@ -39,18 +40,18 @@ bool BasicUniverse::rename_object(ObjectPtr<> object, std::string new_id) {
 	// check if new name already exists
 	auto it = object_map_.find(new_id);
 	bool renamed_exact = true;
-	std::string new_name;
+	String new_name;
 	if ((it != object_map_.end()) || (new_id.size() < 2)) {
 		// it does, so create a unique name from the requested name
 		int n = 1;
-		std::string base_name;
+		String base_name;
 		if (new_id.size() >= 2) {
-			std::stringstream recognize_number_at_end(new_id.substr(new_id.size()-2, 2));
-			if (!(recognize_number_at_end >> n).fail()) {
+			Maybe<int> parsed = parse<int>(new_id.substr(new_id.size()-2, 2));
+			maybe_if(parsed, [&](int parsed_number) {
 				base_name = new_id.substr(0, new_id.size()-2);
-			} else {
+			}).otherwise([&]() {
 				base_name = std::move(new_id);
-			}
+			});
 			n += 1; // n is set to 0 if recognition failed, otherwise the existing number. Add one. :)
 		} else {
 			base_name = object->object_type()->name();
@@ -73,7 +74,7 @@ bool BasicUniverse::rename_object(ObjectPtr<> object, std::string new_id) {
 	return renamed_exact;
 }
 
-const std::string& BasicUniverse::get_id(ObjectPtr<const Object> object) const {
+const String& BasicUniverse::get_id(ObjectPtr<const Object> object) const {
 	auto it = reverse_object_map_.find(object);
 	if (it != reverse_object_map_.end()) {
 		return it->second;

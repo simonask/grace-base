@@ -54,7 +54,7 @@ namespace falling {
         void connect(ObjectPtr<T> ptr, R(T::*member)(Args...) const);
 
         // Should catch named slots:
-        bool connect(ObjectPtr<> ptr, const std::string& slot_name);
+        bool connect(ObjectPtr<> ptr, const String& slot_name);
 
         void invoke(const Args&...) const;
         void operator()(const Args&... args) const { invoke(args...); }
@@ -143,11 +143,11 @@ namespace falling {
         invokers_.push_back(make_unique<MemberFunctionInvoker<const T, R, Args...>>(receiver, member));
     }
 	
-	void nonexistent_slot_warning(ObjectPtr<> receiver, const std::string& slot_name);
-	void slot_type_mismatch_warning(ObjectPtr<> receiver, const std::string& slot_name, std::string expected_signature_description, std::string signature_description);
+	void nonexistent_slot_warning(ObjectPtr<> receiver, const String& slot_name);
+	void slot_type_mismatch_warning(ObjectPtr<> receiver, const String& slot_name, String expected_signature_description, String signature_description);
 
     template <typename... Args>
-    bool Signal<Args...>::connect(ObjectPtr<> receiver, const std::string& slot_name) {
+    bool Signal<Args...>::connect(ObjectPtr<> receiver, const String& slot_name) {
         const SlotBase* slot_base = receiver->object_type()->find_slot_by_name(slot_name);
         if (slot_base == nullptr) {
             nonexistent_slot_warning(receiver, slot_name);
