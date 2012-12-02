@@ -54,7 +54,7 @@ namespace falling {
         template <typename InputIterator>
         void insert(InputIterator i0, InputIterator i1);
         template <typename InputIterator>
-        void insert(InputIterator i0, InputIterator i1, iterator before);
+        void insert(iterator before, InputIterator i0, InputIterator i1);
         void erase(iterator it);
 		void resize(size_t new_size, T filler = T());
     private:
@@ -294,9 +294,9 @@ namespace falling {
 		ValueType* get() const {
 			return current_;
 		}
-        
-        Self& operator++() {
-            ++current_;
+		
+		void inc_nopos() {
+			++current_;
             if (current_ >= block_->current) {
                 ++block_;
                 if (block_ != owner_->blocks_.end()) {
@@ -305,10 +305,9 @@ namespace falling {
                     current_ = nullptr;
                 }
             }
-            return *this;
-        }
+		}
 		
-		Self& operator--() {
+		void dec_nopos() {
 			--current_;
 			if (current_ < block_->begin) {
 				--block_;
@@ -318,43 +317,59 @@ namespace falling {
 					current_ = nullptr;
 				}
 			}
+		}
+        
+        Self& operator++() {
+			inc_nopos();
+			++position_;
+            return *this;
+        }
+		
+		Self& operator--() {
+			dec_nopos();
+			--position_;
 			return *this;
 		}
         
         Self operator++(int) {
             Self s = *this;
-            ++s;
+            ++(*this);
             return s;
         }
 		
-		Self operator+(int n) const {
+		Self operator+(ptrdiff_t n) const {
 			Self s = *this;
 			s += n;
 			return s;
 		}
 		
-		Self operator-(int n) const {
+		Self operator-(ptrdiff_t n) const {
 			return this->operator+(-n);
 		}
 		
-		Self& operator+=(int n) {
+		Self& operator+=(ptrdiff_t n) {
+			position_ += n;
 			if (n > 0) {
 				for (int i = 0; i < n; ++i) {
-					++(*this);
+					inc_nopos();
 				}
 			} else if (n < 0) {
 				for (int i = 0; i < -n; ++i) {
-					--(*this);
+					dec_nopos();
 				}
 			}
 			return *this;
 		}
 		
-		Self& operator-=(int n) {
+		Self& operator-=(ptrdiff_t n) {
 			return this->operator+=(-n);
 		}
         
-        // TODO: Reverse iterators?
+		template <bool IsConst_>
+		ssize_t operator-(const iterator_impl<IsConst_>& other) const {
+			ASSERT(owner_ == other.owner_);
+			return (ssize_t)position_ - (ssize_t)other.position_;
+		}
         
         bool operator==(const iterator_impl<true>& other) const {
             return owner_ == other.owner_ && block_ == other.block_ && current_ == other.current_;
@@ -363,13 +378,15 @@ namespace falling {
             return !(*this == other);
         }
         
-        iterator_impl(const iterator_impl<false>& other) : owner_(other.owner_), block_(other.block_), current_(other.current_) {}
+		iterator_impl() : owner_(nullptr), current_(nullptr) {}
+        iterator_impl(const iterator_impl<false>& other) : owner_(other.owner_), block_(other.block_), current_(other.current_), position_(other.position_) {}
         template <bool IsConst_ = IsConst>
-        iterator_impl(const typename std::enable_if<IsConst_, iterator_impl<true>>::type& other) : owner_(other.owner_), block_(other.block_), current_(other.current_) {}
+        iterator_impl(const typename std::enable_if<IsConst_, iterator_impl<true>>::type& other) : owner_(other.owner_), block_(other.block_), current_(other.current_), position_(other.position_) {}
         Self& operator=(const iterator_impl<false>& other) {
             owner_ = other.owner_;
             block_ = other.block_;
             current_ = other.current_;
+			position_ = other.position_;
             return *this;
         }
         template <bool IsConst_ = IsConst>
@@ -377,35 +394,37 @@ namespace falling {
             owner_ = other.owner_;
             block_ = other.block_;
             current_ = other.current_;
+			position_ = other.position_;
             return *this;
         }
     private:
-        iterator_impl(Owner& owner, BlockListIterator b, ValueType* c) : owner_(&owner), block_(b), current_(c) {}
+        iterator_impl(Owner& owner, BlockListIterator b, ValueType* c, size_t position) : owner_(&owner), block_(b), current_(c), position_(position) {}
         friend class ArrayList<T>;
         friend struct iterator_impl<!IsConst>;
         Owner* owner_;
         BlockListIterator block_;
         ValueType* current_;
+		size_t position_ = 0;
     };
     
     template <typename T>
     typename ArrayList<T>::iterator ArrayList<T>::begin() {
-        return iterator(*this, blocks_.begin(), blocks_.head() ? blocks_.head()->begin : nullptr);
+        return iterator(*this, blocks_.begin(), blocks_.empty() ? nullptr : blocks_.head()->begin, 0);
     }
     
     template <typename T>
     typename ArrayList<T>::iterator ArrayList<T>::end() {
-        return iterator(*this, blocks_.end(), nullptr);
+        return iterator(*this, blocks_.end(), nullptr, size());
     }
     
     template <typename T>
     typename ArrayList<T>::const_iterator ArrayList<T>::begin() const {
-        return const_iterator(*this, blocks_.begin(), blocks_.head() ? blocks_.head()->begin : nullptr);
+        return const_iterator(*this, blocks_.begin(), blocks_.empty() ? nullptr : blocks_.head()->begin, 0);
     }
     
     template <typename T>
     typename ArrayList<T>::const_iterator ArrayList<T>::end() const {
-        return const_iterator(*this, blocks_.end(), nullptr);
+        return const_iterator(*this, blocks_.end(), nullptr, size());
     }
 	
 	template <typename T>
