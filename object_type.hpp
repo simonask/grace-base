@@ -51,7 +51,12 @@ template <typename T> struct AutoListRegistrarForObject;
 
 template <typename T>
 struct ObjectType : TypeFor<T, ObjectTypeBase> {
-	ObjectType(const ObjectTypeBase* super, std::string name, std::string description) : TypeFor<T, ObjectTypeBase>(super, std::move(name), std::move(description)) {}
+	ObjectType(const ObjectTypeBase* super, std::string name, std::string description)
+		: TypeFor<T, ObjectTypeBase>(super, std::move(name), std::move(description))
+		, properties_(static_allocator())
+		, slots_(static_allocator())
+		, lists_(static_allocator())
+		{}
 	
 	void construct(byte* place, UniverseBase& universe) const {
 		TypeFor<T,ObjectTypeBase>::construct(place, universe);
