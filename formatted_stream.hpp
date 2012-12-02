@@ -12,6 +12,7 @@
 #include "base/basic.hpp"
 #include "io/output_stream.hpp"
 #include "base/vector.hpp"
+#include "base/string.hpp"
 #include <stdio.h>
 #include <string>
 
@@ -32,6 +33,7 @@ namespace falling {
 
 	FormattedStream& operator<<(FormattedStream& stream, const char* cstr);
 	FormattedStream& operator<<(FormattedStream& stream, const std::string&);
+	FormattedStream& operator<<(FormattedStream& stream, StringRef);
 	FormattedStream& operator<<(FormattedStream& stream, bool b);
 	FormattedStream& operator<<(FormattedStream& stream, uint8);
 	FormattedStream& operator<<(FormattedStream& stream, uint16);
@@ -44,7 +46,8 @@ namespace falling {
 	FormattedStream& operator<<(FormattedStream& stream, int64);
 	FormattedStream& operator<<(FormattedStream& stream, float32);
 	FormattedStream& operator<<(FormattedStream& stream, float64);
-	inline FormattedStream& operator<<(FormattedStream& stream, unsigned long n) { return stream << (uint32)n; }
+	inline FormattedStream& operator<<(FormattedStream& stream, unsigned long n) { return stream << (uint64)n; }
+	inline FormattedStream& operator<<(FormattedStream& stream, long n) { return stream << (int64)n; }
 	inline FormattedStream& operator<<(FormattedStream& stream, std::nullptr_t) { return stream << "(null)"; }
 	FormattedStream& operator<<(FormattedStream& stream, void* ptr);
 	
@@ -78,6 +81,11 @@ namespace falling {
 			}
 		}
 		stream << '}';
+		return stream;
+	}
+	
+	inline FormattedStream& operator<<(FormattedStream& stream, StringRef str) {
+		stream.write((byte*)str.data(), str.size());
 		return stream;
 	}
 }
