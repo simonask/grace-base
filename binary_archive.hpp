@@ -21,7 +21,7 @@ namespace falling {
 		BinaryArchiveNode(BinaryArchive&, ArchiveNodeType::Type type);
 		
 		void write(OutputStream& os) const;
-		bool read(const byte*& ptr, const byte* end, std::string& out_error);
+		bool read(const byte*& ptr, const byte* end, String& out_error);
 	};
 	
 	struct BinaryArchive : Archive {
@@ -30,7 +30,7 @@ namespace falling {
 		ArchiveNode& root() override { return root_; }
 		const ArchiveNode& root() const override { return root_; }
 		void write(OutputStream& os) const override;
-		size_t read(InputStream& is, std::string& out_error) override;
+		size_t read(InputStream& is, String& out_error) override;
 		bool can_parse(const byte* begin, const byte* end) const;
 		ArchiveNode* make(NodeType type = NodeType::Empty) override { return make_internal(type); }
 		const ArchiveNode& empty() const override { return empty_; }

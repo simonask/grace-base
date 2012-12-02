@@ -9,7 +9,7 @@
 #include "serialization/archive_node_type.hpp"
 #include "base/stack_array.hpp"
 
-#include <string>
+#include "base/string.hpp"
 #include "io/input_stream.hpp"
 #include "io/file_stream.hpp"
 
@@ -27,15 +27,15 @@ struct Archive {
 	virtual ArchiveNode& root() = 0;
 	virtual const ArchiveNode& root() const = 0;
 	virtual void write(OutputStream& os) const = 0;
-	virtual size_t read(InputStream& is, std::string& out_error) = 0;
+	virtual size_t read(InputStream& is, String& out_error) = 0;
 	virtual ArchiveNode* make(NodeType type = NodeType::Empty) = 0;
 	virtual const ArchiveNode& empty() const = 0;
 	
-	const ArchiveNode& operator[](const std::string& key) const;
-	ArchiveNode& operator[](const std::string& key);
+	const ArchiveNode& operator[](const String& key) const;
+	ArchiveNode& operator[](const String& key);
 	
 	void serialize(ObjectPtr<> object, UniverseBase& universe);
-	bool deserialize(UniverseBase& universe, std::string& out_error);
+	bool deserialize(UniverseBase& universe, String& out_error);
 	
 	void register_reference_for_deserialization(DeserializeReferenceBase* ref) { deserialize_references.push_back(ref); }
 	void register_reference_for_serialization(SerializeReferenceBase* ref) { serialize_references.push_back(ref); }

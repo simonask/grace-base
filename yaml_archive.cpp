@@ -8,6 +8,7 @@
 
 #include "serialization/yaml_archive.hpp"
 #include "io/util.hpp"
+#include "base/parse.hpp"
 
 #include <yaml.h>
 #include <deque>
@@ -15,8 +16,9 @@
 
 namespace falling {
 	namespace {
-		struct YAMLParserError : std::runtime_error {
-			YAMLParserError(std::string what) : std::runtime_error(std::move(what)) {}
+		struct YAMLParserError {
+			String message_;
+			YAMLParserError(StringRef message) : message_(message, default_allocator()) {}
 		};
 		
 		struct YAMLParserState {
@@ -28,15 +30,15 @@ namespace falling {
 				Sequence,
 			};
 			
-			std::deque<std::pair<ArchiveNode*, std::string>> stack; // node and non-empty string if node is a mapping waiting for a value
+			std::deque<std::pair<ArchiveNode*, String>> stack; // node and non-empty string if node is a mapping waiting for a value
 			Array<ArchiveNode*> roots;
-			std::map<std::string, ArchiveNode*> anchors;
+			std::map<String, ArchiveNode*> anchors;
 			YAMLParserState(YAMLArchive& archive) : archive(archive) {}
 			
 			ArchiveNode* root() const { return roots.size() ? roots[0] : nullptr; }
 			ArchiveNode* top() const { return stack.back().first; }
-			const std::string& top_key() const { return stack.back().second; }
-			std::string& top_key() { return stack.back().second; }
+			const String& top_key() const { return stack.back().second; }
+			String& top_key() { return stack.back().second; }
 			
 			StateType state() const {
 				if (stack.size() == 0) return TopLevel;
@@ -122,13 +124,13 @@ namespace falling {
 				if (it != anchors.end()) {
 					add_value_to_top(it->second);
 				} else {
-					throw YAMLParserError(std::string("Undefined anchor: ") + anchor);
+					throw YAMLParserError(String("Undefined anchor: ") + anchor);
 				}
 			}
 			
 			void scalar(const char* value_as_string, size_t len) {
 				ArchiveNode* node = make(ArchiveNodeType::Empty);
-				std::string input(value_as_string, len);
+				String input(value_as_string, len);
 				if (input == "~") { // Ruby convention for representing nil
 					add_value_to_top(node);
 					return;
@@ -143,17 +145,18 @@ namespace falling {
 						if (c < '0' || c > '9') { is_integer = false; break; }
 					}
 					if (is_integer) {
-						int64 n = atoll(input.c_str());
-						node->set(n);
+						Maybe<int64> n = parse<int64>(input);
+						node->set(n.get_or(0));
 						add_value_to_top(node);
 						return;
 					}
 				}
 				
 				// Check if float
+				COPY_STRING_REF_TO_CSTR_BUFFER(buffer, input);
 				char* endptr;
-				const char* conversion_success_location = input.c_str() + len;
-				float64 value = strtod(input.c_str(), &endptr);
+				const char* conversion_success_location = buffer.data() + len;
+				float64 value = strtod(buffer.data(), &endptr);
 				if (endptr == conversion_success_location) {
 					node->set(value);
 				} else {
@@ -246,9 +249,9 @@ namespace falling {
 				yaml_emitter_emit(emitter, &event);
 			}
 			
-			void emit_string(const std::string& str) {
+			void emit_string(const String& str) {
 				yaml_event_t event;
-				yaml_scalar_event_initialize(&event, nullptr, nullptr, (yaml_char_t*)str.c_str(), (int)str.size(), true, true, YAML_ANY_SCALAR_STYLE);
+				yaml_scalar_event_initialize(&event, nullptr, nullptr, (yaml_char_t*)str.data(), (int)str.size(), true, true, YAML_ANY_SCALAR_STYLE);
 				yaml_emitter_emit(emitter, &event);
 			}
 			
@@ -295,7 +298,7 @@ namespace falling {
 		yaml_emitter_delete(&emitter);
 	}
 	
-	size_t YAMLArchive::read(InputStream& is, std::string& out_error) {
+	size_t YAMLArchive::read(InputStream& is, String& out_error) {
 		Array<byte> buffer = read_all(is);
 		const byte* begin = buffer.data();
 		const byte* end = begin + buffer.size();
@@ -370,7 +373,7 @@ namespace falling {
 	bool YAMLArchive::can_parse(const byte* begin, const byte* end) const {
 		// There's no way to check but to actually parse it.
 		YAMLArchive other;
-		std::string error;
+		String error;
 		auto stream = MemoryStream(begin, end);
 		if (other.read(stream, error) > 0 && error == "") {
 			return true;

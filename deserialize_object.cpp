@@ -13,10 +13,10 @@
 namespace falling {
 
 namespace {
-	const DerivedType* get_type_from_map(const ArchiveNode& node, std::string& out_error);
+	const DerivedType* get_type_from_map(const ArchiveNode& node, String& out_error);
 	
-	const ObjectTypeBase* get_class_from_map(const ArchiveNode& node, std::string& out_error) {
-		std::string clsname;
+	const ObjectTypeBase* get_class_from_map(const ArchiveNode& node, String& out_error) {
+		String clsname;
 		if (!node["class"].get(clsname)) {
 			out_error = "Class not specified.";
 			return nullptr;
@@ -29,7 +29,7 @@ namespace {
 		return struct_type;
 	}
 	
-	const DerivedType* transform_if_composite_type(const ArchiveNode& node, const ObjectTypeBase* base_type, std::string& out_error) {
+	const DerivedType* transform_if_composite_type(const ArchiveNode& node, const ObjectTypeBase* base_type, String& out_error) {
 		const ArchiveNode& aspects = node["aspects"];
 		if (!aspects.is_array()) return base_type;
 		if (aspects.array_size() == 0) return base_type;
@@ -47,7 +47,7 @@ namespace {
 		return type;
 	}
 	
-	const DerivedType* get_type_from_map(const ArchiveNode& node, std::string& out_error) {
+	const DerivedType* get_type_from_map(const ArchiveNode& node, String& out_error) {
 		const ObjectTypeBase* struct_type = get_class_from_map(node, out_error);
 		if (struct_type != nullptr) {
 			return transform_if_composite_type(node, struct_type, out_error);
@@ -81,7 +81,7 @@ namespace {
 				to.set(n);
 				break;
 			case ArchiveNodeType::String: {
-				std::string s;
+				String s;
 				from.get(s);
 				to.set(std::move(s));
 				break;
@@ -120,14 +120,14 @@ ObjectPtr<> deserialize_object(const ArchiveNode& node, UniverseBase& universe) 
 	}
 	merge_archive_node_map(merged_node, node);
 	
-	std::string error;
+	String error;
 	const DerivedType* type = get_type_from_map(merged_node, error);
 	if (type == nullptr) {
 		Error() << error;
 		return nullptr;
 	}
 	
-	std::string id;
+	String id;
 	if (!merged_node["id"].get(id)) {
 		Warning() << "Object without id.";
 	}

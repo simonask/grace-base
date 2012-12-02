@@ -36,12 +36,12 @@ ArchiveNode& ArchiveNode::operator[](size_t idx) {
 	}
 }
 
-const ArchiveNode& ArchiveNode::operator[](const std::string& key) const {
+const ArchiveNode& ArchiveNode::operator[](const String& key) const {
 	if (type() != Type::Map) return archive_.empty();
 	return *find_or(map_, key, &archive_.empty());
 }
 
-ArchiveNode& ArchiveNode::operator[](const std::string& key) {
+ArchiveNode& ArchiveNode::operator[](const String& key) {
 	if (type() != Type::Map) {
 		clear(Type::Map);
 	}
@@ -71,7 +71,7 @@ Object* DeserializeReferenceBase::get_object(UniverseBase& universe) const {
 	return universe.get_object(object_id_).get();
 }
 
-std::string SerializeReferenceBase::get_id(const UniverseBase& universe, Object* obj) const {
+String SerializeReferenceBase::get_id(const UniverseBase& universe, Object* obj) const {
 	return universe.get_id(obj);
 }
 

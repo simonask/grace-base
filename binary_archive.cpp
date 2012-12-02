@@ -51,7 +51,7 @@ namespace falling {
 			case ArchiveNodeType::String: {
 				uint32 string_length = (uint32)string_value.size();
 				write_bytes(os, &string_length);
-				write_bytes(os, string_value.c_str(), string_length);
+				write_bytes(os, string_value.data(), string_length);
 				break;
 			}
 			case ArchiveNodeType::Array: {
@@ -68,7 +68,7 @@ namespace falling {
 				for (auto& it: map_) {
 					uint32_t string_length = (uint32)it.first.size();
 					write_bytes(os, &string_length);
-					write_bytes(os, it.first.c_str(), string_length);
+					write_bytes(os, it.first.data(), string_length);
 					((BinaryArchiveNode*)it.second)->write(os);
 				}
 				break;
@@ -84,7 +84,7 @@ namespace falling {
 		}
 	}
 	
-	bool BinaryArchiveNode::read(const byte*& p, const byte *end, std::string &out_error) {
+	bool BinaryArchiveNode::read(const byte*& p, const byte *end, String &out_error) {
 		byte type;
 		if (!read_bytes(p, end, &type)) {
 			out_error = "Unexpected end of stream.";
@@ -104,7 +104,7 @@ namespace falling {
 					out_error = "Unexpected end of stream (corrupt string length).";
 					return false;
 				}
-				string_value = std::string(reinterpret_cast<const char*>(p), string_length);
+				string_value = String(reinterpret_cast<const char*>(p), string_length);
 				p += string_length;
 				return true;
 			}
@@ -137,7 +137,7 @@ namespace falling {
 						out_error = "Invalid map key length (corrupt stream).";
 						return false;
 					}
-					std::string key = std::string(reinterpret_cast<const char*>(p), string_length);
+					String key = String(reinterpret_cast<const char*>(p), string_length);
 					p += string_length;
 					BinaryArchiveNode& value = static_cast<BinaryArchiveNode&>((*this)[key]);
 					if (!value.read(p, end, out_error)) {
@@ -175,13 +175,13 @@ namespace falling {
 	void BinaryArchive::write(OutputStream &os) const {
 		StringStream ss;
 		root_.write(ss);
-		std::string data = ss.str();
+		String data = ss.str();
 		uint32 stream_length = (uint32)data.size();
 		write_bytes(os, &stream_length);
 		FormattedStream(os) << data;
 	}
 	
-	size_t BinaryArchive::read(InputStream& is, std::string& out_error) {
+	size_t BinaryArchive::read(InputStream& is, String& out_error) {
 		clear();
 		if (is.has_length()) {
 			size_t stream_length = is.length();

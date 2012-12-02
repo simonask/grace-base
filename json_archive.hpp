@@ -6,7 +6,7 @@
 #include "serialization/archive_node.hpp"
 #include "base/bag.hpp"
 #include <map>
-#include <string>
+#include "base/string.hpp"
 
 namespace falling {
 struct JSONArchive;
@@ -15,7 +15,7 @@ struct JSONArchiveNode : ArchiveNode {
 	JSONArchiveNode(JSONArchive& archive, ArchiveNodeType::Type t = ArchiveNodeType::Empty);
 	void write(OutputStream& os) const { write(os, false, 0); }
 	void write(OutputStream& os, bool print_inline, int indent) const;
-	bool read(const byte*& p, const byte* end, std::string& out_error);
+	bool read(const byte*& p, const byte* end, String& out_error);
 };
 
 struct JSONArchive : Archive {
@@ -23,7 +23,7 @@ struct JSONArchive : Archive {
 	ArchiveNode& root() override;
 	const ArchiveNode& root() const override;
 	void write(OutputStream& os) const override;
-	size_t read(InputStream& is, std::string& out_error) override;
+	size_t read(InputStream& is, String& out_error) override;
 	ArchiveNode* make(ArchiveNode::Type t = ArchiveNodeType::Empty) override { return make_internal(t); }
 	
 	const ArchiveNode& empty() const { return *empty_; }

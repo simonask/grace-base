@@ -27,7 +27,7 @@ namespace falling {
 		ArchiveNode& root() override;
 		const ArchiveNode& root() const override { return root_ ? *root_ : empty_; }
 		void write(OutputStream& os) const override;
-		size_t read(InputStream& is, std::string& out_error) override;
+		size_t read(InputStream& is, String& out_error) override;
 		bool can_parse(const byte* begin, const byte* end) const;
 		ArchiveNode* make(NodeType type = NodeType::Empty) override { return make_internal(type); }
 		const ArchiveNode& empty() const override { return empty_; }

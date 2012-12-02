@@ -2,7 +2,7 @@
 #ifndef ARCHIVE_NODE_HPP_EP8GSONT
 #define ARCHIVE_NODE_HPP_EP8GSONT
 
-#include <string>
+#include "base/string.hpp"
 #include <map>
 //#include <iostream>
 
@@ -39,7 +39,7 @@ struct ArchiveNode {
 	bool get(uint16&) const;
 	bool get(uint32&) const;
 	bool get(uint64&) const;
-	bool get(std::string&) const;
+	bool get(String&) const;
 	template <typename T, size_t N>
 	bool get(TVector<T,N>& vec) const;
 	void set(float32);
@@ -52,22 +52,22 @@ struct ArchiveNode {
 	void set(uint16);
 	void set(uint32);
 	void set(uint64);
-	void set(std::string);
+	void set(String);
 	template <typename T, size_t N>
 	void set(TVector<T,N> vec);
 	void clear() { clear(Type::Empty); }
 	
 	const ArchiveNode& operator[](size_t idx) const;
 	ArchiveNode& operator[](size_t idx);
-	const ArchiveNode& operator[](const std::string& key) const;
-	ArchiveNode& operator[](const std::string& key);
+	const ArchiveNode& operator[](const String& key) const;
+	ArchiveNode& operator[](const String& key);
 	
 	ArchiveNode& array_push();
 	size_t array_size() const { return array_.size(); }
 	
-	const std::map<std::string, ArchiveNode*>& internal_map() const { return map_; }
-	std::map<std::string, ArchiveNode*>& internal_map() { return map_; }
-	const std::string& internal_string() const { return string_value; }
+	const std::map<String, ArchiveNode*>& internal_map() const { return map_; }
+	std::map<String, ArchiveNode*>& internal_map() { return map_; }
+	const String& internal_string() const { return string_value; }
 	const Array<ArchiveNode*>& internal_array() const { return array_; }
 	Array<ArchiveNode*>& internal_array() { return array_; }
 	Archive& archive() const { return archive_; }
@@ -85,7 +85,7 @@ struct ArchiveNode {
 	template <typename T>
 	void register_reference_for_serialization(const T& reference);
 	template <typename T>
-	void register_signal_for_deserialization(T* signal, std::string receiver_id, std::string slot_id) const;
+	void register_signal_for_deserialization(T* signal, String receiver_id, String slot_id) const;
 protected:
 	explicit ArchiveNode(Archive& archive, Type t = Type::Empty) : archive_(archive), type_(t) {}
 protected:
@@ -93,9 +93,9 @@ protected:
 	Type type_;
 public:
 	// TODO: Use an 'any'/'variant' type for the following:
-	std::map<std::string, ArchiveNode*> map_;
+	std::map<String, ArchiveNode*> map_;
 	Array<ArchiveNode*> array_;
-	std::string string_value;
+	String string_value;
 	union {
 		int64 integer_value;
 		float64 float_value;
@@ -162,7 +162,7 @@ inline void ArchiveNode::set(uint64 n) {
 	integer_value = n;
 }
 
-inline void ArchiveNode::set(std::string s) {
+inline void ArchiveNode::set(String s) {
 	clear(Type::String);
 	string_value = std::move(s);
 }
@@ -247,7 +247,7 @@ inline bool ArchiveNode::get(uint64& v) const {
 	return get_number(v);
 }
 
-inline bool ArchiveNode::get(std::string& s) const {
+inline bool ArchiveNode::get(String& s) const {
 	return get_value(s, Type::String, string_value);
 }
 
@@ -261,10 +261,10 @@ inline void ArchiveNode::clear(ArchiveNodeType::Type new_type) {
 
 struct DeserializeReferenceBase {
 	virtual ~DeserializeReferenceBase() {}
-	DeserializeReferenceBase(std::string object_id) : object_id_(object_id) {}
+	DeserializeReferenceBase(String object_id) : object_id_(object_id) {}
 	virtual void perform(UniverseBase&) = 0;
 protected:
-	std::string object_id_;
+	String object_id_;
 	Object* get_object(UniverseBase&) const;
 };
 
@@ -273,7 +273,7 @@ struct DeserializeReference : DeserializeReferenceBase {
 public:
 	typedef typename T::PointeeType PointeeType;
 	
-	DeserializeReference(std::string object_id, T& reference) : DeserializeReferenceBase(object_id), reference_(reference) {}
+	DeserializeReference(String object_id, T& reference) : DeserializeReferenceBase(object_id), reference_(reference) {}
 	void perform(UniverseBase& universe) {
 		Object* object_ptr = get_object(universe);
 		if (object_ptr == nullptr) {
@@ -291,7 +291,7 @@ private:
 
 template <typename T>
 void ArchiveNode::register_reference_for_deserialization(T& reference) const {
-	std::string id;
+	String id;
 	if (get(id)) {
 		register_reference_for_deserialization_impl(new DeserializeReference<T>(id, reference));
 	}
@@ -303,7 +303,7 @@ struct SerializeReferenceBase {
 	virtual void perform(const UniverseBase&) = 0;
 protected:
 	ArchiveNode& node_;
-	std::string get_id(const UniverseBase&, Object*) const;
+	String get_id(const UniverseBase&, Object*) const;
 };
 
 template <typename T>
@@ -331,9 +331,9 @@ struct DeserializeSignalBase {
 public:
 	virtual void perform(const UniverseBase&) const = 0;
 protected:
-	DeserializeSignalBase(std::string receiver, std::string slot) : receiver_id_(std::move(receiver)), slot_id_(std::move(slot)) {}
-	std::string receiver_id_;
-	std::string slot_id_;
+	DeserializeSignalBase(String receiver, String slot) : receiver_id_(std::move(receiver)), slot_id_(std::move(slot)) {}
+	String receiver_id_;
+	String slot_id_;
 	
 	Object* get_object(const UniverseBase&) const;
 	const SlotBase* get_slot(Object*) const;
@@ -341,7 +341,7 @@ protected:
 
 template <typename T>
 struct DeserializeSignal : DeserializeSignalBase {
-	DeserializeSignal(T* signal, std::string receiver, std::string slot) : DeserializeSignalBase(std::move(receiver), std::move(slot)), signal_(signal) {}
+	DeserializeSignal(T* signal, String receiver, String slot) : DeserializeSignalBase(std::move(receiver), std::move(slot)), signal_(signal) {}
 	
 	void perform(const UniverseBase& universe) const {
 		Object* object = get_object(universe);
@@ -355,7 +355,7 @@ private:
 };
 
 template <typename T>
-void ArchiveNode::register_signal_for_deserialization(T* signal, std::string receiver, std::string slot) const {
+void ArchiveNode::register_signal_for_deserialization(T* signal, String receiver, String slot) const {
 	register_signal_for_deserialization_impl(new DeserializeSignal<T>(signal, std::move(receiver), std::move(slot)));
 }
 

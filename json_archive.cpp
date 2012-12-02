@@ -37,7 +37,7 @@ static void print_indentation(OutputStream& oss, int level) {
 	}
 }
 
-static void print_string(OutputStream& oss, const std::string& str) {
+static void print_string(OutputStream& oss, const String& str) {
 	FormattedStream os(oss);
 	// TODO: Escape
 	os << '"';
@@ -109,12 +109,12 @@ void JSONArchiveNode::write(OutputStream& oss, bool print_inline, int indent) co
 	}
 }
 	
-bool JSONArchiveNode::read(const byte *&p, const byte *end, std::string &out_error) {
+bool JSONArchiveNode::read(const byte *&p, const byte *end, String &out_error) {
 	out_error = "JSONArchive::read not implemented yet.";
 	return false;
 }
 	
-size_t JSONArchive::read(InputStream&, std::string& out_error) {
+size_t JSONArchive::read(InputStream&, String& out_error) {
 	out_error = "JSONArchive::read not implemented.";
 	return 0;
 }

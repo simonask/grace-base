@@ -16,7 +16,7 @@ void Archive::serialize(ObjectPtr<> object, UniverseBase& universe) {
 	serialize_references.clear();
 }
 
-bool Archive::deserialize(UniverseBase& universe, std::string& out_error) {
+bool Archive::deserialize(UniverseBase& universe, String& out_error) {
 	ObjectPtr<> ptr = deserialize_object(root(), universe);
 	
 	for (auto it: deserialize_references) {
@@ -33,11 +33,11 @@ bool Archive::deserialize(UniverseBase& universe, std::string& out_error) {
 	return true;
 }
 	
-	ArchiveNode& Archive::operator[](const std::string& key) {
+	ArchiveNode& Archive::operator[](const String& key) {
 		return root()[key];
 	}
 	
-	const ArchiveNode& Archive::operator[](const std::string& key) const {
+	const ArchiveNode& Archive::operator[](const String& key) const {
 		return root()[key];
 	}
 
