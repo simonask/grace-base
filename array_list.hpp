@@ -166,7 +166,7 @@ namespace falling {
 	template <typename InputIterator>
 	void ArrayList<T>::insert(InputIterator a, InputIterator b) {
 		for (auto it = a; it != b; ++it) {
-			push_back(*a);
+			push_back(*it);
 		}
 	}
     
