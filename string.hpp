@@ -65,7 +65,7 @@ namespace falling {
 		const_iterator begin() const { return const_iterator(data_); }
 		const_iterator end() const { return const_iterator(data_ + size_); }
 		
-		static String take_ownership(IAllocator& alloc, const char* utf8, size_t size);
+		static String take_ownership(IAllocator& alloc, const char* utf8, size_t size); // WARNING: utf8 *MUST* be allocated with alloc.
 		
 		struct Algorithms;
 		friend struct Algorithms;
