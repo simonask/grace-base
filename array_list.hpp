@@ -294,52 +294,29 @@ namespace falling {
 		ValueType* get() const {
 			return current_;
 		}
-		
-		void inc_nopos() {
-			++current_;
-            if (current_ >= block_->current) {
-                ++block_;
-                if (block_ != owner_->blocks_.end()) {
-                    current_ = block_->begin;
-                } else {
-                    current_ = nullptr;
-                }
-            }
-		}
-		
-		void dec_nopos() {
-			--current_;
-			if (current_ < block_->begin) {
-				--block_;
-				if (block_ != owner_->blocks_.end()) {
-					current_ = block_->current - 1;
-				} else {
-					current_ = nullptr;
-				}
-			}
-		}
         
         Self& operator++() {
-			inc_nopos();
-			++position_;
+			inc_by(1);
             return *this;
         }
 		
 		Self& operator--() {
-			dec_nopos();
-			--position_;
+			dec_by(1);
 			return *this;
 		}
         
         Self operator++(int) {
             Self s = *this;
-            ++(*this);
+            inc_by(1);
             return s;
         }
 		
 		Self operator+(ptrdiff_t n) const {
 			Self s = *this;
-			s += n;
+			if (n >= 0)
+				s.inc_by(n);
+			else
+				s.dec_by(-n);
 			return s;
 		}
 		
@@ -348,16 +325,10 @@ namespace falling {
 		}
 		
 		Self& operator+=(ptrdiff_t n) {
-			position_ += n;
-			if (n > 0) {
-				for (int i = 0; i < n; ++i) {
-					inc_nopos();
-				}
-			} else if (n < 0) {
-				for (int i = 0; i < -n; ++i) {
-					dec_nopos();
-				}
-			}
+			if (n >= 0)
+				inc_by(n);
+			else
+				dec_by(-n);
 			return *this;
 		}
 		
@@ -405,6 +376,62 @@ namespace falling {
         BlockListIterator block_;
         ValueType* current_;
 		size_t position_ = 0;
+		
+		void inc_by(size_t n) {
+			size_t remaining = n;
+			while (remaining > 0) {
+				size_t current_to_end = block_->current - current_;
+				if (remaining < current_to_end) {
+					current_ += remaining;
+					remaining = 0;
+				} else {
+					remaining -= current_to_end;
+					++block_;
+					if (block_ != owner_->blocks_.end()) {
+						current_ = block_->begin;
+					} else {
+						current_ = nullptr;
+						break;
+					}
+				}
+			}
+			if (remaining > 0) {
+				throw IndexOutOfBoundsException();
+			}
+			position_ += n;
+		}
+		
+		void dec_by(size_t n) {
+			if (n && block_ == owner_->blocks_.end()) {
+				--block_;
+				if (block_ == owner_->blocks_.end()) {
+					throw IndexOutOfBoundsException();
+				}
+				current_ = block_->current;
+			}
+			
+			size_t remaining = n;
+			while (remaining > 0) {
+				size_t begin_to_current = current_ - block_->begin;
+				if (remaining < begin_to_current) {
+					current_ -= remaining;
+					remaining = 0;
+				} else {
+					remaining -= begin_to_current;
+					--block_;
+					if (block_ != owner_->blocks_.end()) {
+						current_ = block_->current;
+					} else {
+						current_ = nullptr;
+						break;
+					}
+				}
+			}
+			if (remaining > 0) {
+				throw IndexOutOfBoundsException();
+			}
+			position_ -= n;
+		}
     };
     
     template <typename T>
