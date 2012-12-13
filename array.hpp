@@ -38,8 +38,12 @@ public:
 	
 	IAllocator& allocator() const { return allocator_; }
 	
-	operator ArrayRef<T>() const {
+	ArrayRef<T> ref() const {
 		return ArrayRef<T>(data_, data_ + size_);
+	}
+	
+	operator ArrayRef<T>() const {
+		return ref();
 	}
 	
 	operator ArrayRef<const T>() const {
@@ -51,7 +55,9 @@ public:
 	
 	uint32 size() const { return size_; }
 	void push_back(T element);
-	void pop_back();
+	T pop_back();
+	const T& back() const;
+	const T& front() const;
 	void reserve(size_t);
 	void resize(size_t, T fill = T());
 	void clear(bool deallocate = true);
@@ -162,9 +168,11 @@ void Array<T>::push_back(T element) {
 }
 	
 template <typename T>
-void Array<T>::pop_back() {
+T Array<T>::pop_back() {
 	check_index_valid(size_-1);
+	T element = std::move(data_[size_-1]);
 	erase(size_-1);
+	return element;
 }
 
 template <typename T>
