@@ -46,9 +46,11 @@ struct AttributeForObjectOfType : AttributeForObject<ObjectType>, Attribute<Memb
 	const Type* type() const { return get_type<MemberType>(); }
 	
 	bool deserialize_attribute(ObjectType* object, const ArchiveNode& node, UniverseBase& universe) const {
-		MemberType value;
-		this->type()->deserialize_raw(reinterpret_cast<byte*>(&value), node, universe);
-		set(*object, std::move(value));
+		if (!node.is_empty()) {
+			MemberType value;
+			this->type()->deserialize_raw(reinterpret_cast<byte*>(&value), node, universe);
+			set(*object, std::move(value));
+		}
 		return true; // eh...
 	}
 	
