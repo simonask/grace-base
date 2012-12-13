@@ -17,7 +17,7 @@ struct ObjectTypeBase : DerivedType {
 	String name() const override { return name_; }
 	const String& description() const { return description_; }
 	const ObjectTypeBase* super() const;
-	virtual Array<const AttributeBase*> attributes() const = 0;
+	virtual ArrayRef<const AttributeBase* const> attributes() const = 0;
 	virtual size_t num_slots() const = 0;
 	virtual const SlotBase* slot_at(size_t idx) const = 0;
 	virtual const SlotBase* find_slot_by_name(const String& name) const = 0;
@@ -65,13 +65,8 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 		p->set_universe__(&universe);
 	}
 	
-	Array<const AttributeBase*> attributes() const {
-		Array<const AttributeBase*> result;
-		result.reserve(properties_.size());
-		for (auto it: properties_) {
-			result.push_back(it);
-		}
-		return result;
+	ArrayRef<const AttributeBase* const> attributes() const {
+		return ArrayRef<const AttributeBase* const>((const AttributeBase* const*)properties_.data(), (const AttributeBase* const*)properties_.data() + properties_.size());
 	}
 	size_t num_slots() const { return slots_.size(); }
 	const SlotBase* slot_at(size_t idx) const { return slots_[idx]; }
