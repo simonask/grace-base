@@ -23,7 +23,13 @@ namespace falling {
 			if (next) {
 				next->prev_next_ptr = prev_next_ptr;
 			}
-			*prev_next_ptr = next;
+			if (prev_next_ptr) {
+				*prev_next_ptr = next;
+			}
+		}
+		
+		bool is_linked() const {
+			return prev_next_ptr == nullptr;
 		}
 	};
 	
