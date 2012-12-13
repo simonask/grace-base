@@ -228,4 +228,23 @@ namespace falling {
 	};
 }
 
+namespace std {
+	template <class Owner, typename Node, bool IsConst>
+	struct iterator_traits<falling::ForwardLinkListIterator<Owner, Node, IsConst>> {
+		using value_type = typename falling::ForwardLinkListIterator<Owner, Node, IsConst>::ValueType;
+		using pointer = value_type*;
+		using reference = value_type&;
+		using iterator_category = std::bidirectional_iterator_tag;
+	};
+	
+	template <class Owner, typename T, bool IsConst>
+	struct iterator_traits<falling::LinearMemoryIterator<Owner, T, IsConst>> {
+		using value_type = typename falling::LinearMemoryIterator<Owner, T, IsConst>::ValueType;
+		using pointer = value_type*;
+		using reference = value_type&;
+		using difference_type = ptrdiff_t;
+		using iterator_category = std::random_access_iterator_tag;
+	};
+}
+
 #endif
