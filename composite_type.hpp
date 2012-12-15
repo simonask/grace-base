@@ -63,6 +63,7 @@ inline Object* CompositeType::get_aspect_in_object(Object *object, size_t idx) c
 	template <typename To, typename From>
 	typename std::enable_if<HasReflection<To>::Value && HasReflection<From>::Value, To*>::type
 	aspect_composite_cast(From* from) {
+		if (from == nullptr) return nullptr;
 		// At this point, we should've already checked that we can't directly up- or downcast,
 		// so let's see if we're a composite.
 		
