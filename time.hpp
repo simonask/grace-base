@@ -83,6 +83,7 @@ namespace falling {
 		static TimeDelta<T> seconds(int64 s) { return milliseconds(s * 1000); }
 		static TimeDelta<T> milliseconds(int64 ms) { return microseconds(ms * 1000); }
 		static TimeDelta<T> microseconds(int64 us) { return TimeDelta<T>(us); }
+		static Time<T> forever() { return Time(UINT64_MAX); }
 	
 		explicit Time(uint64 us_since_epoch = 0) : microseconds_since_epoch_(us_since_epoch) {}
 
