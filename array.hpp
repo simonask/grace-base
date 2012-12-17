@@ -56,7 +56,9 @@ public:
 	uint32 size() const { return size_; }
 	void push_back(T element);
 	T pop_back();
+	T& back();
 	const T& back() const;
+	T& front();
 	const T& front() const;
 	void reserve(size_t);
 	void resize(size_t, T fill = T());
@@ -67,6 +69,8 @@ public:
 	
 	template <typename InputIterator>
 	void insert(InputIterator begin, InputIterator end, iterator before);
+	
+	void insert(T element, iterator before);
 	
 	template <typename... Args>
 	void emplace_back(Args... args);
@@ -159,6 +163,31 @@ const T& Array<T>::operator[](size_t idx) const {
 	check_index_valid(idx);
 	return data_[idx];
 }
+	
+template <typename T>
+const T& Array<T>::back() const {
+	check_index_valid(size_-1);
+	return data_[size_-1];
+}
+	
+template <typename T>
+T& Array<T>::back() {
+	check_index_valid(size_-1);
+	return data_[size_-1];
+}
+	
+template <typename T>
+const T& Array<T>::front() const {
+	check_index_valid(0);
+	return data_[0];
+}
+
+template <typename T>
+T& Array<T>::front() {
+	check_index_valid(0);
+	return data_[0];
+}
+	
 
 template <typename T>
 void Array<T>::push_back(T element) {
@@ -243,6 +272,12 @@ void Array<T>::insert(InputIterator b, InputIterator e, iterator before) {
 		}
 	}
 	size_ += add_len;
+}
+	
+template <typename T>
+void Array<T>::insert(T element, iterator before) {
+	// TODO: Move semantics
+	insert(&element, &element + 1, before);
 }
 
 template <typename T>
