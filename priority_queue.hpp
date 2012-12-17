@@ -27,10 +27,12 @@ namespace falling {
 		bool operator==(ArrayRef<T> range) const;
 		bool operator!=(ArrayRef<T> range) const;
 		
-		void insert(const T& element);
+		void insert(T element);
 		
 		T& top();
 		const T& top() const;
+		T& back();
+		const T& back() const;
 		T pop();
 		
 		const Container& container() const { return container_; }
@@ -45,8 +47,9 @@ namespace falling {
 		const_iterator begin() const { return container_.begin(); }
 		const_iterator end() const { return container_.end(); }
 		
+		FORWARD_TO_MEMBER(clear, container_, Container)
 		FORWARD_TO_MEMBER(erase, container_, Container)
-		FORWARD_TO_MEMBER(reserve, container_, Container);
+		FORWARD_TO_MEMBER(reserve, container_, Container)
 	private:
 		Compare cmp_;
 		Container container_;
@@ -62,25 +65,29 @@ namespace falling {
 	PriorityQueue<T,C,Cmp>::PriorityQueue(PriorityQueue<T,C,Cmp>&& other) : cmp_(std::move(other.cmp_)), container_(std::move(other.container_)) {}
 	
 	template <typename T, typename C, typename Cmp>
-	void PriorityQueue<T,C,Cmp>::insert(const T& element) {
+	void PriorityQueue<T,C,Cmp>::insert(T element) {
 		auto insertion_place = std::lower_bound(begin(), end(), element, cmp_);
-		container_.insert(&element, &element + 1, insertion_place);
+		container_.insert(std::move(element), insertion_place);
 	}
 	
 	template <typename T, typename C, typename Cmp>
 	const T& PriorityQueue<T,C,Cmp>::top() const {
-		if (size() == 0) {
-			throw IndexOutOfBoundsException();
-		}
 		return container_.back();
 	}
 	
 	template <typename T, typename C, typename Cmp>
 	T& PriorityQueue<T,C,Cmp>::top() {
-		if (size() == 0) {
-			throw IndexOutOfBoundsException();
-		}
 		return container_.back();
+	}
+	
+	template <typename T, typename C, typename Cmp>
+	const T& PriorityQueue<T,C,Cmp>::back() const {
+		return container_.front();
+	}
+	
+	template <typename T, typename C, typename Cmp>
+	T& PriorityQueue<T,C,Cmp>::back() {
+		return container_.front();
 	}
 	
 	template <typename T, typename C, typename Cmp>
