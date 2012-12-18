@@ -69,7 +69,7 @@ namespace falling {
 				}
 				
 				if (this->running_) {
-					if (this->queue_.size()) {
+					if (this->queue_.size() && this->queue_.top().wake_up_at <= system_now()) {
 						TimedPayload work = this->queue_.pop();
 						m.unlock();
 						worker(work.payload);
@@ -96,7 +96,9 @@ namespace falling {
 		std::unique_lock<std::mutex> m(lock_);
 		TimedPayload tp = {p, at};
 		queue_.insert(std::move(tp));
-		cond_.notify_one();
+		if (at <= queue_.top().wake_up_at) {
+			cond_.notify_one();
+		}
 	}
 	
 	template <typename Payload>
