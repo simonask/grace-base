@@ -41,12 +41,12 @@ namespace falling {
 		}
 		virtual void set_alarm_clock(Fiber* fiber, GameTime at) {};
 		virtual void launch(std::function<void()> f) {
-			fibers_.push_back(make_unique<Fiber>(*this, std::move(f), now()));
+			fibers_.push_back(make_unique<Fiber>(default_allocator(), *this, std::move(f), now()));
 		}
 		virtual void defer(std::function<void()> f, GameTime until) { launch(f); }
 		virtual Fiber* current_fiber() const { return current_; }
 		
-		Array<std::unique_ptr<Fiber>> fibers_;
+		Array<UniquePtr<Fiber>> fibers_;
 		Fiber* current_ = nullptr;
 	};
 	
