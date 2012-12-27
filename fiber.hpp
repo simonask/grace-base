@@ -12,6 +12,7 @@
 #include <functional>
 #include "base/array.hpp"
 #include "base/time.hpp"
+#include "memory/unique_ptr.hpp"
 
 namespace falling {
 	enum FiberState : byte {
@@ -82,7 +83,7 @@ namespace falling {
 		Fiber* current_;
 		GameTime now_;
 		struct FiberInfo {
-			std::unique_ptr<Fiber> fiber;
+			UniquePtr<Fiber> fiber;
 			GameTime wake_up_at;
 		};
 		Array<FiberInfo> fibers_;

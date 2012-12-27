@@ -24,6 +24,9 @@ typedef double float64;
 typedef uint8 byte;
 
 static struct NothingType {} Nothing;
+using NullPtr = std::nullptr_t;
+
+using std::move;
 
 struct IndexOutOfBoundsException {
 	const char* what() { return "Index out of bounds."; }
@@ -50,11 +53,6 @@ struct CheckHasBuildTypeInfo {
 	
 template <typename T>
 struct HasReflection : HasMember<T, CheckHasBuildTypeInfo> {};
-	
-template <typename T, typename... ConstructorArgs>
-std::unique_ptr<T> make_unique(ConstructorArgs&&... args) {
-	return std::unique_ptr<T>(new T(std::forward<ConstructorArgs>(args)...));
-}
 
 #define FORWARD_TO_MEMBER(METHOD_NAME, MEMBER, MEMBER_TYPE) \
 template <typename ForwardType_ = MEMBER_TYPE, typename... ForwardArgs_> \

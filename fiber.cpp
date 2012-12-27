@@ -64,9 +64,9 @@ namespace falling {
 	}
 	
 	void FiberManager::defer(std::function<void ()> function, GameTime until) {
-		Fiber* f = new Fiber(*this, std::move(function), until);
+		auto f = make_unique<Fiber>(default_allocator(), *this, std::move(function), until);
 		FiberInfo info;
-		info.fiber = std::unique_ptr<Fiber>(f);
+		info.fiber = move(f);
 		info.wake_up_at = until;
 		fibers_.emplace_back(std::move(info));
 	}
