@@ -15,6 +15,7 @@
 #include "object/slot.hpp"
 #include "object/object.hpp"
 #include "object/object_type.hpp"
+#include "memory/unique_ptr.hpp"
 
 #include <functional>
 #include <type_traits>
@@ -62,7 +63,7 @@ namespace falling {
         size_t num_connections() const { return invokers_.size(); }
         SignalInvoker<Args...>* connection_at(size_t idx) const { return invokers_[idx].get(); }
     private:
-        Array<std::unique_ptr<SignalInvoker<Args...>>> invokers_;
+        Array<UniquePtr<SignalInvoker<Args...>>> invokers_;
     };
 
     template <typename R, typename... Args>
@@ -107,7 +108,7 @@ namespace falling {
     void Signal<Args...>::connect(Function function) {
 		typedef decltype(function(std::declval<Args>()...)) R;
 		auto f = std::function<R(Args...)>(std::move(function));
-        invokers_.push_back(make_unique<FunctionInvoker<R, Args...>>(std::move(f)));
+        invokers_.push_back(make_unique<FunctionInvoker<R, Args...>>(default_allocator(), std::move(f)));
     }
 
     template <typename... Args>
