@@ -155,6 +155,17 @@ namespace falling {
 		impl().resource_loaders[lid] = loader;
 	}
 	
+	InputStream* ResourceManager::create_reader_for_resource_id(IAllocator& alloc, ResourceID rid) {
+		// TODO: Consider virtual resources?
+		String path = path_for_resource(rid);
+		InputFileStream of = InputFileStream::open(path);
+		if (of.is_open() && of.is_readable()) {
+			return new(alloc) InputFileStream(std::move(of));
+		}
+		Error() << "Could not create reader for resource id '" << rid << "' (path: " << path << ").";
+		return nullptr;
+	}
+	
 	void ResourceManager::garbage_collect() {
 		bool any_leaked = false;
 		for (auto it = impl().resource_cache.begin(); it != impl().resource_cache.end();) {

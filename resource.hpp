@@ -35,6 +35,13 @@ namespace falling {
 		friend class ResourceManager;
 	};
 	
+	class InputStream;
+	
+	class StreamingResource : public Resource {
+	public:
+		virtual InputStream* create_reader(IAllocator& alloc);
+	};
+	
 	inline void Resource::retain() {
 		++refcount_;
 	}
