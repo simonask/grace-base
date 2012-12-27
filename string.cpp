@@ -22,4 +22,23 @@ namespace falling {
 		std::copy(b.begin(), b.end(), buffer+a.size());
 		return String::take_ownership(alloc, buffer, a.size() + b.size());
 	}
+	
+	StringRef substr(StringRef str, size_t pos, size_t len) {
+		size_t begin = pos;
+		if (begin > str.size()) begin = str.size();
+		size_t end = pos + len;
+		if (end > str.size()) end = str.size();
+		return StringRef(str.data() + begin, str.data() + end);
+	}
+	
+	size_t rfind(StringRef str, const StringRef& needle) {
+		if (needle.size() == 0) return str.size();
+		if (str.size() == 0) return String::NPos;
+		if (needle.size() > str.size()) return String::NPos;
+		
+		for (size_t i = str.size() - needle.size(); i > 0; --i) {
+			if (substr(str, i, needle.size()) == needle) return i;
+		}
+		return String::NPos;
+	}
 }
