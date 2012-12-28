@@ -134,14 +134,13 @@ namespace falling {
     template <typename... Args>
     template <typename T, typename R>
     void Signal<Args...>::connect(ObjectPtr<T> receiver, R(T::*member)(Args...)) {
-
-        invokers_.push_back(make_unique<MemberFunctionInvoker<T,R,Args...>>(receiver, member));
+        invokers_.push_back(make_unique<MemberFunctionInvoker<T,R,Args...>>(default_allocator(), receiver, member));
     }
 
     template <typename... Args>
     template <typename T, typename R>
     void Signal<Args...>::connect(ObjectPtr<T> receiver, R(T::*member)(Args...) const) {
-        invokers_.push_back(make_unique<MemberFunctionInvoker<const T, R, Args...>>(receiver, member));
+        invokers_.push_back(make_unique<MemberFunctionInvoker<const T, R, Args...>>(default_allocator(), receiver, member));
     }
 	
 	void nonexistent_slot_warning(ObjectPtr<> receiver, const String& slot_name);
@@ -159,7 +158,7 @@ namespace falling {
             slot_type_mismatch_warning(receiver, slot_name, slot_base->signature_description(), get_signature_description<Args...>());
 			return false;
         }
-		invokers_.push_back(make_unique<SlotInvoker<Args...>>(receiver, slot));
+		invokers_.push_back(make_unique<SlotInvoker<Args...>>(default_allocator(), receiver, slot));
 		return true;
     }
 	
