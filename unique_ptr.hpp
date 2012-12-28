@@ -18,13 +18,14 @@ namespace falling {
 	public:
 		template <typename U> friend class UniquePtr;
 		
-		UniquePtr() {}
-		UniquePtr(NullPtr* null) : ptr_(nullptr), alloc_(nullptr) {}
-		UniquePtr(UniquePtr<T>&& other) { swap(other); }
+		UniquePtr() { check_invariant(); }
+		UniquePtr(NullPtr* null) : ptr_(nullptr), alloc_(nullptr) { check_invariant(); }
+		UniquePtr(UniquePtr<T>&& other) { this->swap(other); check_invariant(); }
 		template <typename U>
 		UniquePtr(UniquePtr<U>&& other) {
-			ptr_ = other.release();
 			alloc_ = other.alloc_;
+			ptr_ = other.release();
+			check_invariant();
 		}
 		~UniquePtr() { reset(nullptr, nullptr); }
 		
@@ -53,6 +54,7 @@ namespace falling {
 			T* p = ptr_;
 			ptr_ = nullptr;
 			alloc_ = nullptr;
+			check_invariant();
 			return p;
 		}
 		
@@ -61,17 +63,17 @@ namespace falling {
 		}
 		
 		void swap(UniquePtr<T>& other) {
-			IAllocator* tmpa = alloc_;
-			T* tmp = ptr_;
-			alloc_ = other.alloc_;
-			ptr_ = other.ptr_;
-			other.alloc_ = tmpa;
-			other.ptr_ = tmp;
+			std::swap(ptr_, other.ptr_);
+			std::swap(alloc_, other.alloc_);
+			check_invariant();
+			other.check_invariant();
 		}
 	private:
 		template <typename U, typename... Args> friend UniquePtr<U> make_unique(IAllocator&, Args&&...);
 		
-		UniquePtr(IAllocator& alloc, T* ptr) : alloc_(&alloc), ptr_(ptr) {}
+		UniquePtr(IAllocator* alloc, T* ptr) : alloc_(alloc), ptr_(ptr) {
+			check_invariant();
+		}
 		
 		IAllocator* alloc_ = nullptr;
 		T* ptr_ = nullptr;
@@ -83,12 +85,17 @@ namespace falling {
 			ASSERT(ptr != ptr_ || (ptr == ptr_ && alloc_ == alloc));
 			ptr_ = ptr;
 			alloc_ = alloc;
+			check_invariant();
+		}
+		
+		void check_invariant() {
+			ASSERT(ptr_ == nullptr || alloc_ != nullptr);
 		}
 	};
 	
 	template <typename T, typename... Args>
 	UniquePtr<T> make_unique(IAllocator& alloc, Args&&... args) {
-		return UniquePtr<T>(alloc, new(alloc) T(std::forward<Args>(args)...));
+		return UniquePtr<T>(&alloc, new(alloc) T(std::forward<Args>(args)...));
 	}
 	
 	template <typename T>
