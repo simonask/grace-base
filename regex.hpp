@@ -9,81 +9,98 @@
 #ifndef falling_regex_hpp
 #define falling_regex_hpp
 
-#include <regex>
 #include "base/string.hpp"
-
 #include "base/basic.hpp"
 
 namespace falling {
-	struct Regex;
-}
-
-namespace std {
-	void swap(falling::Regex&, falling::Regex&);
-}
-
-namespace falling {
-	/*
-	 This class is mostly necessary because std::regex doesn't save a
-	 string representation of the regex, so it can't be printed.
-	 */
-	struct Regex {
-		Regex(String definition, std::regex::flag_type flags = std::regex_constants::ECMAScript);
-		Regex(Regex&&) = default;
-		Regex(const Regex&) = default;
-		Regex& operator=(Regex&&) = default;
-		Regex& operator=(const Regex&) = default;
+	enum RegexOptions : uint32 {
+		None = 0,
+		CaseInsensitive = 1 << ('i' - 'a'),
+		NewlineSensitive = 1 << ('m' - 'a'),
+	};
 		
-		operator const String&() const { return definition; }
-		operator const std::regex&() const { return regex; }
-		
-		FORWARD_TO_MEMBER(mark_count, regex, std::regex)
-		FORWARD_TO_MEMBER(flags, regex, std::regex)
-		FORWARD_TO_MEMBER(getloc, regex, std::regex)
-		
-		template <typename BidirectionalIterator>
-		bool match(BidirectionalIterator begin, BidirectionalIterator end) const;
-		template <typename BidirectionalIterator>
-		bool match(BidirectionalIterator begin, BidirectionalIterator end, std::match_results<BidirectionalIterator>& out_results) const;
-		template <typename BidirectionalIterator>
-		bool search(BidirectionalIterator begin, BidirectionalIterator end) const;
-		
-		// TODO:
-		template <typename OutputIterator, typename BidirectionalIterator>
-		OutputIterator replace(OutputIterator out, BidirectionalIterator begin, BidirectionalIterator end);
-	private:
-		String definition;
-		std::regex regex;
-		friend void std::swap(Regex&, Regex&);
+	struct RegexError {
+		String message;
+		RegexError(String msg) : message(move(msg)) {}
+		const String& what() const { return message; }
 	};
 	
-	inline Regex::Regex(String definition, std::regex::flag_type flags)
-	: definition(std::move(definition))
-	, regex(this->definition.data(), this->definition.size(), flags)
-	{}
-	
-	template <typename BidirectionalIterator>
-	bool Regex::match(BidirectionalIterator begin, BidirectionalIterator end) const {
-		return std::regex_match(begin, end, regex);
+	struct Regex {
+		Regex(IAllocator& alloc = default_allocator()) : pattern_(alloc) {}
+		Regex(const char* utf8, IAllocator& alloc = default_allocator());
+		Regex(const char* utf8, const char* options, IAllocator& alloc = default_allocator());
+		Regex(const char* utf8, uint32 options, IAllocator& alloc = default_allocator());
+		Regex(StringRef pattern, IAllocator& alloc = default_allocator());
+		Regex(StringRef pattern, const char* options, IAllocator& alloc = default_allocator());
+		Regex(StringRef pattern, uint32 options, IAllocator& alloc = default_allocator());
+		Regex(Regex&& other);
+		Regex(const Regex&, IAllocator& alloc = default_allocator());
+		Regex& operator=(Regex&& other);
+		Regex& operator=(const Regex&);
+		
+		IAllocator& allocator() const;
+		const String& pattern() const;
+		uint32 options() const;
+		bool is_case_insensitive() const;
+		bool is_newline_sensitive() const;
+		
+		struct SearchResults {
+			Array<StringRef> matches;
+			SearchResults(Array<StringRef> m) : matches(move(m)) {}
+			SearchResults(const SearchResults&) = default;
+			SearchResults(SearchResults&&) = default;
+			
+			using iterator = Array<StringRef>::const_iterator;
+			iterator begin() const { return matches.begin(); }
+			iterator end()   const { return matches.end(); }
+			StringRef operator[](size_t idx) const { return matches[idx]; }
+			size_t size() const { return matches.size(); }
+		};
+		
+		bool match(StringRef haystack) const;
+		SearchResults search(StringRef haystack, IAllocator& alloc = default_allocator()) const;
+	private:
+		String pattern_;
+		uint32 options_ = RegexOptions::None;
+		void* regex_ = nullptr;
+		
+		void compile_regex();
+		void parse_options(const char*);
+		void check_error(int) const;
+	};
+		
+	inline IAllocator& Regex::allocator() const {
+		return pattern_.allocator();
 	}
-	
-	template <typename BidirectionalIterator>
-	bool Regex::match(BidirectionalIterator begin, BidirectionalIterator end, std::match_results<BidirectionalIterator>& out_results) const {
-		return std::regex_match(begin, end, out_results, regex);
+		
+	inline const String& Regex::pattern() const {
+		return pattern_;
 	}
-	
-	template <typename BidirectionalIterator>
-	bool Regex::search(BidirectionalIterator begin, BidirectionalIterator end) const {
-		return std::regex_search(begin, end, regex);
+		
+	inline uint32 Regex::options() const {
+		return options_;
 	}
+		
+		inline bool Regex::is_case_insensitive() const {
+			return (options_ & RegexOptions::CaseInsensitive) != 0;
+		}
+		
+		inline bool Regex::is_newline_sensitive() const {
+			return (options_ & RegexOptions::NewlineSensitive) != 0;
+		}
 	
-	
-}
-
-namespace std {
-	inline void swap(falling::Regex& lhs, falling::Regex& rhs) {
-		std::swap(lhs.definition, rhs.definition);
-		std::swap(lhs.regex, rhs.regex);
+	struct FormattedStream;
+	inline FormattedStream& operator<<(FormattedStream& os, const Regex& rx) {
+		os << '/';
+		os << rx.pattern();
+		os << '/';
+		if (rx.is_case_insensitive()) {
+			os << 'i';
+		}
+		if (rx.is_newline_sensitive()) {
+			os << 'm';
+		}
+		return os;
 	}
 }
 
