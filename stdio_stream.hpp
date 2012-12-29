@@ -28,6 +28,9 @@ namespace falling {
 		StdOutputStream(StandardOStreamType stream_type = StandardOutputStreamType);
 		StdOutputStream(StdOutputStream&& other) = default;
 		StdOutputStream& operator=(StdOutputStream&& other) = default;
+		
+		FORWARD_TO_MEMBER(sync, stream_, OutputFileStream);
+		FORWARD_TO_MEMBER(set_sync, stream_, OutputFileStream);
 	private:
 		OutputFileStream stream_;
 	};
@@ -44,8 +47,13 @@ namespace falling {
 	template <StandardOStreamType t>
 	struct GetOutputStream {
 		GetOutputStream() {}
-		operator StdOutputStream&() const {
+		
+		StdOutputStream& stream() const {
 			return get_stdout_stream(t);
+		}
+		
+		operator StdOutputStream&() const {
+			return stream();
 		}
 	};
 	
