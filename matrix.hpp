@@ -49,6 +49,12 @@ namespace falling {
 		Self operator*(ElementType scalar) const;
 		Self& operator*=(ElementType scalar);
 		
+		// Element-by-element addition and subtraction
+		Self& operator+=(const Self& other);
+		Self operator+(const Self& other) const;
+		Self& operator-=(const Self& other);
+		Self operator-(const Self& other) const;
+		
 		// Matrix multiplication
 		template <size_t P>
 		TMatrix<ElementType, N, P> operator*(const TMatrix<ElementType, P, N>& other) const;
@@ -98,6 +104,52 @@ namespace falling {
 		for (size_t i = 0; i < N; ++i) {
 			rows_[i][idx] = col[i];
 		}
+	}
+	
+	template <typename T, size_t N, size_t M>
+	TMatrix<T,N,M>& TMatrix<T,N,M>::operator+=(const Self& other) {
+		for (size_t i = 0; i < N; ++i) {
+			rows_[i] += other.rows_[i];
+		}
+		return *this;
+	}
+	
+	template <typename T, size_t N, size_t M>
+	TMatrix<T,N,M> TMatrix<T,N,M>::operator+(const Self& other) const {
+		TMatrix<T,N,M> result = *this;
+		result += other;
+		return move(result);
+	}
+	
+	template <typename T, size_t N, size_t M>
+	TMatrix<T,N,M>& TMatrix<T,N,M>::operator-=(const Self& other) {
+		for (size_t i = 0; i < N; ++i) {
+			rows_[i] -= other.rows_[i];
+		}
+		return *this;
+	}
+	
+	template <typename T, size_t N, size_t M>
+	TMatrix<T,N,M> TMatrix<T,N,M>::operator-(const Self& other) const {
+		TMatrix<T,N,M> result = *this;
+		result -= other;
+		return move(result);
+	}
+	
+	template <typename T, size_t N, size_t M>
+	TMatrix<T,N,M>& TMatrix<T,N,M>::operator*=(T scalar) {
+		const auto s = Row::replicate(scalar);
+		for (size_t i = 0; i < N; ++i) {
+			rows_[i] *= s;
+		}
+		return *this;
+	}
+	
+	template <typename T, size_t N, size_t M>
+	TMatrix<T,N,M> TMatrix<T,N,M>::operator*(T scalar) const {
+		Self result = *this;
+		result *= scalar;
+		return *this;
 	}
 	
 	template <typename T, size_t N, size_t M>
