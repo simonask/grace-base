@@ -5,6 +5,7 @@
 #include "object/object.hpp"
 #include "type/type.hpp"
 #include "serialization/archive.hpp"
+#include "base/any.hpp"
 
 namespace falling {
 
@@ -12,12 +13,18 @@ struct AttributeBase {
 	AttributeBase(String name, String description) : name_(std::move(name)), description_(std::move(description)) {}
 	virtual ~AttributeBase() {}
 	
+	virtual Any get_any(Object* object) const = 0;
+	virtual Any get_any(const Object* object) const = 0;
+	virtual bool set_any(Object* object, const Any& value) const = 0;
+	
 	virtual const Type* type() const = 0;
 	const String& name() const { return name_; }
 	const String& description() const { return description_; }
 protected:
 	String name_;
 	String description_;
+	
+	void warn_set_any_wrong_type(const Type* expected, const Type* got) const;
 };
 
 template <typename T>
@@ -58,6 +65,36 @@ struct AttributeForObjectOfType : AttributeForObject<ObjectType>, Attribute<Memb
 		GetterType value = get(*object);
 		this->type()->serialize_raw(reinterpret_cast<const byte*>(&value), node, universe);
 		return true; // eh...
+	}
+	
+	Any get_any(Object* object) const {
+		MemberType value;
+		if (get_polymorphic(object, value)) {
+			return move(value);
+		}
+		return Nothing;
+	}
+	
+	Any get_any(const Object* object) const {
+		return Nothing;
+		/*MemberType value;
+		if (const_get_polymorphic(object, value)) {
+			return move(value);
+		}
+		return Nothing;*/
+	}
+	
+	bool set_any(Object* object, const Any& value) const {
+		if (value.is_a<MemberType>()) {
+			bool result = false;
+			value.get<MemberType>().map([&](const MemberType& v) {
+				set_polymorphic(object, v);
+				result = true;
+			});
+			return result;
+		}
+		this->warn_set_any_wrong_type(get_type<MemberType>(), value.type());
+		return false;
 	}
 	
 	bool get_polymorphic(Object* object, MemberType& out_value) const {
