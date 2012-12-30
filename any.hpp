@@ -54,6 +54,8 @@ namespace falling {
 		void assign(Any&& other);
 		
 		const Type* type() const { return stored_type_; }
+		template <typename T>
+		bool is_a() const;
 		void clear();
 		
 		template <typename T, typename Function>
@@ -76,6 +78,20 @@ namespace falling {
 		void deallocate_storage();
 		const byte* ptr() const;
 		byte* ptr();
+		
+		friend struct AnyType;
+	};
+	
+	struct AnyType : TypeFor<Any> {
+		void deserialize(Any& place, const ArchiveNode& n, UniverseBase& u) const;
+		void serialize(const Any& place, ArchiveNode&, UniverseBase&) const;
+		String name() const { return "Any"; }
+		size_t size() const { return sizeof(Any); }
+	};
+	
+	template <>
+	struct BuildTypeInfo<Any> {
+		static const AnyType* build();
 	};
 	
 	inline Any::Any() : allocator_(default_allocator()) {
@@ -158,6 +174,21 @@ namespace falling {
 		return stored_type_ == nullptr;
 	}
 	
+	template <>
+	inline bool Any::is_a<Any>() const {
+		return true;
+	}
+	
+	template <typename T>
+	inline bool Any::is_a() const {
+		return stored_type_ == get_type<T>();
+	}
+	
+	template <>
+	inline void Any::assign<Any>(Any value) {
+		this->operator=(move(value));
+	}
+	
 	template <typename T>
 	void Any::assign(T value) {
 		clear();
@@ -199,7 +230,9 @@ namespace falling {
 	
 	template <typename T, typename Function>
 	Any& Any::when(Function function) {
-		if (get_type<T>() == stored_type_) {
+		if ((const Type*)get_type<T>() == get_type<Any>()) {
+			function(*this);
+		} else if (get_type<T>() == stored_type_) {
 			T* object = reinterpret_cast<T*>(ptr());
 			function(*object);
 		}
@@ -208,7 +241,9 @@ namespace falling {
 	
 	template <typename T, typename Function>
 	const Any& Any::when(Function function) const {
-		if (get_type<T>() == stored_type_) {
+		if ((const Type*)get_type<T> == get_type<Any>()) {
+			function(*this);
+		} else if (get_type<T>() == stored_type_) {
 			const T* object = reinterpret_cast<const T*>(ptr());
 			function(*object);
 		}
@@ -222,9 +257,14 @@ namespace falling {
 		}
 	}
 	
+	template <>
+	inline Maybe<Any> Any::get<Any>() const {
+		return *this;
+	}
+	
 	template <typename T>
 	Maybe<T> Any::get() const {
-		if (get_type<T>() == stored_type_) {
+		if ((const Type*)get_type<T>() == stored_type_) {
 			return Maybe<T>(*reinterpret_cast<const T*>(ptr()));
 		}
 		return Nothing;
@@ -232,6 +272,7 @@ namespace falling {
 	
 	template <typename T>
 	T Any::unsafe_get() const {
+		ASSERT((const Type*)get_type<T>() != (const Type*)get_type<Any>());
 		ASSERT(get_type<T>() == stored_type_);
 		return *reinterpret_cast<const T*>(ptr());
 	}
