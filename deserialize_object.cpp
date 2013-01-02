@@ -13,11 +13,12 @@
 namespace falling {
 
 namespace {
-	const DerivedType* get_type_from_map(const ArchiveNode& node, String& out_error);
+	const StructuredType* get_type_from_map(const ArchiveNode& node, String& out_error);
 	
 	const ObjectTypeBase* get_class_from_map(const ArchiveNode& node, String& out_error) {
 		String clsname;
-		if (!node["class"].get(clsname)) {
+		const ArchiveNode& cls_node = node["class"];
+		if (!cls_node.get(clsname)) {
 			out_error = "Class not specified.";
 			return nullptr;
 		}
@@ -29,15 +30,15 @@ namespace {
 		return struct_type;
 	}
 	
-	const DerivedType* transform_if_composite_type(const ArchiveNode& node, const ObjectTypeBase* base_type, String& out_error) {
+	const StructuredType* transform_if_composite_type(const ArchiveNode& node, const ObjectTypeBase* base_type, String& out_error) {
 		const ArchiveNode& aspects = node["aspects"];
 		if (!aspects.is_array()) return base_type;
 		if (aspects.array_size() == 0) return base_type;
 		
-		CompositeType* type = new CompositeType("Composite", base_type);
+		CompositeType* type = new CompositeType(default_allocator(), "Composite", base_type); // TODO: Use universe allocator
 		for (size_t i = 0; i < aspects.array_size(); ++i) {
 			const ArchiveNode& aspect = aspects[i];
-			const DerivedType* aspect_type = get_type_from_map(aspect, out_error);
+			const StructuredType* aspect_type = get_type_from_map(aspect, out_error);
 			if (aspect_type == nullptr) {
 				return nullptr;
 			}
@@ -47,7 +48,7 @@ namespace {
 		return type;
 	}
 	
-	const DerivedType* get_type_from_map(const ArchiveNode& node, String& out_error) {
+	const StructuredType* get_type_from_map(const ArchiveNode& node, String& out_error) {
 		const ObjectTypeBase* struct_type = get_class_from_map(node, out_error);
 		if (struct_type != nullptr) {
 			return transform_if_composite_type(node, struct_type, out_error);
@@ -121,7 +122,7 @@ ObjectPtr<> deserialize_object(const ArchiveNode& node, UniverseBase& universe) 
 	merge_archive_node_map(merged_node, node);
 	
 	String error;
-	const DerivedType* type = get_type_from_map(merged_node, error);
+	const StructuredType* type = get_type_from_map(merged_node, error);
 	if (type == nullptr) {
 		Error() << error;
 		return nullptr;
