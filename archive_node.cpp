@@ -36,19 +36,19 @@ ArchiveNode& ArchiveNode::operator[](size_t idx) {
 	}
 }
 
-const ArchiveNode& ArchiveNode::operator[](const String& key) const {
+const ArchiveNode& ArchiveNode::operator[](StringRef key) const {
 	if (type() != Type::Map) return archive_.empty();
-	return *find_or(map_, key, &archive_.empty());
+	return *find_or(map_, String(key), &archive_.empty());
 }
 
-ArchiveNode& ArchiveNode::operator[](const String& key) {
+ArchiveNode& ArchiveNode::operator[](StringRef key) {
 	if (type() != Type::Map) {
 		clear(Type::Map);
 	}
-	auto it = map_.find(key);
+	auto it = map_.find(String(key));
 	if (it == map_.end()) {
 		ArchiveNode* n = archive_.make();
-		map_[key] = n;
+		map_[String(key)] = n;
 		return *n;
 	} else {
 		return *it->second;
@@ -80,7 +80,7 @@ Object* DeserializeSignalBase::get_object(const UniverseBase& universe) const {
 }
 
 const SlotBase* DeserializeSignalBase::get_slot(Object* object) const {
-	const DerivedType* type = get_type(object);
+	const StructuredType* type = get_type(object);
 	return type->find_slot_by_name(slot_id_);
 }
 

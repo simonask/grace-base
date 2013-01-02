@@ -59,8 +59,8 @@ struct ArchiveNode {
 	
 	const ArchiveNode& operator[](size_t idx) const;
 	ArchiveNode& operator[](size_t idx);
-	const ArchiveNode& operator[](const String& key) const;
-	ArchiveNode& operator[](const String& key);
+	const ArchiveNode& operator[](StringRef key) const;
+	ArchiveNode& operator[](StringRef key);
 	
 	ArchiveNode& array_push();
 	size_t array_size() const { return array_.size(); }
