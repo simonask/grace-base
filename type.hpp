@@ -195,8 +195,10 @@ struct StringType : TypeFor<String> {
 	size_t size() const override { return sizeof(String); }
 };
 
+struct SlotBase;
+struct AttributeBase;
+
 struct DerivedType : Type {
-	virtual const SlotBase* find_slot_by_name(const String& name) const { return nullptr; }
 };
 
 // static downcast

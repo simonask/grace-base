@@ -8,128 +8,121 @@
 #include "base/any.hpp"
 
 namespace falling {
+	struct IAttribute {
+		virtual const Type* type() const = 0;
+		virtual StringRef name() const = 0;
+		virtual StringRef description() const = 0;
+		virtual Any get_any(Object* object) const = 0;
+		virtual Any get_any(const Object* object) const = 0;
+		virtual bool set_any(Object* object, const Any& value) const = 0;
+		virtual void deserialize_attribute(Object* object, const ArchiveNode&, UniverseBase&) const = 0;
+		virtual void serialize_attribute(const Object* object, ArchiveNode&, UniverseBase&) const = 0;
+	};
 
-struct AttributeBase {
-	AttributeBase(String name, String description) : name_(std::move(name)), description_(std::move(description)) {}
-	virtual ~AttributeBase() {}
+	template <typename T>
+	struct AttributeOfType : IAttribute {
+		virtual bool get_polymorphic(Object* object, T& out_value) const = 0;
+		virtual bool get_polymorphic(const Object* object, T& out_value) const = 0;
+		virtual bool set_polymorphic(Object* object, const T& in_value) const = 0;
+		
+		const Type* type() const final { return get_type<T>(); }
+	};
 	
-	virtual Any get_any(Object* object) const = 0;
-	virtual Any get_any(const Object* object) const = 0;
-	virtual bool set_any(Object* object, const Any& value) const = 0;
-	
-	virtual const Type* type() const = 0;
-	const String& name() const { return name_; }
-	const String& description() const { return description_; }
-protected:
-	String name_;
-	String description_;
-	
-	void warn_set_any_wrong_type(const Type* expected, const Type* got) const;
-};
+	namespace detail {
+		void warn_set_any_wrong_type(StringRef property_name, const Type* expected, const Type* got);
+	}
 
-template <typename T>
-struct Attribute {
-	virtual ~Attribute() {}
-	virtual bool get_polymorphic(Object* object, T& out_value) const = 0;
-	//virtual bool const_get_polymorphic(const Object* object, T const*& out_pointer) const = 0;
-	virtual bool set_polymorphic(Object* object, const T& in_value) const = 0;
-};
-
-template <typename T>
-struct AttributeForObject : AttributeBase {
-	AttributeForObject(String name, String description) : AttributeBase(std::move(name), std::move(description)) {}
-	virtual ~AttributeForObject() {}
-	virtual bool deserialize_attribute(T* object, const ArchiveNode&, UniverseBase&) const = 0;
-	virtual bool serialize_attribute(const T* object, ArchiveNode&, UniverseBase&) const = 0;
-};
-
-template <typename ObjectType, typename MemberType, typename GetterType = MemberType>
-struct AttributeForObjectOfType : AttributeForObject<ObjectType>, Attribute<MemberType> {
-	AttributeForObjectOfType(String name, String description) : AttributeForObject<ObjectType>(name, description) {}
+	template <typename ObjectType, typename MemberType, typename GetterType = MemberType>
+	struct AttributeForObjectOfType : AttributeOfType<MemberType> {
+		String name_;
+		String description_;
 	
-	virtual GetterType get(const ObjectType&) const = 0;
-	virtual void set(ObjectType&, MemberType value) const = 0;
+		AttributeForObjectOfType(IAllocator& alloc, StringRef name, StringRef description) : name_(name, alloc), description_(description, alloc) {}
+		
+		StringRef name() const { return name_; }
+		StringRef description() const { return description_; }
 	
-	const Type* type() const { return get_type<MemberType>(); }
+		virtual GetterType get(const ObjectType&) const = 0;
+		virtual void set(ObjectType&, MemberType value) const = 0;
 	
-	bool deserialize_attribute(ObjectType* object, const ArchiveNode& node, UniverseBase& universe) const {
-		if (!node.is_empty()) {
+		void deserialize_attribute(Object* object, const ArchiveNode& node, UniverseBase& universe) const {
+			ObjectType* o = dynamic_cast<ObjectType*>(object);
+			ASSERT(o != nullptr);
+			if (!node.is_empty()) {
+				MemberType value;
+				this->type()->deserialize_raw(reinterpret_cast<byte*>(&value), node, universe);
+				set(*o, std::move(value));
+			}
+		}
+	
+		void serialize_attribute(const Object* object, ArchiveNode& node, UniverseBase& universe) const {
+			const ObjectType* o = dynamic_cast<const ObjectType*>(object);
+			GetterType value = get(*o);
+			this->type()->serialize_raw(reinterpret_cast<const byte*>(&value), node, universe);
+		}
+	
+		Any get_any(Object* object) const {
 			MemberType value;
-			this->type()->deserialize_raw(reinterpret_cast<byte*>(&value), node, universe);
-			set(*object, std::move(value));
+			if (get_polymorphic(object, value)) {
+				return move(value);
+			}
+			return Nothing;
 		}
-		return true; // eh...
-	}
 	
-	bool serialize_attribute(const ObjectType* object, ArchiveNode& node, UniverseBase& universe) const {
-		GetterType value = get(*object);
-		this->type()->serialize_raw(reinterpret_cast<const byte*>(&value), node, universe);
-		return true; // eh...
-	}
-	
-	Any get_any(Object* object) const {
-		MemberType value;
-		if (get_polymorphic(object, value)) {
-			return move(value);
+		Any get_any(const Object* object) const {
+			MemberType value;
+			if (get_polymorphic(object, value)) {
+				return move(value);
+			}
+			return Nothing;
 		}
-		return Nothing;
-	}
 	
-	Any get_any(const Object* object) const {
-		return Nothing;
-		/*MemberType value;
-		if (const_get_polymorphic(object, value)) {
-			return move(value);
+		bool set_any(Object* object, const Any& value) const {
+			if (value.is_a<MemberType>()) {
+				bool result = false;
+				value.get<MemberType>().map([&](const MemberType& v) {
+					set_polymorphic(object, v);
+					result = true;
+				});
+				return result;
+			}
+			detail::warn_set_any_wrong_type(name_, get_type<MemberType>(), value.type());
+			return false;
 		}
-		return Nothing;*/
-	}
 	
-	bool set_any(Object* object, const Any& value) const {
-		if (value.is_a<MemberType>()) {
-			bool result = false;
-			value.get<MemberType>().map([&](const MemberType& v) {
-				set_polymorphic(object, v);
-				result = true;
-			});
-			return result;
+		bool get_polymorphic(Object* object, MemberType& out_value) const {
+			const ObjectType* o = dynamic_cast<const ObjectType*>(object);
+			if (o != nullptr) {
+				out_value = get(*o);
+				return true;
+			}
+			return false;
 		}
-		this->warn_set_any_wrong_type(get_type<MemberType>(), value.type());
-		return false;
-	}
 	
-	bool get_polymorphic(Object* object, MemberType& out_value) const {
-		const ObjectType* o = dynamic_cast<const ObjectType*>(object);
-		if (o != nullptr) {
-			out_value = get(*o);
-			return true;
+		bool set_polymorphic(Object* object, const MemberType& in_value) const {
+			ObjectType* o = dynamic_cast<ObjectType*>(object);
+			if (o != nullptr) {
+				set(*o, in_value);
+				return true;
+			}
+			return false;
 		}
-		return false;
-	}
 	
-	bool set_polymorphic(Object* object, const MemberType& in_value) const {
-		ObjectType* o = dynamic_cast<ObjectType*>(object);
-		if (o != nullptr) {
-			set(*o, in_value);
-			return true;
+		bool get_polymorphic(const Object* object, MemberType& out_value) const {
+			const ObjectType* o = dynamic_cast<const ObjectType*>(object);
+			if (o != nullptr) {
+				out_value = get(*o);
+				return true;
+			}
+			return false;
 		}
-		return false;
-	}
-	
-	/*bool const_get_polymorphic(const Object* object, const MemberType*& out_pointer) const {
-		const ObjectType* o = dynamic_cast<const ObjectType*>(object);
-		if (o != nullptr) {
-			out_pointer = &get(*o);
-			return true;
-		}
-		return false;
-	}*/
-};
+	};
 
 template <typename ObjectType, typename MemberType>
 struct MemberAttribute : AttributeForObjectOfType<ObjectType, MemberType, const MemberType&> {
 	typedef MemberType ObjectType::* MemberPointer;
 	
-	MemberAttribute(String name, String description, MemberPointer member) : AttributeForObjectOfType<ObjectType, MemberType, const MemberType&>(name, description), member_(member) {}
+	MemberAttribute(IAllocator& alloc, StringRef name, StringRef description, MemberPointer member) : AttributeForObjectOfType<ObjectType, MemberType, const MemberType&>(alloc, name, description), member_(member) {}
 	
 	const MemberType& get(const ObjectType& object) const {
 		return object.*member_;
@@ -140,10 +133,11 @@ struct MemberAttribute : AttributeForObjectOfType<ObjectType, MemberType, const 
 	}
 	
 	// override deserialize_attribute so we can deserialize in-place
-	bool deserialize_attribute(ObjectType* object, const ArchiveNode& node, UniverseBase& universe) const {
-		MemberType* ptr = &(object->*member_);
+	void deserialize_attribute(Object* object, const ArchiveNode& node, UniverseBase& universe) const {
+		ObjectType* o = dynamic_cast<ObjectType*>(object);
+		ASSERT(o != nullptr);
+		MemberType* ptr = &(o->*member_);
 		this->type()->deserialize_raw(reinterpret_cast<byte*>(ptr), node, universe);
-		return true; // eh...
 	}
 	
 	MemberPointer member_;
@@ -158,7 +152,7 @@ struct MethodAttribute : AttributeForObjectOfType<ObjectType, MemberType, Getter
 	typedef GetterReturnType(ObjectType::*GetterPointer)() const;
 	typedef SetterReturnTypeUnused(ObjectType::*SetterPointer)(SetterArgumentType);
 	
-	MethodAttribute(String name, String description, GetterPointer getter, SetterPointer setter) : AttributeForObjectOfType<ObjectType, MemberType, GetterReturnType>(name, description), getter_(getter), setter_(setter) {}
+	MethodAttribute(IAllocator& alloc, StringRef name, StringRef description, GetterPointer getter, SetterPointer setter) : AttributeForObjectOfType<ObjectType, MemberType, GetterReturnType>(alloc, name, description), getter_(getter), setter_(setter) {}
 	
 	GetterReturnType get(const ObjectType& object) const {
 		return (object.*getter_)();

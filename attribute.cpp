@@ -10,7 +10,9 @@
 #include "base/log.hpp"
 
 namespace falling {
-	void AttributeBase::warn_set_any_wrong_type(const Type *expected, const Type *got) const {
-		Warning() << "Wrong variant type in dynamic attribute assignment to '" << name() << "'. expected value of type " << expected->name() << ", got " << got->name() << ".";
+	namespace detail {
+		void warn_set_any_wrong_type(StringRef property_name, const Type *expected, const Type *got) {
+			Warning() << "Wrong variant type in dynamic attribute assignment to '" << property_name << "'. expected value of type " << expected->name() << ", got " << got->name() << ".";
+		}
 	}
 }
