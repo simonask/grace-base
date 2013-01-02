@@ -62,6 +62,7 @@ bool BasicUniverse::rename_object(ObjectPtr<> object, String new_id) {
 			StringStream create_new_name;
 			create_new_name << base_name << format("%02d", n);
 			new_name = std::move(create_new_name.str());
+			++n;
 		} while (object_map_.find(new_name) != object_map_.end());
 		
 		renamed_exact = false;
