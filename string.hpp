@@ -15,7 +15,44 @@
 #include "base/iterators.hpp"
 
 namespace falling {
-	using StringRef = ArrayRef<const char>;
+	struct StringRef {
+	public:
+		constexpr StringRef() : begin_(nullptr), end_(nullptr) {}
+		constexpr StringRef(Empty e) : begin_(nullptr), end_(nullptr) {}
+		template <size_t N>
+		constexpr StringRef(const char(&data)[N]) : begin_(data), end_(data + N - 1) { }
+		constexpr StringRef(const char* begin, const char* end) : begin_(begin), end_(end) { /*ASSERT(begin_ <= end_);*/ }
+		StringRef(const char* utf8) : begin_(utf8), end_(utf8 + strlen(utf8)) {}
+		StringRef(const char* utf8, size_t len) : begin_(utf8), end_(utf8 + len) {}
+		constexpr StringRef(const ArrayRef<char>& array) : begin_(array.data()), end_(array.data() + array.size()) {}
+		StringRef(const StringRef& other) = default;
+		StringRef(StringRef&& other) = default;
+		StringRef& operator=(const StringRef& other) = default;
+		StringRef& operator=(StringRef&& other) = default;
+
+		ssize_t compare(StringRef other) const;
+		bool operator==(StringRef other) const;
+		bool operator!=(StringRef other) const;
+		bool operator< (StringRef other) const;
+		bool operator> (StringRef other) const;
+		bool operator<=(StringRef other) const;
+		bool operator>=(StringRef other) const;
+		
+		size_t size() const { return end_ - begin_; }
+		
+		char operator[](size_t idx) const { ASSERT(idx < size()); return begin_[idx]; }
+		
+		typedef const char value_type;
+		using const_iterator = LinearMemoryIterator<StringRef, char, true>;
+		using iterator = const_iterator;
+		const_iterator begin() const { return begin_; }
+		const_iterator end() const { return end_; }
+		
+		const char* data() const { return begin_; }
+	private:
+		const char* begin_;
+		const char* end_;
+	};
 	
 	class String {
 	public:
@@ -36,12 +73,14 @@ namespace falling {
 		IAllocator& allocator() const { return allocator_; }
 		
 		ssize_t compare(StringRef other/*, Collation collation = default_collation()*/) const;
-		bool operator==(const String& other) const;
-		bool operator!=(const String& other) const;
-		bool operator<(const String& other) const;
-		bool operator>(const String& other) const;
-		bool operator<=(const String& other) const;
-		bool operator>=(const String& other) const;
+		ssize_t compare(const char* other/*, Collation collation = default_collation()*/) const;
+		bool operator==(StringRef other) const;
+		bool operator!=(StringRef other) const;
+		bool operator< (StringRef other) const;
+		bool operator> (StringRef other) const;
+		bool operator<=(StringRef other) const;
+		bool operator>=(StringRef other) const;
+
 		char operator[](size_t idx) const;
 		
 		String operator+(StringRef other) const;
@@ -79,6 +118,7 @@ namespace falling {
 		void clear();
 	};
 	
+	ssize_t compare(StringRef a, StringRef b);
 	StringRef substr(StringRef, size_t pos, size_t len = String::NPos);
 	size_t find(StringRef, char letter);
 	size_t find(StringRef, const StringRef& substring);
@@ -158,37 +198,69 @@ namespace falling {
 		}
 		return data_[idx];
 	}
+
+	inline ssize_t StringRef::compare(StringRef other) const {
+		return falling::compare(*this, other);
+	}
 	
 	inline ssize_t String::compare(StringRef other) const {
+		return falling::compare(*this, other);
+	}
+
+	inline ssize_t compare(StringRef a, StringRef b) {
 		// TODO: Consider just using strcmp...
-		for (size_t i = 0; i < size_ && i < other.size(); ++i) {
-			signed char diff = (signed char)data_[i] - (signed char)other[i];
+		for (size_t i = 0; i < a.size() && i < b.size(); ++i) {
+			signed char diff = (signed char)a[i] - (signed char)b[i];
 			if (diff != 0) return diff;
 		}
-		return (ssize_t)size_ - (ssize_t)other.size();
+		return (ssize_t)a.size() - (ssize_t)b.size();
 	}
 	
-	inline bool String::operator==(const String& other) const {
-		return (size_ == other.size_) && (compare(other) == 0);
+	inline bool String::operator==(StringRef other) const {
+		return (size_ == other.size()) && (compare(other) == 0);
 	}
 	
-	inline bool String::operator!=(const String& other) const {
-		return (size_ != other.size_) || (compare(other) != 0);
+	inline bool String::operator!=(StringRef other) const {
+		return (size_ != other.size()) || (compare(other) != 0);
 	}
 	
-	inline bool String::operator<(const String& other) const {
+	inline bool String::operator<(StringRef other) const {
 		return compare(other) < 0;
 	}
 	
-	inline bool String::operator>(const String& other) const {
+	inline bool String::operator>(StringRef other) const {
 		return compare(other) > 0;
 	}
 	
-	inline bool String::operator<=(const String& other) const {
+	inline bool String::operator<=(StringRef other) const {
 		return compare(other) <= 0;
 	}
 	
-	inline bool String::operator>=(const String& other) const {
+	inline bool String::operator>=(StringRef other) const {
+		return compare(other) >= 0;
+	}
+
+	inline bool StringRef::operator==(StringRef other) const {
+		return (size() == other.size()) && (compare(other) == 0);
+	}
+	
+	inline bool StringRef::operator!=(StringRef other) const {
+		return (size() != other.size()) || (compare(other) != 0);
+	}
+	
+	inline bool StringRef::operator<(StringRef other) const {
+		return compare(other) < 0;
+	}
+	
+	inline bool StringRef::operator>(StringRef other) const {
+		return compare(other) > 0;
+	}
+	
+	inline bool StringRef::operator<=(StringRef other) const {
+		return compare(other) <= 0;
+	}
+	
+	inline bool StringRef::operator>=(StringRef other) const {
 		return compare(other) >= 0;
 	}
 	

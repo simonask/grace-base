@@ -20,8 +20,8 @@ namespace falling {
 	public:
 		constexpr ArrayRef() : begin_(nullptr), end_(nullptr) {}
 		constexpr ArrayRef(Empty e) : begin_(nullptr), end_(nullptr) {}
-		template <size_t N>
-		constexpr ArrayRef(const T(&data)[N]) : begin_(data), end_(data + N) { }
+		template <size_t N, typename C = T>
+		constexpr ArrayRef(const C(&data)[N]) : begin_(data), end_(data + N) { }
 		constexpr ArrayRef(T* begin, T* end) : begin_(begin), end_(end) { /*ASSERT(begin_ <= end_);*/ }
 		ArrayRef(const ArrayRef<T>& other) = default;
 		ArrayRef(ArrayRef<T>&& other) = default;
@@ -32,10 +32,10 @@ namespace falling {
 		
 		size_t size() const { return end_ - begin_; }
 		
-		T& operator[](size_t idx) { ASSERT(idx < size()); return begin_[idx]; }
 		const T& operator[](size_t idx) const { ASSERT(idx < size()); return begin_[idx]; }
+		T& operator[](size_t idx) { ASSERT(idx < size()); return begin_[idx]; }
 		
-		typedef T value_type;
+		typedef const T value_type;
 		using iterator = LinearMemoryIterator<ArrayRef<T>, T, false>;
 		using const_iterator = LinearMemoryIterator<ArrayRef<T>, T, true>;
 		iterator begin() { return begin_; }
@@ -43,7 +43,6 @@ namespace falling {
 		const_iterator begin() const { return begin_; }
 		const_iterator end() const { return end_; }
 		
-		T* data() { return begin_; }
 		const T* data() const { return begin_; }
 	private:
 		T* begin_;
