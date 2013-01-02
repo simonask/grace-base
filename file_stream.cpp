@@ -94,7 +94,7 @@ namespace falling {
 		return len;
 	}
 	
-	InputFileStream InputFileStream::open(String path) {
+	InputFileStream InputFileStream::open(StringRef path) {
 		COPY_STRING_REF_TO_CSTR_BUFFER(path_buffer, path);
 		FILE* fp = fopen(path_buffer.data(), "r");
 		return wrap_file_pointer(fp);
@@ -134,7 +134,7 @@ namespace falling {
 		return file_size();
 	}
 	
-	OutputFileStream OutputFileStream::open(String path, FileWriteMode mode) {
+	OutputFileStream OutputFileStream::open(StringRef path, FileWriteMode mode) {
 		const char* m = mode == FileWriteMode::Truncate ? "w" : "a";
 		COPY_STRING_REF_TO_CSTR_BUFFER(path_buffer, path);
 		FILE* fp = fopen(path_buffer.data(), m);

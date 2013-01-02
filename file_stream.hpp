@@ -51,7 +51,7 @@ namespace falling {
 		
 	class InputFileStream : public InputStream, public FileStreamBase {
 	public:
-		static InputFileStream open(String path);
+		static InputFileStream open(StringRef path);
 		static InputFileStream wrap_file_pointer(void* os_fp);
 		InputFileStream() {}
 		InputFileStream(InputFileStream&& other) = default;
@@ -68,7 +68,7 @@ namespace falling {
 		
 	class OutputFileStream : public OutputStream, public FileStreamBase {
 	public:
-		static OutputFileStream open(String path, FileWriteMode mode = FileWriteMode::Truncate);
+		static OutputFileStream open(StringRef path, FileWriteMode mode = FileWriteMode::Truncate);
 		static OutputFileStream wrap_file_pointer(void* os_fp);
 		OutputFileStream() {}
 		OutputFileStream(OutputFileStream&& other) = default;
