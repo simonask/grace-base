@@ -23,7 +23,7 @@
 namespace falling {
     struct SignalInvokerBase {
         virtual ObjectPtr<> receiver() const = 0;
-        virtual const SlotBase* slot() const = 0;
+        virtual const ISlot* slot() const = 0;
     };
 
     template <typename... Args>
@@ -71,7 +71,7 @@ namespace falling {
         std::function<R(Args...)> function;
         FunctionInvoker(std::function<R(Args...)> function) : function(std::move(function)) {}
         ObjectPtr<> receiver() const { return nullptr; }
-        const SlotBase* slot() const { return nullptr; }
+        const ISlot* slot() const { return nullptr; }
         void invoke(Args... args) const { function(std::forward<Args>(args)...); }
     };
 
@@ -84,7 +84,7 @@ namespace falling {
 
         MemberFunctionInvoker(ObjectPtr<RawT> receiver, FunctionPointerType member) : receiver_(receiver), function_(member) {}
         ObjectPtr<> receiver() const { return receiver_; }
-        const SlotBase* slot() const {
+        const ISlot* slot() const {
 			const ObjectTypeBase* type = get_type<RawT>();
 			return type->find_slot_for_method<T,R,Args...>(function_);
 		}
@@ -96,7 +96,7 @@ namespace falling {
         const Slot<Args...>* slot_;
         ObjectPtr<> object_;
         SlotInvoker(ObjectPtr<> receiver, const Slot<Args...>* slot) : object_(receiver), slot_(slot) {}
-		const SlotBase* slot() const { return dynamic_cast<const SlotBase*>(slot_); }
+		const ISlot* slot() const { return dynamic_cast<const ISlot*>(slot_); }
 		ObjectPtr<> receiver() const { return object_; }
 		void invoke(Args... args) const { slot_->invoke_polymorphic(object_, std::forward<Args>(args)...); }
     };
@@ -148,14 +148,14 @@ namespace falling {
 
     template <typename... Args>
     bool Signal<Args...>::connect(ObjectPtr<> receiver, const String& slot_name) {
-        const SlotBase* slot_base = receiver->object_type()->find_slot_by_name(slot_name);
+        const ISlot* slot_base = receiver->object_type()->find_slot_by_name(slot_name);
         if (slot_base == nullptr) {
             nonexistent_slot_warning(receiver, slot_name);
             return false;
         }
         auto slot = dynamic_cast<const Slot<Args...>*>(slot_base);
         if (slot == nullptr) {
-            slot_type_mismatch_warning(receiver, slot_name, slot_base->signature_description(), get_signature_description<Args...>());
+            slot_type_mismatch_warning(receiver, slot_name, slot_base->signature_description(), get_signature_description<Args...>(default_allocator()));
 			return false;
         }
 		invokers_.push_back(make_unique<SlotInvoker<Args...>>(default_allocator(), receiver, slot));

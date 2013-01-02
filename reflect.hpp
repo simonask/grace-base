@@ -58,13 +58,13 @@ struct ObjectTypeBuilder {
 	
 	template <typename R, typename... Args>
 	Self& slot(R(T::*function)(Args...), String name, String description) {
-		type_->slots_.push_back(new_static SlotForTypeWithSignature<T, R, Args...>(std::move(name), std::move(description), function));
+		type_->slots_.push_back(new_static SlotForTypeWithSignature<T, R, Args...>(static_allocator(), std::move(name), std::move(description), function));
 		return *this;
 	}
 	
 	template <typename R, typename... Args>
 	Self& slot(R(T::*function)(Args...) const, String name, String description) {
-		type_->slots_.push_back(new_static SlotForTypeWithSignature<const T, R, Args...>(std::move(name), std::move(description), function));
+		type_->slots_.push_back(new_static SlotForTypeWithSignature<const T, R, Args...>(static_allocator(), std::move(name), std::move(description), function));
 		return *this;
 	}
 	

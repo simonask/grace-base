@@ -60,8 +60,8 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	ArrayRef<const IAttribute*> attributes() const {
 		return ArrayRef<const IAttribute*>((IAttribute const **)properties_.data(), (IAttribute const **)properties_.data() + properties_.size());
 	}
-	ArrayRef<const SlotBase* const> slots() const {
-		return ArrayRef<const SlotBase* const>((const SlotBase* const*)slots_.data(), (const SlotBase* const*)slots_.data() + slots_.size());
+	ArrayRef<const ISlot* const> slots() const {
+		return ArrayRef<const ISlot* const>((const ISlot* const*)slots_.data(), (const ISlot* const*)slots_.data() + slots_.size());
 	}
 	
 	size_t num_elements() const { return properties_.size(); }
@@ -71,7 +71,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	void deserialize(T& object, const ArchiveNode&, UniverseBase&) const;
 	void serialize(const T& object, ArchiveNode&, UniverseBase&) const;
 	
-	const SlotBase* find_slot_by_name(const String& name) const {
+	const ISlot* find_slot_by_name(const String& name) const {
 		for (auto& it: slots_) {
 			if (it->name() == name) return it;
 		}
@@ -79,7 +79,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	}
 
 	Array<IAttribute*> properties_;
-	Array<SlotForType<T>*> slots_;
+	Array<ISlot*> slots_;
 	Array<AutoListRegistrarForObject<T>*> lists_;
 };
 

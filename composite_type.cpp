@@ -1,5 +1,6 @@
 #include "object/composite_type.hpp"
 #include "object/object_type.hpp"
+#include "base/log.hpp"
 
 namespace falling {
 
@@ -146,9 +147,9 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, Universe
 		return ArrayRef<const IAttribute*>(p, p + exposed_attributes_.size());
 	}
 	
-	ArrayRef<const SlotBase* const> CompositeType::slots() const {
-		auto p = (SlotBase const**)exposed_slots_.data();
-		return ArrayRef<const SlotBase* const>(p, p + exposed_slots_.size());
+	ArrayRef<const ISlot* const> CompositeType::slots() const {
+		auto p = (ISlot const**)exposed_slots_.data();
+		return ArrayRef<const ISlot* const>(p, p + exposed_slots_.size());
 	}
 	
 	Any ExposedAttribute::get_any(const Object* object) const {

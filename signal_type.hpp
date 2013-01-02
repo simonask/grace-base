@@ -71,7 +71,7 @@ namespace falling {
 		for (size_t i = 0; i < signal.num_connections(); ++i) {
 			const SignalInvoker<Args...>* invoker = signal.connection_at(i);
 			ObjectPtr<Object> receiver = invoker->receiver();
-			const SlotBase* slot = invoker->slot();
+			const ISlot* slot = invoker->slot();
 			if (receiver != nullptr && slot != nullptr) {
 				ArchiveNode& signal_connection = node.array_push();
 				ArchiveNode& receiver_node = signal_connection["receiver"];

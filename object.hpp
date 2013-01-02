@@ -4,6 +4,7 @@
 
 #include "base/basic.hpp"
 #include "base/time.hpp"
+#include "base/string.hpp"
 
 namespace falling {
 

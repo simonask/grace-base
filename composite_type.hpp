@@ -71,7 +71,7 @@ struct CompositeType : StructuredType {
 	
 	// StructuredType interface
 	ArrayRef<const IAttribute*> attributes() const override;
-	ArrayRef<const SlotBase* const> slots() const override;
+	ArrayRef<const ISlot* const> slots() const override;
 private:
 	const ObjectTypeBase* base_type_;
 	String name_;
@@ -79,7 +79,7 @@ private:
 	bool frozen_;
 	size_t size_;
 	Array<ExposedAttribute*> exposed_attributes_;
-	Array<SlotBase*> exposed_slots_; // TODO!
+	Array<ISlot*> exposed_slots_; // TODO!
 };
 
 inline size_t CompositeType::offset_of_element(size_t idx) const {

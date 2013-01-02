@@ -94,7 +94,7 @@ struct BasicUniverse : UniverseBase {
 	bool rename_object(ObjectPtr<> object, String) override;
 	ObjectPtr<> root() const override { return root_; }
 	void set_root(ObjectPtr<> r) {
-		ASSERT(r != nullptr && r->universe() == this);
+		ASSERT(r != nullptr && this == r->universe());
 		root_ = r;
 	}
 	void initialize_all();
