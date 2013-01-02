@@ -17,7 +17,6 @@ namespace falling {
 	
 struct ArchiveNode;
 struct UniverseBase;
-struct SlotBase;
 
 struct Type {
 	virtual void deserialize_raw(byte* place, const ArchiveNode&, UniverseBase&) const = 0;
@@ -195,9 +194,6 @@ struct StringType : TypeFor<String> {
 	size_t size() const override { return sizeof(String); }
 };
 
-struct SlotBase;
-struct AttributeBase;
-
 struct DerivedType : Type {
 };
 
@@ -287,12 +283,12 @@ void append_type_names(FormattedStream& os) {
 }
 
 template <typename... Args>
-String get_signature_description() {
-	StringStream ss;
+String get_signature_description(IAllocator& alloc) {
+	StringStream ss(alloc);
 	ss << '(';
 	append_type_names<Args...>(ss);
 	ss << ')';
-	return ss.str();
+	return ss.string(alloc);
 }
 
 

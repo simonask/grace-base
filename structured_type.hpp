@@ -10,31 +10,18 @@
 #define falling_structured_type_hpp
 
 #include "type/type.hpp"
-#include "object/slot.hpp"
-#include "type/attribute.hpp"
 
 namespace falling {
+	struct ISlot;
+	struct IAttribute;
+	
 	struct StructuredType : DerivedType {
-		virtual ArrayRef<const SlotBase* const> slots() const = 0;
+		virtual ArrayRef<const ISlot* const> slots() const = 0;
 		virtual ArrayRef<const IAttribute*> attributes() const = 0;
 		
-		const SlotBase* find_slot_by_name(StringRef name) const;
+		const ISlot* find_slot_by_name(StringRef name) const;
 		const IAttribute* find_attribute_by_name(StringRef name) const;
 	};
-	
-	inline const SlotBase* StructuredType::find_slot_by_name(StringRef name) const {
-		for (auto s: slots()) {
-			if (s->name() == name) return s;
-		}
-		return nullptr;
-	}
-	
-	inline const IAttribute* StructuredType::find_attribute_by_name(StringRef name) const {
-		for (auto a: attributes()) {
-			if (a->name() == name) return a;
-		}
-		return nullptr;
-	}
 }
 
 #endif

@@ -4,7 +4,7 @@
 
 #include "object/object.hpp"
 #include "type/type.hpp"
-#include "serialization/archive.hpp"
+#include "serialization/archive_node.hpp"
 #include "base/any.hpp"
 
 namespace falling {

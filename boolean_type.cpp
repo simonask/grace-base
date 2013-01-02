@@ -7,6 +7,7 @@
 //
 
 #include "type/boolean_type.hpp"
+#include "serialization/archive_node.hpp"
 
 namespace falling {
 	BooleanType* BuildTypeInfo<bool>::build() {
