@@ -9,9 +9,9 @@
 #ifndef falling_slot_invoke_hpp
 #define falling_slot_invoke_hpp
 
-#include "object/slot.hpp"
 #include "serialization/archive_node.hpp"
 #include "base/basic.hpp"
+#include "base/any.hpp"
 
 namespace falling {
 	struct UniverseBase;
@@ -30,6 +30,27 @@ namespace falling {
 		const Type* t = get_type<typename RemoveConstRef<decltype(target)>::Type>();
 		t->deserialize_raw((byte*)&target, node, universe);
 		deserialize_list_into_tuple<SourceIdx+1, TupleIdx+1>(arg_list, tuple, universe);
+	}
+	
+	template <size_t SourceIdx, size_t TupleIdx, typename... TupleTypes>
+	typename std::enable_if<(TupleIdx >= sizeof...(TupleTypes)), bool>::type
+	extract_anies(ArrayRef<Any> anies, std::tuple<TupleTypes...>& tuple) {
+		// Recursion base
+		return true;
+	}
+	
+	template <size_t SourceIdx, size_t TupleIdx, typename... TupleTypes>
+	typename std::enable_if<(TupleIdx < sizeof...(TupleTypes)), bool>::type
+	extract_anies(ArrayRef<Any> anies, std::tuple<TupleTypes...>& tuple)
+	{
+		auto& target = std::get<TupleIdx>(tuple);
+		using T = typename RemoveConstRef<decltype(target)>::Type;
+		bool was_extracted = false;
+		anies[SourceIdx].get<T>().map([&](const T& v) {
+			target = v;
+			was_extracted = true;
+		});
+		return was_extracted || extract_anies<SourceIdx+1, TupleIdx+1>(anies, tuple);
 	}
 }
 

@@ -2,6 +2,7 @@
 #include "serialization/archive.hpp"
 #include "object/universe.hpp"
 #include "object/objectptr.hpp"
+#include "type/structured_type.hpp"
 
 namespace falling {
 class UniverseBase;
@@ -79,7 +80,7 @@ Object* DeserializeSignalBase::get_object(const UniverseBase& universe) const {
 	return universe.get_object(receiver_id_).get();
 }
 
-const SlotBase* DeserializeSignalBase::get_slot(Object* object) const {
+const ISlot* DeserializeSignalBase::get_slot(Object* object) const {
 	const StructuredType* type = get_type(object);
 	return type->find_slot_by_name(slot_id_);
 }

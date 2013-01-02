@@ -16,7 +16,7 @@ struct DeserializeReferenceBase;
 struct SerializeReferenceBase;
 struct DeserializeSignalBase;
 struct UniverseBase;
-struct SlotBase;
+struct ISlot;
 struct DerivedType;
 struct Object;
 
@@ -336,7 +336,7 @@ protected:
 	String slot_id_;
 	
 	Object* get_object(const UniverseBase&) const;
-	const SlotBase* get_slot(Object*) const;
+	const ISlot* get_slot(Object*) const;
 };
 
 template <typename T>
@@ -346,7 +346,7 @@ struct DeserializeSignal : DeserializeSignalBase {
 	void perform(const UniverseBase& universe) const {
 		Object* object = get_object(universe);
 		if (object == nullptr) return;
-		const SlotBase* slot = get_slot(object);
+		const ISlot* slot = get_slot(object);
 		if (slot == nullptr) return;
 		signal_->connect(object, slot);
 	}
