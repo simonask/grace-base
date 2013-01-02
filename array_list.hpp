@@ -12,6 +12,9 @@
 #include "base/basic.hpp"
 #include "memory/allocator.hpp"
 #include "base/link_list.hpp"
+#include "base/iterators.hpp"
+#include <initializer_list>
+#include <algorithm>
 
 namespace falling {
 	struct FormattedStream;
@@ -232,7 +235,7 @@ namespace falling {
 		auto output_begin = it;
 		auto input_begin = it+1;
 		auto input_end = end();
-		std::move(input_begin, input_end, output_begin);
+		std::copy(input_begin, input_end, output_begin);
 		if (size_) {
 			auto last = end()-1;
 			last.get()->~T();
@@ -453,14 +456,6 @@ namespace falling {
     typename ArrayList<T>::const_iterator ArrayList<T>::end() const {
         return const_iterator(*this, blocks_.end(), nullptr, size());
     }
-	
-	template <typename T>
-	FormattedStream& operator<<(FormattedStream& stream, const ArrayList<T>& array) {
-		stream << "@[";
-		stream << join(array, ", ");
-		stream << ']';
-		return stream;
-	}
 }
 
 #endif

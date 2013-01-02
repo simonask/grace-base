@@ -9,6 +9,11 @@
 #ifndef falling_anim_utils_hpp
 #define falling_anim_utils_hpp
 
+#include "base/basic.hpp"
+#include "base/vector.hpp"
+#include "base/matrix.hpp"
+#include "base/color.hpp"
+
 namespace falling {
 	inline float32 anim_lerp(float32 current, float32 target, float64 progress_ratio) {
 		return current + ((target - current) * progress_ratio);

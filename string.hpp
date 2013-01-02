@@ -13,6 +13,7 @@
 #include "base/array_ref.hpp"
 #include "memory/allocator.hpp"
 #include "base/iterators.hpp"
+#include <algorithm> // for std::copy
 
 namespace falling {
 	struct StringRef {
@@ -43,10 +44,10 @@ namespace falling {
 		char operator[](size_t idx) const { ASSERT(idx < size()); return begin_[idx]; }
 		
 		typedef const char value_type;
-		using const_iterator = LinearMemoryIterator<StringRef, char, true>;
+		using const_iterator = LinearMemoryIterator<char, true>;
 		using iterator = const_iterator;
-		const_iterator begin() const { return begin_; }
-		const_iterator end() const { return end_; }
+		const_iterator begin() const { return iterator(begin_); }
+		const_iterator end() const { return iterator(end_); }
 		
 		const char* data() const { return begin_; }
 	private:
@@ -99,7 +100,7 @@ namespace falling {
 		
 		StringRef substr(size_t pos, size_t len = NPos) const;
 		
-		using const_iterator = LinearMemoryIterator<String, char, true>;
+		using const_iterator = LinearMemoryIterator<char, true>;
 		using iterator = const_iterator;
 		const_iterator begin() const { return const_iterator(data_); }
 		const_iterator end() const { return const_iterator(data_ + size_); }

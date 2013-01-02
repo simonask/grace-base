@@ -7,6 +7,8 @@
 //
 
 #include "base/any.hpp"
+#include "serialization/archive_node.hpp"
+#include "type/array_type.hpp"
 
 namespace falling {
 	void AnyType::deserialize(Any &place, const ArchiveNode &n, UniverseBase &u) const {

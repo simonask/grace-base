@@ -9,6 +9,8 @@
 #ifndef falling_auto_link_stack_hpp
 #define falling_auto_link_stack_hpp
 
+#include "base/basic.hpp"
+
 namespace falling {
 	template <typename T>
 	struct AutoListLink {

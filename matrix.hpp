@@ -10,6 +10,7 @@
 #define falling_matrix_hpp
 
 #include "base/vector.hpp"
+#include "base/array_ref.hpp"
 #include <array>
 #include <initializer_list>
 
@@ -288,23 +289,6 @@ namespace falling {
 			truncated[i] = result[i];
 		}
 		return truncated;
-	}
-	
-	template <typename T, size_t N, size_t M>
-	FormattedStream& operator<<(FormattedStream& os, const TMatrix<T, N, M>& mat) {
-		os << '{';
-		for (size_t row = 0; row < M; ++row) {
-			os << '{';
-			for (size_t col = 0; col < N; ++col) {
-				os << mat.row_at(row)[col];
-				if (col != N-1) {
-					os << ", ";
-				}
-			}
-			os << '}';
-		}
-		os << '}';
-		return os;
 	}
 }
 

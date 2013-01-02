@@ -9,6 +9,9 @@
 #ifndef falling_iterators_hpp
 #define falling_iterators_hpp
 
+#include <utility>
+#include <iterator>
+
 namespace falling {
 	template <typename T>
 	struct GetNodeValueType {
@@ -122,18 +125,18 @@ namespace falling {
 	};
 	
 	
-	template <class Owner, typename T, bool IsConst>
+	template <typename T, bool IsConst>
 	struct LinearMemoryIterator {
 	public:
-		using Self = LinearMemoryIterator<Owner, T, IsConst>;
+		using Self = LinearMemoryIterator<T, IsConst>;
 		using ValueType = typename std::conditional<IsConst, const T, T>::type;
 		
 		LinearMemoryIterator() {}
-		LinearMemoryIterator(const LinearMemoryIterator<Owner, T, false>& other) : current_(other.current_) {}
+		LinearMemoryIterator(const LinearMemoryIterator<T, false>& other) : current_(other.current_) {}
 		template <bool IsConst_ = IsConst>
 		LinearMemoryIterator(const typename std::enable_if<IsConst_, Self>::type& other) : current_(other.current_) {}
 		
-		Self& operator=(const LinearMemoryIterator<Owner, T, false>& other) {
+		Self& operator=(const LinearMemoryIterator<T, false>& other) {
 			current_ = other.current_;
 			return *this;
 		}
@@ -190,41 +193,39 @@ namespace falling {
 		}
 		
 		template <bool B>
-		ptrdiff_t operator-(const LinearMemoryIterator<Owner, T, B>& other) {
+		ptrdiff_t operator-(const LinearMemoryIterator<T, B>& other) {
 			return current_ - other.current_;
 		}
 		
 		template <bool B>
-		bool operator==(const LinearMemoryIterator<Owner, T, B>& other) {
+		bool operator==(const LinearMemoryIterator<T, B>& other) {
 			return current_ == other.current_;
 		}
 		template <bool B>
-		bool operator!=(const LinearMemoryIterator<Owner, T, B>& other) {
+		bool operator!=(const LinearMemoryIterator<T, B>& other) {
 			return current_ != other.current_;
 		}
 		template <bool B>
-		bool operator>=(const LinearMemoryIterator<Owner, T, B>& other) {
+		bool operator>=(const LinearMemoryIterator<T, B>& other) {
 			return current_ >= other.current_;
 		}
 		template <bool B>
-		bool operator>(const LinearMemoryIterator<Owner, T, B>& other) {
+		bool operator>(const LinearMemoryIterator<T, B>& other) {
 			return current_ > other.current_;
 		}
 		template <bool B>
-		bool operator<=(const LinearMemoryIterator<Owner, T, B>& other) {
+		bool operator<=(const LinearMemoryIterator<T, B>& other) {
 			return current_ <= other.current_;
 		}
 		template <bool B>
-		bool operator<(const LinearMemoryIterator<Owner, T, B>& other) {
+		bool operator<(const LinearMemoryIterator<T, B>& other) {
 			return current_ < other.current_;
 		}
 		
-	private:
-		friend Owner;
-		friend struct LinearMemoryIterator<Owner, T, !IsConst>;
-		ValueType* current_ = nullptr;
-		
 		LinearMemoryIterator(ValueType* x) : current_(x) {}
+	private:
+		friend struct LinearMemoryIterator<T, !IsConst>;
+		ValueType* current_ = nullptr;
 	};
 }
 
@@ -237,9 +238,9 @@ namespace std {
 		using iterator_category = std::bidirectional_iterator_tag;
 	};
 	
-	template <class Owner, typename T, bool IsConst>
-	struct iterator_traits<falling::LinearMemoryIterator<Owner, T, IsConst>> {
-		using value_type = typename falling::LinearMemoryIterator<Owner, T, IsConst>::ValueType;
+	template <typename T, bool IsConst>
+	struct iterator_traits<falling::LinearMemoryIterator<T, IsConst>> {
+		using value_type = typename falling::LinearMemoryIterator<T, IsConst>::ValueType;
 		using pointer = value_type*;
 		using reference = value_type&;
 		using difference_type = ptrdiff_t;

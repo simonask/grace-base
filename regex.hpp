@@ -11,6 +11,8 @@
 
 #include "base/string.hpp"
 #include "base/basic.hpp"
+#include "base/array.hpp"
+#include "io/formatted_stream.hpp"
 
 namespace falling {
 	enum RegexOptions : uint32 {

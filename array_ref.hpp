@@ -36,8 +36,8 @@ namespace falling {
 		T& operator[](size_t idx) { ASSERT(idx < size()); return begin_[idx]; }
 		
 		typedef const T value_type;
-		using iterator = LinearMemoryIterator<ArrayRef<T>, T, false>;
-		using const_iterator = LinearMemoryIterator<ArrayRef<T>, T, true>;
+		using iterator = LinearMemoryIterator<T, false>;
+		using const_iterator = LinearMemoryIterator<T, true>;
 		iterator begin() { return begin_; }
 		iterator end() { return end_; }
 		const_iterator begin() const { return begin_; }

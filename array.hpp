@@ -20,8 +20,8 @@ template <typename T>
 class Array {
 public:
 	typedef T value_type;
-	using iterator = LinearMemoryIterator<Array<T>, T, false>;
-	using const_iterator = LinearMemoryIterator<Array<T>, T, true>;
+	using iterator = LinearMemoryIterator<T, false>;
+	using const_iterator = LinearMemoryIterator<T, true>;
 	
 	Array() : allocator_(default_allocator()) {}
 	explicit Array(IAllocator& alloc) : allocator_(alloc) {}
