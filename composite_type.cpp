@@ -141,6 +141,28 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, Universe
 		
 		exposed_attributes_.push_back(new(allocator()) ExposedAttribute(aspect_idx, attr));
 	}
+	
+	void CompositeType::expose_slot(size_t aspect_idx, StringRef slot_name) {
+		ASSERT(!frozen_);
+		ASSERT(aspect_idx < aspects_.size());
+		const StructuredType* aspect_type = aspects_[aspect_idx];
+		const ISlot* slot = aspect_type->find_slot_by_name(slot_name);
+		if (slot == nullptr) {
+			Error() << "Cannot expose slot '" << slot_name << "', because it doesn't exist on aspect '" << aspect_type->name() << "' in composite.";
+			return;
+		}
+		
+#if DEBUG
+		for (auto p: exposed_slots_) {
+			if (p->aspect() == aspect_idx && p->slot() == slot) {
+				Warning() << "Slot '" << slot_name << "' from aspect '" << aspect_type->name() << "' has already been exposed on composite.";
+				return;
+			}
+		}
+#endif
+		
+		exposed_slots_.push_back(new(allocator()) ExposedSlot(aspect_idx, slot));
+	}
 
 	ArrayRef<const IAttribute*> CompositeType::attributes() const {
 		auto p = (IAttribute const**)exposed_attributes_.data();
@@ -194,5 +216,37 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, Universe
 				break;
 			}
 		}
+	}
+	
+	StringRef ExposedSlot::name() const {
+		return slot_->name();
+	}
+	
+	StringRef ExposedSlot::description() const {
+		return slot_->description();
+	}
+	
+	Array<const Type*> ExposedSlot::signature(IAllocator &alloc) const {
+		return slot_->signature(alloc);
+	}
+	
+	bool ExposedSlot::invoke(ObjectPtr<> receiver, ArrayRef<Any> args) const {
+		const StructuredType* ot = receiver->object_type();
+		const CompositeType* ct = dynamic_cast<const CompositeType*>(ot);
+		ASSERT(ct != nullptr);
+		Object* o = ct->get_aspect_in_object(receiver.get(), aspect_idx_);
+		return slot_->invoke(o, args);
+	}
+	
+	void ExposedSlot::invoke_with_serialized_arguments(ObjectPtr<> receiver, const ArchiveNode &arg_list, UniverseBase &universe) const {
+		const StructuredType* ot = receiver->object_type();
+		const CompositeType* ct = dynamic_cast<const CompositeType*>(ot);
+		ASSERT(ct != nullptr);
+		Object* o = ct->get_aspect_in_object(receiver.get(), aspect_idx_);
+		return slot_->invoke_with_serialized_arguments(o, arg_list, universe);
+	}
+	
+	String ExposedSlot::signature_description(IAllocator &alloc) const {
+		return slot_->signature_description(alloc);
 	}
 }

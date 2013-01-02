@@ -30,6 +30,27 @@ private:
 	friend class CompositeType;
 	ExposedAttribute(size_t aspect_idx, const IAttribute* attribute) : aspect_idx_(aspect_idx), attribute_(attribute) {}
 };
+	
+	struct ExposedSlot : public ISlot {
+		// ISlot interface
+		StringRef name() const final;
+		StringRef description() const final;
+		Array<const Type*> signature(IAllocator& alloc) const final;
+		bool invoke(ObjectPtr<> receiver, ArrayRef<Any> args) const final;
+		
+		// Deprecated:
+		void invoke_with_serialized_arguments(ObjectPtr<> receiver, const ArchiveNode& arg_list, UniverseBase& universe) const final;
+		String signature_description(IAllocator& alloc) const final;
+		
+		// ExposedSlot interface
+		size_t aspect() const { return aspect_idx_; }
+		const ISlot* slot() const { return slot_; }
+	private:
+		size_t aspect_idx_;
+		const ISlot* slot_;
+		friend class CompositeType;
+		ExposedSlot(size_t aspect_idx, const ISlot* slot) : aspect_idx_(aspect_idx), slot_(slot) {}
+	};
 
 void resolve_exposed_attribute(const IAttribute*& inout_attr, ObjectPtr<>& inout_object);
 
@@ -79,7 +100,7 @@ private:
 	bool frozen_;
 	size_t size_;
 	Array<ExposedAttribute*> exposed_attributes_;
-	Array<ISlot*> exposed_slots_; // TODO!
+	Array<ExposedSlot*> exposed_slots_; // TODO!
 };
 
 inline size_t CompositeType::offset_of_element(size_t idx) const {
