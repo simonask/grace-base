@@ -29,7 +29,7 @@ struct ObjectTypeBuilder {
 	void check_attribute_name_(const String& name) {
 		const char* reserved_names[] = {"class", "aspects"};
 		for (auto it: reserved_names) {
-			if (name == it) {
+			if (name == StringRef(it)) {
 				Error() << "The attribute name '" << name << "' is reserved.";
 				ASSERT(false);
 			}
@@ -39,7 +39,7 @@ struct ObjectTypeBuilder {
 	template <typename MemberType>
 	Self& property(MemberType T::* member, String name, String description/*, MemberType default_value = MemberType()*/) {
 		check_attribute_name_(name);
-		type_->properties_.push_back(new_static MemberAttribute<T, MemberType>(std::move(name), std::move(description), member));
+		type_->properties_.push_back(new_static MemberAttribute<T, MemberType>(static_allocator(), std::move(name), std::move(description), member));
 		return *this;
 	}
 	
@@ -47,7 +47,7 @@ struct ObjectTypeBuilder {
 	Self& property(GetterReturnType (T::*getter)() const, SetterReturnType (T::*setter)(SetterArgumentType), String name, String description) {
 		check_attribute_name_(name);
 		typedef typename RemoveConstRef<GetterReturnType>::Type RawType;
-		type_->properties_.push_back(new_static MethodAttribute<T, RawType, GetterReturnType, SetterArgumentType, SetterReturnType>(std::move(name), std::move(description), getter, setter));
+		type_->properties_.push_back(new_static MethodAttribute<T, RawType, GetterReturnType, SetterArgumentType, SetterReturnType>(static_allocator(), std::move(name), std::move(description), getter, setter));
 		return *this;
 	}
 	

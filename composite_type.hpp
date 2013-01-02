@@ -2,24 +2,57 @@
 #ifndef COMPOSITE_TYPE_HPP_K5R3HGBW
 #define COMPOSITE_TYPE_HPP_K5R3HGBW
 
-#include "type/type.hpp"
+#include "type/structured_type.hpp"
 #include "serialization/archive.hpp"
 #include "base/array.hpp"
 #include "object/object_type.hpp"
 #include <new>
 
 namespace falling {
-
-struct CompositeType : DerivedType {
-	CompositeType(String name, const ObjectTypeBase* base_type = nullptr);
 	
+struct ExposedAttribute : public IAttribute {
+	// IAttribute interface
+	const Type* type() const final { return attribute_->type(); }
+	StringRef name() const final { return attribute_->name(); }
+	StringRef description() const final { return attribute_->description(); }
+	Any get_any(const Object* object) const final;
+	Any get_any(Object* object) const final;
+	bool set_any(Object* object, const Any& value) const final;
+	void deserialize_attribute(Object* object, const ArchiveNode&, UniverseBase&) const final;
+	void serialize_attribute(const Object* object, ArchiveNode&, UniverseBase&) const final;
+	
+	// ExposedAttribute interface
+	size_t aspect() const { return aspect_idx_; }
+	const IAttribute* attribute() const { return attribute_; }
+private:
+	size_t aspect_idx_;
+	const IAttribute* attribute_;
+	friend class CompositeType;
+	ExposedAttribute(size_t aspect_idx, const IAttribute* attribute) : aspect_idx_(aspect_idx), attribute_(attribute) {}
+};
+
+void resolve_exposed_attribute(const IAttribute*& inout_attr, ObjectPtr<>& inout_object);
+
+struct CompositeType : StructuredType {
+	CompositeType(IAllocator& alloc, StringRef name, const ObjectTypeBase* base_type = nullptr);
+	~CompositeType();
+	
+	// CompositeType interface
+	IAllocator& allocator() const;
 	const ObjectTypeBase* base_type() const;
 	size_t base_size() const;
-	void add_aspect(const DerivedType* aspect);
+	void add_aspect(const StructuredType* aspect);
 	void freeze() { frozen_ = true; }
 	size_t num_aspects() const { return aspects_.size(); }
 	Object* get_aspect_in_object(Object* object, size_t idx) const;
+	const Object* get_aspect_in_object(const Object* object, size_t idx) const;
 	Object* find_aspect_of_type(Object* composite_object, const DerivedType* aspect, const DerivedType* skip_in_search = nullptr) const;
+	void expose_attribute(size_t aspect_idx, StringRef attr_name);
+	void unexpose_attribute(size_t aspect_idx, StringRef attr_name);
+	void expose_slot(size_t aspect_idx, StringRef slot_name);
+	void unexpose_slot(size_t aspect_idx, StringRef slot_name);
+	ArrayRef<const ExposedAttribute*> exposed_attributes() const;
+	const StructuredType* get_aspect(size_t aspect_idx) const;
 	
 	// Type interface
 	void construct(byte* place, UniverseBase&) const override;
@@ -35,12 +68,18 @@ struct CompositeType : DerivedType {
 	size_t num_elements() const { return aspects_.size(); }
 	size_t offset_of_element(size_t idx) const;
 	const Type* type_of_element(size_t idx) const { return aspects_[idx]; }
+	
+	// StructuredType interface
+	ArrayRef<const IAttribute*> attributes() const override;
+	ArrayRef<const SlotBase* const> slots() const override;
 private:
 	const ObjectTypeBase* base_type_;
 	String name_;
-	Array<const DerivedType*> aspects_;
+	Array<const StructuredType*> aspects_; // TODO: Consider ownership
 	bool frozen_;
 	size_t size_;
+	Array<ExposedAttribute*> exposed_attributes_;
+	Array<SlotBase*> exposed_slots_; // TODO!
 };
 
 inline size_t CompositeType::offset_of_element(size_t idx) const {
@@ -59,6 +98,13 @@ inline Object* CompositeType::get_aspect_in_object(Object *object, size_t idx) c
 	size_t offset = offset_of_element(idx);
 	return reinterpret_cast<Object*>(memory + offset);
 }
+	
+	inline const Object* CompositeType::get_aspect_in_object(const Object *object, size_t idx) const {
+		ASSERT(object->object_type() == this);
+		const byte* memory = reinterpret_cast<const byte*>(object);
+		size_t offset = offset_of_element(idx);
+		return reinterpret_cast<const Object*>(memory + offset);
+	}
 	
 	template <typename To, typename From>
 	typename std::enable_if<HasReflection<To>::Value && HasReflection<From>::Value, To*>::type

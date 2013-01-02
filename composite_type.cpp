@@ -3,15 +3,25 @@
 
 namespace falling {
 
-CompositeType::CompositeType(String name, const ObjectTypeBase* base_type) : base_type_(base_type), name_(std::move(name)), frozen_(false) {
+CompositeType::CompositeType(IAllocator& alloc, StringRef name, const ObjectTypeBase* base_type) : base_type_(base_type), name_(std::move(name), alloc), aspects_(alloc), exposed_attributes_(alloc), exposed_slots_(alloc), frozen_(false) {
 	size_ = this->base_type()->size();
 }
+	
+	CompositeType::~CompositeType() {
+		for (auto p: exposed_attributes_) {
+			destroy(p, allocator());
+		}
+	}
+	
+	IAllocator& CompositeType::allocator() const {
+		return name_.allocator();
+	}
 	
 size_t CompositeType::base_size() const {
 	return base_type()->size();
 }
 
-void CompositeType::add_aspect(const DerivedType* aspect) {
+void CompositeType::add_aspect(const StructuredType* aspect) {
 	ASSERT(!frozen_);
 	ASSERT(!aspect->is_abstract());
 	aspects_.push_back(aspect); // TODO: Check for circular dependencies.
@@ -108,5 +118,80 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, Universe
 	}
 	ASSERT(offset == size_);
 }
+	
+	void CompositeType::expose_attribute(size_t aspect_idx, StringRef attr_name) {
+		ASSERT(!frozen_);
+		ASSERT(aspect_idx < aspects_.size());
+		const StructuredType* aspect_type = aspects_[aspect_idx];
+		const IAttribute* attr = aspect_type->find_attribute_by_name(attr_name);
+		if (attr == nullptr) {
+			Error() << "Cannot expose attribute '" << attr_name << "', because it doesn't exist on aspect '" << aspect_type->name() << "' in composite.";
+			return;
+		}
+		
+#if DEBUG
+		for (auto p: exposed_attributes_) {
+			if (p->aspect() == aspect_idx && p->attribute() == attr) {
+				Warning() << "Attribute '" << attr_name << "' from aspect '" << aspect_type->name() << "' has already been exposed on composite.";
+				return;
+			}
+		}
+#endif
+		
+		exposed_attributes_.push_back(new(allocator()) ExposedAttribute(aspect_idx, attr));
+	}
 
+	ArrayRef<const IAttribute*> CompositeType::attributes() const {
+		auto p = (IAttribute const**)exposed_attributes_.data();
+		return ArrayRef<const IAttribute*>(p, p + exposed_attributes_.size());
+	}
+	
+	ArrayRef<const SlotBase* const> CompositeType::slots() const {
+		auto p = (SlotBase const**)exposed_slots_.data();
+		return ArrayRef<const SlotBase* const>(p, p + exposed_slots_.size());
+	}
+	
+	Any ExposedAttribute::get_any(const Object* object) const {
+		const StructuredType* st = object->object_type();
+		const CompositeType* ct = dynamic_cast<const CompositeType*>(st);
+		ASSERT(st != nullptr); // type mismatch
+		return attribute_->get_any(ct->get_aspect_in_object(object, aspect_idx_));
+	}
+	
+	Any ExposedAttribute::get_any(Object* object) const {
+		const StructuredType* st = object->object_type();
+		const CompositeType* ct = dynamic_cast<const CompositeType*>(st);
+		ASSERT(st != nullptr); // type mismatch
+		return attribute_->get_any(ct->get_aspect_in_object(object, aspect_idx_));
+	}
+	
+	bool ExposedAttribute::set_any(Object* object, const Any& value) const {
+		const StructuredType* st = object->object_type();
+		const CompositeType* ct = dynamic_cast<const CompositeType*>(st);
+		ASSERT(st != nullptr); // type mismatch
+		return attribute_->set_any(ct->get_aspect_in_object(object, aspect_idx_), value);
+	}
+	
+	void ExposedAttribute::deserialize_attribute(Object* object, const ArchiveNode &, UniverseBase & u) const {
+		ASSERT(false); // Composite objects must be deserialized with the specialized algorithm.
+	}
+	
+	void ExposedAttribute::serialize_attribute(const Object *object, ArchiveNode &, UniverseBase &) const {
+		ASSERT(false); // Composite objects must be serialized with the specialized algorithm.
+	}
+	
+	void resolve_exposed_attribute(const IAttribute*& inout_attr, ObjectPtr<>& inout_object) {
+		bool is_real = false;
+		while (true) {
+			const ExposedAttribute* exattr = dynamic_cast<const ExposedAttribute*>(exattr);
+			if (exattr != nullptr) {
+				const CompositeType* ct = dynamic_cast<const CompositeType*>(inout_object->object_type());
+				ASSERT(ct != nullptr); // ExposedAttribute on non-composite object.
+				inout_object = ct->get_aspect_in_object(inout_object.get(), exattr->aspect());
+				inout_attr = exattr->attribute();
+			} else {
+				break;
+			}
+		}
+	}
 }

@@ -2,7 +2,7 @@
 #ifndef STRUCT_TYPE_HPP_PTB31EJN
 #define STRUCT_TYPE_HPP_PTB31EJN
 
-#include "type/type.hpp"
+#include "type/structured_type.hpp"
 #include <memory>
 
 #include <new>
@@ -13,25 +13,17 @@
 
 namespace falling {
 
-struct ObjectTypeBase : DerivedType {
+struct ObjectTypeBase : StructuredType {
 	String name() const override { return name_; }
 	const String& description() const { return description_; }
 	const ObjectTypeBase* super() const;
-	virtual ArrayRef<const AttributeBase* const> attributes() const = 0;
-	virtual size_t num_slots() const = 0;
-	virtual const SlotBase* slot_at(size_t idx) const = 0;
-	virtual const SlotBase* find_slot_by_name(const String& name) const = 0;
 	
 	template <typename T, typename R, typename... Args>
 	const SlotForTypeWithSignature<T,R,Args...>* find_slot_for_method(typename GetMemberFunctionPointerType<T, R, Args...>::Type method) const {
-		size_t n = num_slots();
-		for (size_t i = 0; i < n; ++i) {
-			auto s = slot_at(i);
+		for (auto s: slots()) {
 			auto slot = dynamic_cast<const SlotForTypeWithSignature<T,R,Args...>*>(s);
-			if (slot != nullptr) {
-				if (slot->method() == method) {
-					return slot;
-				}
+			if (slot != nullptr && slot->method() == method) {
+				return slot;
 			}
 		}
 		return nullptr;
@@ -65,11 +57,12 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 		p->set_universe__(&universe);
 	}
 	
-	ArrayRef<const AttributeBase* const> attributes() const {
-		return ArrayRef<const AttributeBase* const>((const AttributeBase* const*)properties_.data(), (const AttributeBase* const*)properties_.data() + properties_.size());
+	ArrayRef<const IAttribute*> attributes() const {
+		return ArrayRef<const IAttribute*>((IAttribute const **)properties_.data(), (IAttribute const **)properties_.data() + properties_.size());
 	}
-	size_t num_slots() const { return slots_.size(); }
-	const SlotBase* slot_at(size_t idx) const { return slots_[idx]; }
+	ArrayRef<const SlotBase* const> slots() const {
+		return ArrayRef<const SlotBase* const>((const SlotBase* const*)slots_.data(), (const SlotBase* const*)slots_.data() + slots_.size());
+	}
 	
 	size_t num_elements() const { return properties_.size(); }
 	const Type* type_of_element(size_t idx) const { return properties_[idx]->attribute_type(); }
@@ -85,7 +78,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 		return nullptr;
 	}
 
-	Array<AttributeForObject<T>*> properties_;
+	Array<IAttribute*> properties_;
 	Array<SlotForType<T>*> slots_;
 	Array<AutoListRegistrarForObject<T>*> lists_;
 };

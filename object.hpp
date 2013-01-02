@@ -9,7 +9,7 @@ namespace falling {
 
 struct UniverseBase;
 struct Type;
-struct DerivedType;
+struct StructuredType;
 struct ObjectTypeBase;
 template <typename T> struct ObjectType;
 
@@ -42,13 +42,13 @@ struct Object {
 	const String& object_id() const;
 	bool set_object_id(String new_id);
 	
-	const DerivedType* object_type() const { return type_; }
-	void set_object_type__(const DerivedType* t) { type_ = t; }
+	const StructuredType* object_type() const { return type_; }
+	void set_object_type__(const StructuredType* t) { type_ = t; }
 	size_t object_offset() const { return offset_; }
 	void set_object_offset__(uint32 o) { offset_ = o; }
 
 private:
-	const DerivedType* type_;
+	const StructuredType* type_;
 	UniverseBase* universe_;
 	uint32 offset_; // offset within composite
 	uint32 universe_data_;
@@ -59,11 +59,11 @@ struct IsDerivedFromObject {
 	static const bool Value = std::is_convertible<typename std::remove_const<T>::type*, Object*>::value;
 };
 
-inline const DerivedType* get_type(Object* object) {
+inline const StructuredType* get_type(Object* object) {
 	return object->object_type();
 }
 
-inline const DerivedType* get_type(const Object* object) {
+inline const StructuredType* get_type(const Object* object) {
 	return object->object_type();
 }
 
