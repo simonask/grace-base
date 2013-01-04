@@ -61,10 +61,6 @@ namespace falling {
         const T& front() const { return *sentinel.next; }
         T& back() { return *sentinel.previous; }
         const T& back() const { return *sentinel.previous; }
-        
-        void link_tail(T* element);
-        void link_head(T* element);
-        void unlink(T* element);
 		
 		bool empty() const { return sentinel.next == (T*)&sentinel; }
         
@@ -78,26 +74,51 @@ namespace falling {
 		const_iterator last() const;
         const_iterator end() const;
         
+		iterator link_after(T* element, iterator after);
+		iterator link_before(T* element, iterator before);
         iterator erase(iterator it);
+		iterator link_tail(T* element);
+        iterator link_head(T* element);
+        void unlink(T* element);
     private:
 		ListLinkBase<T> sentinel; // previous = tail, next = head
     };
     
     template <typename T>
-    void BareLinkList<T>::link_tail(T* element) {
+    typename BareLinkList<T>::iterator BareLinkList<T>::link_tail(T* element) {
 		element->next = (T*)&sentinel;
 		element->previous = sentinel.previous;
 		element->previous->next = element;
 		element->next->previous = element;
+		return iterator(element);
     }
     
     template <typename T>
-    void BareLinkList<T>::link_head(T* element) {
+    typename BareLinkList<T>::iterator BareLinkList<T>::link_head(T* element) {
 		element->previous = (T*)&sentinel;
 		element->next = sentinel.next;
 		element->next->previous = element;
 		element->previous->next = element;
+		return iterator(element);
     }
+	
+	template <typename T>
+	typename BareLinkList<T>::iterator BareLinkList<T>::link_after(T* element, iterator after) {
+		element->previous = after.get();
+		element->next = after->next;
+		element->next->previous = element;
+		element->previous->next = element;
+		return iterator(element);
+	}
+	
+	template <typename T>
+	typename BareLinkList<T>::iterator BareLinkList<T>::link_before(T* element, iterator before) {
+		element->previous = before->previous;
+		element->next = before.get();
+		element->next->previous = element;
+		element->previous->next = element;
+		return iterator(element);
+	}
     
     template <typename T>
     void BareLinkList<T>::unlink(T* element) {

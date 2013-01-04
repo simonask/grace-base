@@ -57,7 +57,11 @@ namespace falling {
         template <typename InputIterator>
         void insert(InputIterator i0, InputIterator i1);
         template <typename InputIterator>
-        void insert(iterator before, InputIterator i0, InputIterator i1);
+        void insert(InputIterator i0, InputIterator i1, const iterator& before);
+		template <typename InputIterator>
+        void insert_move(InputIterator i0, InputIterator i1);
+        template <typename InputIterator>
+        void insert_move(InputIterator i0, InputIterator i1, const iterator& before);
         void erase(iterator it);
 		void resize(size_t new_size, T filler = T());
     private:
@@ -69,13 +73,29 @@ namespace falling {
             T* begin;
             T* end;
             T* current;
+			
+			void extend_current_by(size_t n) {
+				ASSERT(current + n <= end);
+				construct_range(current, current + n);
+				current += n;
+			}
+			
+			void extend_current_until_end() {
+				construct_range(current, end);
+				current = end;
+			}
         };
         
         BareLinkList<Block> blocks_;
         size_t size_ = 0;
+		
+		using BlockIterator = typename BareLinkList<Block>::iterator;
         
         Block* create_and_append_block();
-		void delete_and_remove_block(Block* b);
+		Block* create_block_of_size(size_t n_elements);
+		void delete_and_remove_block(BlockIterator b);
+		iterator make_room_at(const iterator& at, size_t n);
+		iterator fill_and_spill(BlockIterator fill, size_t n, const iterator& before);
     };
     
     template <typename T>
@@ -135,41 +155,122 @@ namespace falling {
     
     template <typename T>
     void ArrayList<T>::push_back(const T& object) {
-		auto b_it = blocks_.last();
-		Block* b;
-		if (b_it == blocks_.end() || b_it->end - b_it->current == 0) {
-			b = create_and_append_block();
-		} else {
-			b = b_it.get();
-		}
-		
-		ASSERT(b->end - b->current > 0);
-		T* ptr = b->current++;
-		++size_;
-		new(ptr) T(object);
+		insert(&object, &object + 1);
     }
 	
 	template <typename T>
 	void ArrayList<T>::push_back(T&& object) {
-		auto b_it = blocks_.last();
-		Block* b;
-		if (b_it == blocks_.end() || b_it->end - b_it->current == 0) {
-			b = create_and_append_block();
-		} else {
-			b = b_it.get();
-		}
-		
-		ASSERT(b->end - b->current > 0);
-		T* ptr = b->current++;
-		++size_;
-		new(ptr) T(std::move(object));
+		insert_move(&object, &object + 1);
 	}
 	
 	template <typename T>
 	template <typename InputIterator>
 	void ArrayList<T>::insert(InputIterator a, InputIterator b) {
-		for (auto it = a; it != b; ++it) {
-			push_back(*it);
+		insert(a, b, end());
+	}
+	
+	template <typename T>
+	template <typename InputIterator>
+	void ArrayList<T>::insert_move(InputIterator a, InputIterator b) {
+		insert_move(a, b, end());
+	}
+	
+	template <typename T>
+	typename ArrayList<T>::iterator ArrayList<T>::fill_and_spill(BlockIterator fill, size_t n, const iterator& before) {
+		if (fill != blocks_.end()) {
+			size_t fill_space = fill->end - fill->current;
+			if (fill_space > 0) {
+				auto it = iterator(*this, fill, fill->current, before.position_);
+				if (fill_space >= n) {
+					fill->extend_current_by(n);
+				} else {
+					fill->extend_current_until_end();
+					size_t remaining = n - fill_space;
+					Block* spill = create_block_of_size(remaining);
+					blocks_.link_after(spill, fill);
+					spill->extend_current_by(remaining);
+				}
+				return move(it);
+			}
+		}
+		
+		Block* spill = create_block_of_size(n);
+		spill->extend_current_by(n);
+		BlockIterator spill_it;
+		if (fill != blocks_.end()) {
+			spill_it = blocks_.link_after(spill, fill);
+		} else {
+			spill_it = blocks_.link_tail(spill);
+		}
+		return iterator(*this, spill_it, spill_it->begin, before.position_);
+	}
+	
+	template <typename T>
+	typename ArrayList<T>::iterator ArrayList<T>::make_room_at(const iterator& before, size_t n) {
+		size_ += n;
+		if (before == end()) {
+			return fill_and_spill(blocks_.last(), n, before);
+		} else  if (before == begin()) {
+			// prepend block of size n
+			Block* b = create_block_of_size(n);
+			b->extend_current_by(n);
+			auto it = blocks_.link_head(b);
+			return iterator(*this, it, it->begin, before.position_);
+		} else if (before.current_ == before.block_->begin) {
+			// at block boundary, insert block before
+			auto prev_block = before.block_ - 1;
+			if (prev_block != blocks_.end()) {
+				return fill_and_spill(prev_block, n, before);
+			}
+			
+			Block* b = create_block_of_size(n);
+			b->extend_current_by(n);
+			auto it = blocks_.link_before(b, before.block_);
+			return iterator(*this, it, it->begin, before.position_);
+		} else if (before.current_ == before.block_->current) {
+			// at block boundary:
+			// fill current block if it has room
+			// create new block for remaining elements
+			return fill_and_spill(before.block_, n, before);
+		} else {
+			// split block
+			BlockIterator b = before.block_;
+			size_t elements_to_move = b->current - before.current_;
+			size_t block_space = b->end - b->current;
+			if (block_space >= n) {
+				b->extend_current_by(n);
+				// no more space required
+			} else {
+				b->extend_current_until_end();
+				size_t remaining = n - block_space;
+				Block* nb = create_block_of_size(remaining);
+				nb->extend_current_by(remaining);
+				blocks_.link_after(nb, b);
+			}
+			
+			auto old_elements_begin = before + elements_to_move;
+			std::move(before, old_elements_begin, old_elements_begin);
+			return before;
+		}
+	}
+	
+	template <typename T>
+	template <typename InputIterator>
+	void ArrayList<T>::insert(InputIterator a, InputIterator b, const iterator& before) {
+		ssize_t n = b - a;
+		if (n != 0) {
+			iterator i0 = make_room_at(before, n);
+			std::copy(a, b, i0);
+		}
+	}
+	
+	template <typename T>
+	template <typename InputIterator>
+	void ArrayList<T>::insert_move(InputIterator a, InputIterator b, const iterator& before) {
+		ssize_t n = b - a;
+		if (n != 0) {
+			iterator i0 = make_room_at(before, n);
+			std::move(a, b, i0);
 		}
 	}
     
@@ -239,7 +340,7 @@ namespace falling {
 		if (size_) {
 			auto last = end()-1;
 			last.get()->~T();
-			Block* b = blocks_.tail();
+			BlockIterator b = blocks_.last();
 			--b->current;
 			if (b->current == b->begin) {
 				delete_and_remove_block(b);
@@ -247,31 +348,38 @@ namespace falling {
 		}
 		--size_;
 	}
-    
-    template <typename T>
-    typename ArrayList<T>::Block* ArrayList<T>::create_and_append_block() {
-        size_t actual_allocation_size;
-        byte* memory = (byte*)allocator_.allocate_large(4096, alignof(Block), actual_allocation_size);
-        Block* b = new(memory) Block;
-        
-        byte* begin = memory + sizeof(Block);
+	
+	template <typename T>
+	typename ArrayList<T>::Block* ArrayList<T>::create_block_of_size(size_t n_elements) {
+		size_t actual_allocation_size;
+		byte* memory = (byte*)allocator_.allocate_large(sizeof(Block) + sizeof(T) * n_elements, alignof(Block), actual_allocation_size);
+		Block* b = new(memory) Block;
+		
+		byte* begin = memory + sizeof(Block);
         intptr_t ibegin = reinterpret_cast<intptr_t>(begin);
         intptr_t adjust = (ibegin % alignof(T)) & (alignof(T)-1);
         begin += adjust;
         b->begin = reinterpret_cast<T*>(begin);
         b->end = reinterpret_cast<T*>(memory + actual_allocation_size);
         b->current = b->begin;
-        
-        blocks_.link_tail(b);
-        
+		
+		return b;
+	}
+    
+    template <typename T>
+    typename ArrayList<T>::Block* ArrayList<T>::create_and_append_block() {
+		size_t n_elements = (4096 - sizeof(Block)) / sizeof(T);
+		Block* b = create_block_of_size(n_elements);
+		blocks_.link_tail(b);
         return b;
     }
 	
 	template <typename T>
-	void ArrayList<T>::delete_and_remove_block(Block* b) {
-		ASSERT(b->current == b->begin); // Block has live objects.
-		blocks_.unlink(b);
-		allocator_.free_large(b, (byte*)b->end - (byte*)b);
+	void ArrayList<T>::delete_and_remove_block(BlockIterator b) {
+		ASSERT(b->current != b->begin); // Block has live objects.
+		Block* ptr = b.get();
+		blocks_.erase(b);
+		allocator_.free_large(ptr, (byte*)ptr->end - (byte*)ptr);
 	}
     
     template <typename T>
