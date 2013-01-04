@@ -40,6 +40,7 @@ struct ArchiveNode {
 	bool get(uint32&) const;
 	bool get(uint64&) const;
 	bool get(String&) const;
+	bool get(StringRef&) const;
 	template <typename T, size_t N>
 	bool get(TVector<T,N>& vec) const;
 	void set(float32);
@@ -52,7 +53,7 @@ struct ArchiveNode {
 	void set(uint16);
 	void set(uint32);
 	void set(uint64);
-	void set(String);
+	void set(StringRef);
 	template <typename T, size_t N>
 	void set(TVector<T,N> vec);
 	void clear() { clear(Type::Empty); }
@@ -162,9 +163,9 @@ inline void ArchiveNode::set(uint64 n) {
 	integer_value = n;
 }
 
-inline void ArchiveNode::set(String s) {
+inline void ArchiveNode::set(StringRef s) {
 	clear(Type::String);
-	string_value = std::move(s);
+	string_value = s;
 }
 
 template <typename T, size_t N>
@@ -248,6 +249,10 @@ inline bool ArchiveNode::get(uint64& v) const {
 }
 
 inline bool ArchiveNode::get(String& s) const {
+	return get_value(s, Type::String, string_value);
+}
+	
+inline bool ArchiveNode::get(StringRef& s) const {
 	return get_value(s, Type::String, string_value);
 }
 
