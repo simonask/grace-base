@@ -98,7 +98,7 @@ namespace falling {
 		void insert(InputIterator begin, InputIterator end) {
 			size_t rp = read_pos_ - buffer_.begin();
 			size_t wp = write_pos_ - buffer_.begin();
-			buffer_.insert(write_pos_, begin, end);
+			buffer_.insert(begin, end, write_pos_);
 			read_pos_ = buffer_.begin() + rp;
 			write_pos_ = buffer_.begin() + wp;
 			write_pos_ += end - begin;
