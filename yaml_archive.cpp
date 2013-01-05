@@ -299,7 +299,7 @@ namespace falling {
 	}
 	
 	size_t YAMLArchive::read(InputStream& is, String& out_error) {
-		Array<byte> buffer = read_all(is);
+		Array<byte> buffer = read_all<Array<byte>>(is);
 		const byte* begin = buffer.data();
 		const byte* end = begin + buffer.size();
 	

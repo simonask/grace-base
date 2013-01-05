@@ -185,7 +185,7 @@ namespace falling {
 		clear();
 		if (is.has_length()) {
 			size_t stream_length = is.length();
-			Array<byte> buffer = read_all(is);
+			Array<byte> buffer = read_all<Array<byte>>(is);
 			const byte* p = buffer.data();
 			const byte* end = p + stream_length;
 			if (!read_bytes(p, end, &stream_length)) {
@@ -193,7 +193,7 @@ namespace falling {
 				return 0;
 			}
 			
-			if (!static_cast<BinaryArchiveNode&>(root()).read(p, end, out_error)) {
+			if (!root_.read(p, end, out_error)) {
 				clear();
 				return 0;
 			}
