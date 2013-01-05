@@ -282,6 +282,7 @@ namespace falling {
             size_t block_size = (byte*)b->end - (byte*)b;
             allocator_.free_large(b, block_size);
         }
+		size_ = 0;
         ASSERT(blocks_.empty());
     }
 	
@@ -491,6 +492,7 @@ namespace falling {
 		void inc_by(size_t n) {
 			size_t remaining = n;
 			while (remaining > 0) {
+				ASSERT(current_ >= block_->begin && current_ <= block_->end);
 				size_t current_to_end = block_->current - current_;
 				if (remaining < current_to_end) {
 					current_ += remaining;
