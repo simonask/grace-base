@@ -13,7 +13,8 @@
 #include "base/array.hpp"
 
 namespace falling {
-	inline size_t read_all(InputStream& is, Array<byte>& buffer) {
+	template <typename ContainerType>
+	inline size_t read_all(InputStream& is, ContainerType& buffer) {
 		if (is.has_length()) {
 			buffer.reserve(is.length());
 		}
@@ -26,10 +27,11 @@ namespace falling {
 		return buffer.size();
 	}
 	
-	inline Array<byte> read_all(InputStream& is, IAllocator& alloc = default_allocator()) {
-		Array<byte> buffer(alloc);
+	template <typename ContainerType>
+	inline ContainerType read_all(InputStream& is, IAllocator& alloc = default_allocator()) {
+		ContainerType buffer(alloc);
 		read_all(is, buffer);
-		return buffer;
+		return move(buffer);
 	}
 }
 
