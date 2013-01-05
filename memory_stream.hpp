@@ -46,7 +46,7 @@ namespace falling {
 		
 		// MemoryStream API
 		size_t size() const { return end_ - begin_; }
-		size_t data_available() const { return current_ - end_; }
+		size_t data_available() const { return end_ - current_; }
 	private:
 		const byte* begin_;
 		const byte* end_;
