@@ -27,7 +27,7 @@ DEFINE_SIMPLE_TYPE(float32, true, true)
 DEFINE_SIMPLE_TYPE(float64, true, true)
 
 
-void IntegerType::deserialize_raw(byte* place, const ArchiveNode& node, UniverseBase&) const {
+void IntegerType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const {
 	if (is_signed_) {
 		switch (width_) {
 			case 1: node.get(*reinterpret_cast<int8* >(place)); return;
@@ -47,7 +47,7 @@ void IntegerType::deserialize_raw(byte* place, const ArchiveNode& node, Universe
 	}
 }
 
-void IntegerType::serialize_raw(const byte* place, ArchiveNode& node, UniverseBase&) const {
+void IntegerType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const {
 	if (is_signed_) {
 		switch (width_) {
 			case 1: node.set(*reinterpret_cast<const int8* >(place)); return;
@@ -90,7 +90,7 @@ void* IntegerType::cast(const SimpleType* to, void* memory) const {
 	return nullptr;
 }
 
-void FloatType::deserialize_raw(byte* place, const ArchiveNode& node, UniverseBase&) const {
+void FloatType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const {
 	if (width_ == 4) {
 		node.get(*reinterpret_cast<float32*>(place));
 		return;
@@ -101,7 +101,7 @@ void FloatType::deserialize_raw(byte* place, const ArchiveNode& node, UniverseBa
 	ASSERT(false); // FloatType with neither 32-bit nor 64-bit floats?
 }
 
-void FloatType::serialize_raw(const byte* place, ArchiveNode& node, UniverseBase&) const {
+void FloatType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const {
 	if (width_ == 4) {
 		node.set(*reinterpret_cast<const float32*>(place));
 	} else if (width_ == 8) {
@@ -142,7 +142,7 @@ bool EnumType::value_for_name(const String& name, ssize_t& out_value) const {
 	return false;
 }
 
-void EnumType::deserialize_raw(byte* place, const ArchiveNode& node, UniverseBase&) const {
+void EnumType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const {
 	String name;
 	if (node.get(name)) {
 		ssize_t value;
@@ -158,7 +158,7 @@ void EnumType::deserialize_raw(byte* place, const ArchiveNode& node, UniverseBas
 	}
 }
 
-void EnumType::serialize_raw(const byte* place, ArchiveNode& node, UniverseBase&) const {
+void EnumType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const {
 	ssize_t value = 0;
 	ASSERT(width_ <= sizeof(ssize_t));
 	memcpy(&value, place, width_);
@@ -209,11 +209,11 @@ const VoidType* VoidType::get() {
 }
 
 
-void StringType::deserialize(String& place, const ArchiveNode& node, UniverseBase&) const {
+void StringType::deserialize(String& place, const ArchiveNode& node, IUniverse&) const {
 	node.get(place);
 }
 
-void StringType::serialize(const String& place, ArchiveNode& node, UniverseBase&) const {
+void StringType::serialize(const String& place, ArchiveNode& node, IUniverse&) const {
 	node.set(place);
 }
 
@@ -231,11 +231,11 @@ const StringRefType* StringRefType::get() {
 	return &type;
 }
 	
-void StringRefType::deserialize(StringRef& place, const ArchiveNode& node, UniverseBase&) const {
+void StringRefType::deserialize(StringRef& place, const ArchiveNode& node, IUniverse&) const {
 	place = node.string_value;
 }
 
-void StringRefType::serialize(const StringRef &place, ArchiveNode & node, UniverseBase &) const {
+void StringRefType::serialize(const StringRef &place, ArchiveNode & node, IUniverse &) const {
 	node.set(place);
 }
 

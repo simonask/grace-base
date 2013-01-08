@@ -15,8 +15,9 @@ namespace falling {
 		virtual Any get_any(Object* object) const = 0;
 		virtual Any get_any(const Object* object) const = 0;
 		virtual bool set_any(Object* object, const Any& value) const = 0;
-		virtual void deserialize_attribute(Object* object, const ArchiveNode&, UniverseBase&) const = 0;
-		virtual void serialize_attribute(const Object* object, ArchiveNode&, UniverseBase&) const = 0;
+		virtual void deserialize_attribute(Object* object, const ArchiveNode&, IUniverse&) const = 0;
+		virtual void serialize_attribute(const Object* object, ArchiveNode&, IUniverse&) const = 0;
+		virtual bool deferred_instantiation() const = 0; // should return true for attributes that depend on the object hierarchy (such as ObjectPtr).
 	};
 
 	template <typename T>
@@ -26,6 +27,7 @@ namespace falling {
 		virtual bool set_polymorphic(Object* object, const T& in_value) const = 0;
 		
 		const Type* type() const final { return get_type<T>(); }
+		bool deferred_instantiation() const final { return type()->deferred_instantiation(); }
 	};
 	
 	namespace detail {
@@ -45,7 +47,7 @@ namespace falling {
 		virtual GetterType get(const ObjectType&) const = 0;
 		virtual void set(ObjectType&, MemberType value) const = 0;
 	
-		void deserialize_attribute(Object* object, const ArchiveNode& node, UniverseBase& universe) const {
+		void deserialize_attribute(Object* object, const ArchiveNode& node, IUniverse& universe) const {
 			ObjectType* o = dynamic_cast<ObjectType*>(object);
 			ASSERT(o != nullptr);
 			if (!node.is_empty()) {
@@ -55,7 +57,7 @@ namespace falling {
 			}
 		}
 	
-		void serialize_attribute(const Object* object, ArchiveNode& node, UniverseBase& universe) const {
+		void serialize_attribute(const Object* object, ArchiveNode& node, IUniverse& universe) const {
 			const ObjectType* o = dynamic_cast<const ObjectType*>(object);
 			GetterType value = get(*o);
 			this->type()->serialize_raw(reinterpret_cast<const byte*>(&value), node, universe);
@@ -133,7 +135,7 @@ struct MemberAttribute : AttributeForObjectOfType<ObjectType, MemberType, const 
 	}
 	
 	// override deserialize_attribute so we can deserialize in-place
-	void deserialize_attribute(Object* object, const ArchiveNode& node, UniverseBase& universe) const {
+	void deserialize_attribute(Object* object, const ArchiveNode& node, IUniverse& universe) const {
 		ObjectType* o = dynamic_cast<ObjectType*>(object);
 		ASSERT(o != nullptr);
 		MemberType* ptr = &(o->*member_);

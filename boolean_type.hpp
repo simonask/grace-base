@@ -15,8 +15,8 @@
 namespace falling {
 	struct BooleanType : TypeFor<bool> {
 	public:
-		void deserialize(bool& place, const ArchiveNode&, UniverseBase&) const;
-		void serialize(const bool& place, ArchiveNode&, UniverseBase&) const;
+		void deserialize(bool& place, const ArchiveNode&, IUniverse&) const;
+		void serialize(const bool& place, ArchiveNode&, IUniverse&) const;
 		String name() const { return String("bool", static_allocator()); }
 	};
 	

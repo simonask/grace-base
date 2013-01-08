@@ -14,12 +14,12 @@
 
 namespace falling {
 	struct ArchiveNode;
-	struct UniverseBase;
+	struct IUniverse;
 	
 	struct ColorType : TypeFor<Color> {
 		ColorType() {}
-		virtual void deserialize(Color& place, const ArchiveNode&, UniverseBase&) const;
-		virtual void serialize(const Color& place, ArchiveNode&, UniverseBase&) const;
+		virtual void deserialize(Color& place, const ArchiveNode&, IUniverse&) const;
+		virtual void serialize(const Color& place, ArchiveNode&, IUniverse&) const;
 		
 		String name() const;
 		size_t size() const { return sizeof(Color); }

@@ -14,8 +14,8 @@ template <typename T>
 struct MaybeType : TypeFor<Maybe<T>> {
 	MaybeType() : name_(build_maybe_type_name(get_type<T>())) {}
 	
-	void deserialize(Maybe<T>& place, const ArchiveNode&, UniverseBase&) const;
-	void serialize(const Maybe<T>& place, ArchiveNode&, UniverseBase&) const;
+	void deserialize(Maybe<T>& place, const ArchiveNode&, IUniverse&) const;
+	void serialize(const Maybe<T>& place, ArchiveNode&, IUniverse&) const;
 	
 	const String& name() const { return name_; }
 	
@@ -25,7 +25,7 @@ private:
 };
 
 template <typename T>
-void MaybeType<T>::deserialize(Maybe<T>& m, const ArchiveNode& node, UniverseBase& universe) const {
+void MaybeType<T>::deserialize(Maybe<T>& m, const ArchiveNode& node, IUniverse& universe) const {
 	if (!node.is_empty()) {
 		T value;
 		inner_type()->deserialize(reinterpret_cast<byte*>(&value), node, universe);
@@ -34,12 +34,12 @@ void MaybeType<T>::deserialize(Maybe<T>& m, const ArchiveNode& node, UniverseBas
 }
 
 template <typename T>
-void MaybeType<T>::serialize(const Maybe<T>& m, ArchiveNode& node, UniverseBase& universe) const {
+void MaybeType<T>::serialize(const Maybe<T>& m, ArchiveNode& node, IUniverse& universe) const {
 	/*struct Serialize {
 		const Type* inner_type;
 		ArchiveNode& node;
-		UniverseBase& universe;
-		Serialize(const Type* inner_type, ArchiveNode& node, UniverseBase& universe) : inner_type(inner_type), node(node), universe(universe) {}
+		IUniverse& universe;
+		Serialize(const Type* inner_type, ArchiveNode& node, IUniverse& universe) : inner_type(inner_type), node(node), universe(universe) {}
 		void operator()(const T& it) {
 			inner_type->serialize(reinterpret_cast<const byte*>(&it), node, universe);
 		};
