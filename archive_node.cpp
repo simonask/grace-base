@@ -84,5 +84,21 @@ const ISlot* DeserializeSignalBase::get_slot(Object* object) const {
 	const StructuredType* type = get_type(object);
 	return type->find_slot_by_name(slot_id_);
 }
+	
+	const ArchiveNodeConstPtrType* BuildTypeInfo<const ArchiveNode*>::build() {
+		static const ArchiveNodeConstPtrType type = ArchiveNodeConstPtrType();
+		return &type;
+	}
+	
+	void ArchiveNodeConstPtrType::deserialize(ArchiveNodeConstPtrType::T &place, const falling::ArchiveNode & node, falling::UniverseBase &) const {
+		place = &node;
+	}
+	
+	void ArchiveNodeConstPtrType::serialize(const ArchiveNodeConstPtrType::T &place, falling::ArchiveNode &, falling::UniverseBase &) const {
+		ASSERT(false); // Cannot serialize a reference into another serialized tree.
+	}
 
+	String ArchiveNodeConstPtrType::name() const {
+		return "const ArchiveNode*";
+	}
 }

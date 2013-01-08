@@ -114,6 +114,22 @@ protected:
 	void register_signal_for_deserialization_impl(DeserializeSignalBase* sig) const;
 };
 
+// This type is provided as a way to defer deserialization of serialized
+// subtrees, for instance when loading scenes via serialized RPC calls.
+// 'Deserialize' merely converts the reference to a pointer and assigns
+// it to the place.
+struct ArchiveNodeConstPtrType : TypeFor<const ArchiveNode*> {
+	using T = const ArchiveNode*;
+	void deserialize(T& place, const ArchiveNode&, UniverseBase&) const final;
+	void serialize(const T& place, ArchiveNode&, UniverseBase&) const final;
+	String name() const final;
+};
+	
+template <>
+struct BuildTypeInfo<const ArchiveNode*> {
+	static const ArchiveNodeConstPtrType* build();
+};
+
 inline void ArchiveNode::set(float32 f) {
 	clear(Type::Float);
 	float_value = f;
