@@ -11,7 +11,7 @@
 #include "type/array_type.hpp"
 
 namespace falling {
-	void AnyType::deserialize(Any &place, const ArchiveNode &n, UniverseBase &u) const {
+	void AnyType::deserialize(Any &place, const ArchiveNode &n, IUniverse &u) const {
 		switch (n.type()) {
 			case ArchiveNodeType::Empty: {
 				place = Nothing; break;
@@ -59,7 +59,7 @@ namespace falling {
 		}
 	}
 	
-	void AnyType::serialize(const Any& place, ArchiveNode& n, UniverseBase& u) const {
+	void AnyType::serialize(const Any& place, ArchiveNode& n, IUniverse& u) const {
 		if (!place.is_empty()) {
 			place.type()->serialize_raw(place.ptr(), n, u);
 		} else {

@@ -145,7 +145,7 @@ void destruct(void* ptr) {
 template <typename Container, typename Key, typename DefaultValue>
 auto find_or(Container& container, const Key& key, const DefaultValue& default_value)
 -> typename std::common_type<typename Container::mapped_type, DefaultValue>::type {
-	auto it = container.find(key);
+	auto it = container.find(typename Container::key_type(key));
 	if (it != container.end()) return it->second;
 	return default_value;
 }

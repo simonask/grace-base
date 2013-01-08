@@ -14,13 +14,13 @@ namespace falling {
 		struct RectType : TypeFor<Rect> {
 			String name() const { return "Rect"; }
 		
-			virtual void deserialize(Rect& place, const ArchiveNode& node, UniverseBase& universe) const {
+			virtual void deserialize(Rect& place, const ArchiveNode& node, IUniverse& universe) const {
 				auto vt = get_type<vec2>();
 				vt->deserialize(place.origin, node["origin"], universe);
 				vt->deserialize(place.size, node["size"], universe);
 			}
 			
-			virtual void serialize(const Rect& place, ArchiveNode&, UniverseBase&) const {
+			virtual void serialize(const Rect& place, ArchiveNode&, IUniverse&) const {
 				
 			}
 		};

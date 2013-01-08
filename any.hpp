@@ -83,8 +83,8 @@ namespace falling {
 	};
 	
 	struct AnyType : TypeFor<Any> {
-		void deserialize(Any& place, const ArchiveNode& n, UniverseBase& u) const;
-		void serialize(const Any& place, ArchiveNode&, UniverseBase&) const;
+		void deserialize(Any& place, const ArchiveNode& n, IUniverse& u) const;
+		void serialize(const Any& place, ArchiveNode&, IUniverse&) const;
 		String name() const { return "Any"; }
 		size_t size() const { return sizeof(Any); }
 	};
@@ -222,7 +222,7 @@ namespace falling {
 	
 	inline void Any::clear() {
 		if (stored_type_ != nullptr) {
-			stored_type_->destruct(ptr(), *(UniverseBase*)nullptr); // TODO: Remove UniverseBase requirement, since this is undefined behavior...
+			stored_type_->destruct(ptr(), *(IUniverse*)nullptr); // TODO: Remove IUniverse requirement, since this is undefined behavior...
 			deallocate_storage();
 			stored_type_ = nullptr;
 		}
