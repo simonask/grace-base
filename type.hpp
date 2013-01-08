@@ -187,11 +187,17 @@ struct FloatType : SimpleType {
 struct StringType : TypeFor<String> {
 	static const StringType* get();
 	
-	void deserialize(String& place, const ArchiveNode&, UniverseBase&) const override;
-	void serialize(const String& place, ArchiveNode&, UniverseBase&) const override;
+	void deserialize(String& place, const ArchiveNode&, UniverseBase&) const final;
+	void serialize(const String& place, ArchiveNode&, UniverseBase&) const final;
 	
-	String name() const override;
-	size_t size() const override { return sizeof(String); }
+	String name() const final;
+};
+	
+struct StringRefType : TypeFor<StringRef> {
+	static const StringRefType* get();
+	void deserialize(StringRef& place, const ArchiveNode&, UniverseBase&) const final;
+	void serialize(const StringRef& place, ArchiveNode&, UniverseBase&) const final;
+	String name() const final;
 };
 
 struct DerivedType : Type {
@@ -235,6 +241,10 @@ template <> struct BuildTypeInfo<void> {
 
 template <> struct BuildTypeInfo<String> {
 	static const StringType* build() { return StringType::get(); }
+};
+	
+template <> struct BuildTypeInfo<StringRef> {
+	static const StringRefType* build() { return StringRefType::get(); }
 };
 
 template <typename T>

@@ -225,5 +225,22 @@ const StringType* StringType::get() {
 String StringType::name() const {
 	return "String";
 }
+	
+const StringRefType* StringRefType::get() {
+	static const StringRefType type = StringRefType();
+	return &type;
+}
+	
+void StringRefType::deserialize(StringRef& place, const ArchiveNode& node, UniverseBase&) const {
+	place = node.string_value;
+}
+
+void StringRefType::serialize(const StringRef &place, ArchiveNode & node, UniverseBase &) const {
+	node.set(place);
+}
+
+String StringRefType::name() const {
+	return "StringRef";
+}
 
 }
