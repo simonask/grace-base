@@ -4,7 +4,6 @@
 
 #include "type/type.hpp"
 #include "object/object.hpp"
-#include "type/reference_type.hpp"
 
 namespace falling {
 
@@ -46,14 +45,6 @@ struct ObjectPtr/*<T, typename std::enable_if<IsDerivedFromObject<T>::Value>::ty
 	bool operator<(const ObjectPtr<T>& other) const { return ptr_ < other.ptr_; }
 private:
 	T* ptr_;
-};
-
-template <typename T>
-struct BuildTypeInfo<ObjectPtr<T>> {
-	static const ReferenceTypeImpl<ObjectPtr<T>>* build() {
-		static auto type = new_static ReferenceTypeImpl<ObjectPtr<T>>("ObjectPtr");
-		return type;
-	}
 };
 
 template <typename To, typename From>

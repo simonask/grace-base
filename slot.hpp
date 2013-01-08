@@ -17,7 +17,7 @@
 
 namespace falling {
 	struct ArchiveNode;
-	struct UniverseBase;
+	struct IUniverse;
 	class Any;
 
 	void warn_signal_receiver_type_mismatch(ObjectPtr<> receiver, const Type* expected_type);
@@ -30,7 +30,7 @@ namespace falling {
 		virtual bool invoke(ObjectPtr<> receiver, ArrayRef<Any> args) const = 0;
 		
 		// Deprecated:
-		virtual void invoke_with_serialized_arguments(ObjectPtr<> receiver, const ArchiveNode& arg_list, UniverseBase& universe) const = 0;
+		virtual void invoke_with_serialized_arguments(ObjectPtr<> receiver, const ArchiveNode& arg_list, IUniverse& universe) const = 0;
 		virtual String signature_description(IAllocator& alloc = default_allocator()) const = 0;
 	};
 	
@@ -101,7 +101,7 @@ namespace falling {
 			}
 		}
 		
-		void invoke_with_serialized_arguments(ObjectPtr<> object, const ArchiveNode& arg_list, UniverseBase& universe) const {
+		void invoke_with_serialized_arguments(ObjectPtr<> object, const ArchiveNode& arg_list, IUniverse& universe) const {
 			std::tuple<Args...> deserialized_args;
 			deserialize_list_into_tuple<0, 0>(arg_list, deserialized_args, universe);
 			T* ptr = this->get_object_polymorphic(object);

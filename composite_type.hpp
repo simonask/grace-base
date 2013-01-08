@@ -18,8 +18,9 @@ struct ExposedAttribute : public IAttribute {
 	Any get_any(const Object* object) const final;
 	Any get_any(Object* object) const final;
 	bool set_any(Object* object, const Any& value) const final;
-	void deserialize_attribute(Object* object, const ArchiveNode&, UniverseBase&) const final;
-	void serialize_attribute(const Object* object, ArchiveNode&, UniverseBase&) const final;
+	void deserialize_attribute(Object* object, const ArchiveNode&, IUniverse&) const final;
+	void serialize_attribute(const Object* object, ArchiveNode&, IUniverse&) const final;
+	bool deferred_instantiation() const final { return attribute_->deferred_instantiation(); }
 	
 	// ExposedAttribute interface
 	size_t aspect() const { return aspect_idx_; }
@@ -39,7 +40,7 @@ private:
 		bool invoke(ObjectPtr<> receiver, ArrayRef<Any> args) const final;
 		
 		// Deprecated:
-		void invoke_with_serialized_arguments(ObjectPtr<> receiver, const ArchiveNode& arg_list, UniverseBase& universe) const final;
+		void invoke_with_serialized_arguments(ObjectPtr<> receiver, const ArchiveNode& arg_list, IUniverse& universe) const final;
 		String signature_description(IAllocator& alloc) const final;
 		
 		// ExposedSlot interface
@@ -76,12 +77,12 @@ struct CompositeType : StructuredType {
 	const StructuredType* get_aspect(size_t aspect_idx) const;
 	
 	// Type interface
-	void construct(byte* place, UniverseBase&) const override;
-	void destruct(byte* place, UniverseBase&) const override;
+	void construct(byte* place, IUniverse&) const override;
+	void destruct(byte* place, IUniverse&) const override;
 	void copy_construct(byte* place, const byte* original) const override { ASSERT(false); }
 	void move_construct(byte* place, byte* original) const override { ASSERT(false); }
-	void deserialize_raw(byte* place, const ArchiveNode& node, UniverseBase&) const override;
-	void serialize_raw(const byte* place, ArchiveNode& node, UniverseBase&) const override;
+	void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
+	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const override;
 	String name() const override { return name_; }
 	size_t size() const override { return size_; }
 	

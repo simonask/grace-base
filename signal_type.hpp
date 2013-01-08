@@ -19,6 +19,7 @@ namespace falling {
 	public:
 		ArrayRef<const Type*> signature() const { return signature_; }
 		String name() const { return name_; }
+		bool deferred_instantiation() const final { return true; }
 	protected:
 		String name_;
 		Array<const Type*> signature_;
@@ -27,8 +28,8 @@ namespace falling {
 	
 	template <typename... Args>
 	struct SignalType : TypeFor<Signal<Args...>, SignalTypeBase> {
-		void deserialize(Signal<Args...>& place, const ArchiveNode&, UniverseBase&) const;
-		void serialize(const Signal<Args...>& place, ArchiveNode&, UniverseBase&) const;
+		void deserialize(Signal<Args...>& place, const ArchiveNode&, IUniverse&) const;
+		void serialize(const Signal<Args...>& place, ArchiveNode&, IUniverse&) const;
 		
 		SignalType() {
 			build_signature<Args...>(this->signature_);
@@ -45,17 +46,22 @@ namespace falling {
 	};
 	
 	template <typename... Args>
-	void SignalType<Args...>::deserialize(Signal<Args...>& signal, const ArchiveNode& node, UniverseBase&) const {
+	void SignalType<Args...>::deserialize(Signal<Args...>& signal, const ArchiveNode& node, IUniverse& universe) const {
 		if (node.is_array()) {
 			for (size_t i = 0; i < node.array_size(); ++i) {
 				const ArchiveNode& connection = node[i];
 				if (connection.is_map()) {
 					auto& receiver_node = connection["receiver"];
 					auto& slot_node = connection["slot"];
-					String receiver;
-					String slot;
-					if (receiver_node.get(receiver) && slot_node.get(slot)) {
-						node.register_signal_for_deserialization(&signal, receiver, slot);
+					StringRef receiver_id;
+					StringRef slot_name;
+					if (receiver_node.get(receiver_id) && slot_node.get(slot_name)) {
+						ObjectPtr<> receiver = universe.get_object(receiver_id);
+						if (receiver) {
+							signal.connect(receiver, slot_name);
+						} else {
+							Warning() << "Invalid signal connection: No object named '" << receiver_id << "' in scene.";
+						}
 					} else {
 						Warning() << "Invalid signal connection.";
 					}
@@ -67,7 +73,7 @@ namespace falling {
 	}
 	
 	template <typename... Args>
-	void SignalType<Args...>::serialize(const Signal<Args...>& signal, ArchiveNode& node, UniverseBase& universe) const {
+	void SignalType<Args...>::serialize(const Signal<Args...>& signal, ArchiveNode& node, IUniverse& universe) const {
 		for (size_t i = 0; i < signal.num_connections(); ++i) {
 			const SignalInvoker<Args...>* invoker = signal.connection_at(i);
 			ObjectPtr<Object> receiver = invoker->receiver();

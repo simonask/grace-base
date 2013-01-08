@@ -40,11 +40,11 @@ const Object* Object::find_topmost_object() const {
 	return object;
 }
 
-bool Object::set_object_id(String new_id) {
+bool Object::set_object_id(StringRef new_id) {
 	return universe_->rename_object(this, new_id);
 }
 
-const String& Object::object_id() const {
+StringRef Object::object_id() const {
 	return universe_->get_id(this);
 }
 

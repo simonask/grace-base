@@ -9,6 +9,7 @@
 #include "type/attribute.hpp"
 #include "object/slot.hpp"
 #include "object/universe.hpp"
+#include "object/universe_base.hpp"
 #include "base/link_list.hpp"
 
 namespace falling {
@@ -50,7 +51,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 		, lists_(static_allocator())
 		{}
 	
-	void construct(byte* place, UniverseBase& universe) const {
+	void construct(byte* place, IUniverse& universe) const {
 		TypeFor<T,ObjectTypeBase>::construct(place, universe);
 		Object* p = reinterpret_cast<Object*>(place);
 		p->set_object_type__(this);
@@ -68,8 +69,8 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	const Type* type_of_element(size_t idx) const { return properties_[idx]->attribute_type(); }
 	size_t offset_of_element(size_t idx) const { return 0; /* TODO */ }
 	
-	void deserialize(T& object, const ArchiveNode&, UniverseBase&) const;
-	void serialize(const T& object, ArchiveNode&, UniverseBase&) const;
+	void deserialize(T& object, const ArchiveNode&, IUniverse&) const;
+	void serialize(const T& object, ArchiveNode&, IUniverse&) const;
 	
 	const ISlot* find_slot_by_name(const String& name) const {
 		for (auto& it: slots_) {
@@ -85,7 +86,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 
 template <typename T>
 struct AutoListRegistrarForObject {
-	virtual void link_object_in_universe(T& object, UniverseBase& universe) const = 0;
+	virtual void link_object_in_universe(T& object, IUniverse& universe) const = 0;
 };
 
 template <typename T, typename ObjectType, size_t MemberOffset>
@@ -95,8 +96,9 @@ struct AutoListRegistrarImpl : AutoListRegistrarForObject<T> {
 	
 	AutoListRegistrarImpl(LinkMemberType link) : link_(link) {}
 	
-	void link_object_in_universe(T& object, UniverseBase& universe) const {
-		auto& list = universe.get_auto_list<ObjectType, MemberOffset>();
+	void link_object_in_universe(T& object, IUniverse& universe) const {
+		UniverseBase* universe_base = dynamic_cast<UniverseBase*>(&universe);
+		auto& list = universe_base->get_auto_list<ObjectType, MemberOffset>();
 		AutoListLink<ObjectType>* link = &(object.*link_);
 		list.link_head(link);
 	}
@@ -104,12 +106,18 @@ struct AutoListRegistrarImpl : AutoListRegistrarForObject<T> {
 
 
 template <typename T>
-void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, UniverseBase& universe) const {
+void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& universe) const {
 	auto s = this->super();
 	if (s) s->deserialize_raw(reinterpret_cast<byte*>(&object), node, universe);
 	
 	for (auto& property: properties_) {
-		property->deserialize_attribute(&object, node[property->name()], universe);
+		ObjectPtr<> o = &object;
+		const ArchiveNode& serialized = node[property->name()];
+		if (property->deferred_instantiation()) {
+			universe.defer_attribute_deserialization(o, property, &serialized);
+		} else {
+			property->deserialize_attribute(o.get(), serialized, universe);
+		}
 	}
 	
 	for (auto& list: lists_) {
@@ -118,7 +126,7 @@ void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, UniverseBase
 }
 
 template <typename T>
-void ObjectType<T>::serialize(const T& object, ArchiveNode& node, UniverseBase& universe) const {
+void ObjectType<T>::serialize(const T& object, ArchiveNode& node, IUniverse& universe) const {
 	auto s = this->super();
 	if (s) s->serialize_raw(reinterpret_cast<const byte*>(&object), node, universe);
 	
