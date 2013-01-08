@@ -7,32 +7,6 @@
 #include "serialization/deserialize_object.hpp"
 
 namespace falling {
-
-void Archive::serialize(ObjectPtr<> object, UniverseBase& universe) {
-	falling::serialize(*object, root(), universe);
-	for (auto ref: serialize_references) {
-		ref->perform(universe);
-	}
-	serialize_references.clear();
-}
-
-bool Archive::deserialize(UniverseBase& universe, String& out_error) {
-	ObjectPtr<> ptr = deserialize_object(root(), universe);
-	
-	for (auto it: deserialize_references) {
-		it->perform(universe);
-	}
-	for (auto it: deserialize_signals) {
-		it->perform(universe);
-	}
-	
-	universe.set_root(ptr);
-	
-	universe.initialize_all();
-	
-	return true;
-}
-	
 	ArchiveNode& Archive::operator[](const String& key) {
 		return root()[key];
 	}
@@ -40,5 +14,4 @@ bool Archive::deserialize(UniverseBase& universe, String& out_error) {
 	const ArchiveNode& Archive::operator[](const String& key) const {
 		return root()[key];
 	}
-
 }

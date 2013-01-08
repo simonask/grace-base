@@ -15,11 +15,8 @@
 
 namespace falling {
 
-struct DeserializeReferenceBase;
-struct SerializeReferenceBase;
-struct DeserializeSignalBase;
 struct ArchiveNode;
-struct UniverseBase;
+struct IUniverse;
 
 struct Archive {
 	typedef ArchiveNodeType::Type NodeType;
@@ -34,23 +31,11 @@ struct Archive {
 	const ArchiveNode& operator[](const String& key) const;
 	ArchiveNode& operator[](const String& key);
 	
-	void serialize(ObjectPtr<> object, UniverseBase& universe);
-	bool deserialize(UniverseBase& universe, String& out_error);
-	
-	void register_reference_for_deserialization(DeserializeReferenceBase* ref) { deserialize_references.push_back(ref); }
-	void register_reference_for_serialization(SerializeReferenceBase* ref) { serialize_references.push_back(ref); }
-	void register_signal_for_deserialization(DeserializeSignalBase* sig) {
-		deserialize_signals.push_back(sig);
-	}
-	
 	IAllocator& allocator() const { return allocator_; }
 protected:
-	Archive(IAllocator& alloc) : allocator_(alloc), deserialize_references(alloc), serialize_references(alloc), deserialize_signals(alloc) {}
+	Archive(IAllocator& alloc) : allocator_(alloc) {}
 private:
 	IAllocator& allocator_;
-	Array<DeserializeReferenceBase*> deserialize_references;
-	Array<SerializeReferenceBase*> serialize_references;
-	Array<DeserializeSignalBase*> deserialize_signals;
 };
 
 }

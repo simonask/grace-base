@@ -105,7 +105,7 @@ namespace {
 	}
 }
 
-ObjectPtr<> deserialize_object(const ArchiveNode& node, UniverseBase& universe) {
+ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
 	if (!node.is_map()) {
 		Error() << "Expected object, got non-map.";
 		return nullptr;

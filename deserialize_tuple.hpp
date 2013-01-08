@@ -14,17 +14,17 @@
 #include "base/any.hpp"
 
 namespace falling {
-	struct UniverseBase;
+	struct IUniverse;
 	
 	template <size_t SourceIdx, size_t TupleIdx, typename... TupleTypes>
 	typename std::enable_if<(TupleIdx >= sizeof...(TupleTypes)), void>::type
-	deserialize_list_into_tuple(const ArchiveNode&, std::tuple<TupleTypes...>&, UniverseBase&) {
+	deserialize_list_into_tuple(const ArchiveNode&, std::tuple<TupleTypes...>&, IUniverse&) {
 		// Recursion base.
 	}
 
 	template <size_t SourceIdx, size_t TupleIdx, typename... TupleTypes>
 	typename std::enable_if<(TupleIdx < sizeof...(TupleTypes)), void>::type
-	deserialize_list_into_tuple(const ArchiveNode& arg_list, std::tuple<TupleTypes...>& tuple, UniverseBase& universe) {
+	deserialize_list_into_tuple(const ArchiveNode& arg_list, std::tuple<TupleTypes...>& tuple, IUniverse& universe) {
 		const ArchiveNode& node = arg_list[SourceIdx];
 		auto& target = std::get<TupleIdx>(tuple);
 		const Type* t = get_type<typename RemoveConstRef<decltype(target)>::Type>();

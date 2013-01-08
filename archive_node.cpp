@@ -5,7 +5,7 @@
 #include "type/structured_type.hpp"
 
 namespace falling {
-class UniverseBase;
+class IUniverse;
 
 ArchiveNode& ArchiveNode::array_push() {
 	if (type() != Type::Array) {
@@ -55,46 +55,17 @@ ArchiveNode& ArchiveNode::operator[](StringRef key) {
 		return *it->second;
 	}
 }
-
-void ArchiveNode::register_reference_for_deserialization_impl(DeserializeReferenceBase* ref) const {
-	archive_.register_reference_for_deserialization(ref);
-}
-
-void ArchiveNode::register_reference_for_serialization_impl(SerializeReferenceBase* ref) {
-	archive_.register_reference_for_serialization(ref);
-}
-
-void ArchiveNode::register_signal_for_deserialization_impl(DeserializeSignalBase* sig) const {
-	archive_.register_signal_for_deserialization(sig);
-}
-
-Object* DeserializeReferenceBase::get_object(UniverseBase& universe) const {
-	return universe.get_object(object_id_).get();
-}
-
-String SerializeReferenceBase::get_id(const UniverseBase& universe, Object* obj) const {
-	return universe.get_id(obj);
-}
-
-Object* DeserializeSignalBase::get_object(const UniverseBase& universe) const {
-	return universe.get_object(receiver_id_).get();
-}
-
-const ISlot* DeserializeSignalBase::get_slot(Object* object) const {
-	const StructuredType* type = get_type(object);
-	return type->find_slot_by_name(slot_id_);
-}
 	
 	const ArchiveNodeConstPtrType* BuildTypeInfo<const ArchiveNode*>::build() {
 		static const ArchiveNodeConstPtrType type = ArchiveNodeConstPtrType();
 		return &type;
 	}
 	
-	void ArchiveNodeConstPtrType::deserialize(ArchiveNodeConstPtrType::T &place, const falling::ArchiveNode & node, falling::UniverseBase &) const {
+	void ArchiveNodeConstPtrType::deserialize(ArchiveNodeConstPtrType::T &place, const falling::ArchiveNode & node, falling::IUniverse &) const {
 		place = &node;
 	}
 	
-	void ArchiveNodeConstPtrType::serialize(const ArchiveNodeConstPtrType::T &place, falling::ArchiveNode &, falling::UniverseBase &) const {
+	void ArchiveNodeConstPtrType::serialize(const ArchiveNodeConstPtrType::T &place, falling::ArchiveNode &, falling::IUniverse &) const {
 		ASSERT(false); // Cannot serialize a reference into another serialized tree.
 	}
 

@@ -15,7 +15,7 @@ struct Archive;
 struct DeserializeReferenceBase;
 struct SerializeReferenceBase;
 struct DeserializeSignalBase;
-struct UniverseBase;
+struct IUniverse;
 struct ISlot;
 struct DerivedType;
 struct Object;
@@ -80,13 +80,6 @@ struct ArchiveNode {
 	}
 	
 	virtual ~ArchiveNode() {}
-	
-	template <typename T>
-	void register_reference_for_deserialization(T& reference) const;
-	template <typename T>
-	void register_reference_for_serialization(const T& reference);
-	template <typename T>
-	void register_signal_for_deserialization(T* signal, String receiver_id, String slot_id) const;
 protected:
 	explicit ArchiveNode(Archive& archive, Type t = Type::Empty) : archive_(archive), type_(t) {}
 protected:
@@ -108,10 +101,6 @@ protected:
 	bool get_value(T& v, Type value_type, const U& value) const;
 	template <typename T>
 	bool get_number(T& v) const;
-	
-	void register_reference_for_deserialization_impl(DeserializeReferenceBase* ref) const;
-	void register_reference_for_serialization_impl(SerializeReferenceBase* ref);
-	void register_signal_for_deserialization_impl(DeserializeSignalBase* sig) const;
 };
 
 // This type is provided as a way to defer deserialization of serialized
@@ -120,8 +109,8 @@ protected:
 // it to the place.
 struct ArchiveNodeConstPtrType : TypeFor<const ArchiveNode*> {
 	using T = const ArchiveNode*;
-	void deserialize(T& place, const ArchiveNode&, UniverseBase&) const final;
-	void serialize(const T& place, ArchiveNode&, UniverseBase&) const final;
+	void deserialize(T& place, const ArchiveNode&, IUniverse&) const final;
+	void serialize(const T& place, ArchiveNode&, IUniverse&) const final;
 	String name() const final;
 };
 	
@@ -278,106 +267,6 @@ inline void ArchiveNode::clear(ArchiveNodeType::Type new_type) {
 	string_value = "";
 	integer_value = 0;
 	type_ = new_type;
-}
-
-struct DeserializeReferenceBase {
-	virtual ~DeserializeReferenceBase() {}
-	DeserializeReferenceBase(String object_id) : object_id_(object_id) {}
-	virtual void perform(UniverseBase&) = 0;
-protected:
-	String object_id_;
-	Object* get_object(UniverseBase&) const;
-};
-
-template <typename T>
-struct DeserializeReference : DeserializeReferenceBase {
-public:
-	typedef typename T::PointeeType PointeeType;
-	
-	DeserializeReference(String object_id, T& reference) : DeserializeReferenceBase(object_id), reference_(reference) {}
-	void perform(UniverseBase& universe) {
-		Object* object_ptr = get_object(universe);
-		if (object_ptr == nullptr) {
-			// TODO: Warn about non-existing object ID.
-		}
-		PointeeType* ptr = aspect_cast<PointeeType>(object_ptr);
-		if (ptr == nullptr) {
-			// TODO: Warn about type mismatch.
-		}
-		reference_ = ptr;
-	}
-private:
-	T& reference_;
-};
-
-template <typename T>
-void ArchiveNode::register_reference_for_deserialization(T& reference) const {
-	String id;
-	if (get(id)) {
-		register_reference_for_deserialization_impl(new DeserializeReference<T>(id, reference));
-	}
-}
-
-struct SerializeReferenceBase {
-	virtual ~SerializeReferenceBase() {}
-	SerializeReferenceBase(ArchiveNode& node) : node_(node) {}
-	virtual void perform(const UniverseBase&) = 0;
-protected:
-	ArchiveNode& node_;
-	String get_id(const UniverseBase&, Object*) const;
-};
-
-template <typename T>
-struct SerializeReference : SerializeReferenceBase {
-	typedef typename T::PointeeType PointeeType;
-	
-	SerializeReference(ArchiveNode& node, const T& reference) : SerializeReferenceBase(node), reference_(reference) {}
-	void perform(const UniverseBase& universe) {
-		if (reference_ != nullptr) {
-			node_.set(get_id(universe, reference_.get()));
-		} else {
-			node_.clear();
-		}
-	}
-private:
-	T reference_;
-};
-
-template <typename T>
-void ArchiveNode::register_reference_for_serialization(const T& reference) {
-	register_reference_for_serialization_impl(new SerializeReference<T>(*this, reference));
-}
-
-struct DeserializeSignalBase {
-public:
-	virtual void perform(const UniverseBase&) const = 0;
-protected:
-	DeserializeSignalBase(String receiver, String slot) : receiver_id_(std::move(receiver)), slot_id_(std::move(slot)) {}
-	String receiver_id_;
-	String slot_id_;
-	
-	Object* get_object(const UniverseBase&) const;
-	const ISlot* get_slot(Object*) const;
-};
-
-template <typename T>
-struct DeserializeSignal : DeserializeSignalBase {
-	DeserializeSignal(T* signal, String receiver, String slot) : DeserializeSignalBase(std::move(receiver), std::move(slot)), signal_(signal) {}
-	
-	void perform(const UniverseBase& universe) const {
-		Object* object = get_object(universe);
-		if (object == nullptr) return;
-		const ISlot* slot = get_slot(object);
-		if (slot == nullptr) return;
-		signal_->connect(object, slot);
-	}
-private:
-	T* signal_;
-};
-
-template <typename T>
-void ArchiveNode::register_signal_for_deserialization(T* signal, String receiver, String slot) const {
-	register_signal_for_deserialization_impl(new DeserializeSignal<T>(signal, std::move(receiver), std::move(slot)));
 }
 
 }
