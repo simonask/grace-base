@@ -54,6 +54,38 @@ namespace falling {
 			sentinel.next = (T*)&sentinel;
 			sentinel.previous = (T*)&sentinel;
 		}
+		BareLinkList(BareLinkList<T>&& other) {
+			T* head = other.sentinel.next;
+			T* tail = other.sentinel.previous;
+			if (head != &other.sentinel) {
+				head->previous = (T*)&sentinel;
+				head->previous->next = head;
+				tail->next = (T*)&sentinel;
+				tail->next->previous = tail;
+				other.sentinel.next = (T*)&other.sentinel;
+				other.sentinel.previous = (T*)&other.sentinel;
+			} else {
+				sentinel.next = (T*)&sentinel;
+				sentinel.previous = (T*)&sentinel;
+			}
+		}
+		
+		BareLinkList<T>& operator=(BareLinkList<T>&& other) {
+			T* head = other.sentinel.next;
+			T* tail = other.sentinel.previous;
+			if (head != &other.sentinel) {
+				head->previous = (T*)&sentinel;
+				head->previous->next = head;
+				tail->next = (T*)&sentinel;
+				tail->next->previous = tail;
+				other.sentinel.next = (T*)&other.sentinel;
+				other.sentinel.previous = (T*)&other.sentinel;
+			} else {
+				sentinel.next = (T*)&sentinel;
+				sentinel.previous = (T*)&sentinel;
+			}
+			return *this;
+		}
         
         T* head() const { ASSERT(!empty()); return sentinel.next; }
         T* tail() const { ASSERT(!empty()); return sentinel.previous; }

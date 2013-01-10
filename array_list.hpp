@@ -103,9 +103,7 @@ namespace falling {
 	
 	template <typename T>
 	ArrayList<T>::ArrayList(const ArrayList<T>& other, IAllocator& alloc) : allocator_(alloc) {
-		for (auto& it: other) {
-			push_back(it);
-		}
+		insert(other.begin(), other.end());
 	}
 	
 	template <typename T>
@@ -113,9 +111,7 @@ namespace falling {
 	
 	template <typename T>
 	ArrayList<T>::ArrayList(std::initializer_list<T> init, IAllocator& alloc) : allocator_(alloc) {
-		for (auto& it: init) {
-			push_back(it);
-		}
+		insert(init.begin(), init.end());
 	}
     
     template <typename T>
