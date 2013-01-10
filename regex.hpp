@@ -24,7 +24,7 @@ namespace falling {
 	struct RegexError {
 		String message;
 		RegexError(String msg) : message(move(msg)) {}
-		const String& what() const { return message; }
+		StringRef what() const { return message; }
 	};
 	
 	struct Regex {
@@ -41,7 +41,7 @@ namespace falling {
 		Regex& operator=(const Regex&);
 		
 		IAllocator& allocator() const;
-		const String& pattern() const;
+		StringRef pattern() const;
 		uint32 options() const;
 		bool is_case_insensitive() const;
 		bool is_newline_sensitive() const;
@@ -75,7 +75,7 @@ namespace falling {
 		return pattern_.allocator();
 	}
 		
-	inline const String& Regex::pattern() const {
+	inline StringRef Regex::pattern() const {
 		return pattern_;
 	}
 		
