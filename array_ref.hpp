@@ -27,8 +27,8 @@ namespace falling {
 		ArrayRef(ArrayRef<T>&& other) = default;
 		ArrayRef<T>& operator=(const ArrayRef<T>& other) = default;
 		ArrayRef<T>& operator=(ArrayRef<T>&& other) = default;
-		bool operator==(const ArrayRef<T>& other) const { return begin_ == other.begin_ && end_ == other.end_; }
-		bool operator!=(const ArrayRef<T>& other) const { return begin_ != other.begin_ && end_ != other.end_; }
+		bool operator==(const ArrayRef<T>& other) const;
+		bool operator!=(const ArrayRef<T>& other) const;
 		
 		size_t size() const { return end_ - begin_; }
 		
@@ -48,6 +48,24 @@ namespace falling {
 		T* begin_;
 		T* end_;
 	};
+	
+	template <typename T>
+	bool ArrayRef<T>::operator==(const ArrayRef<T> &other) const {
+		if (size() == other.size()) {
+			for (size_t i = 0; i < size(); ++i) {
+				if (begin_[i] != other.begin_[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	template <typename T>
+	bool ArrayRef<T>::operator!=(const ArrayRef<T>& other) const {
+		return !(*this == other);
+	}
 }
 
 #endif
