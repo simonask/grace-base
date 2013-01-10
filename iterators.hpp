@@ -193,32 +193,32 @@ namespace falling {
 		}
 		
 		template <bool B>
-		ptrdiff_t operator-(const LinearMemoryIterator<T, B>& other) {
+		ptrdiff_t operator-(const LinearMemoryIterator<T, B>& other) const {
 			return current_ - other.current_;
 		}
 		
 		template <bool B>
-		bool operator==(const LinearMemoryIterator<T, B>& other) {
+		bool operator==(const LinearMemoryIterator<T, B>& other) const {
 			return current_ == other.current_;
 		}
 		template <bool B>
-		bool operator!=(const LinearMemoryIterator<T, B>& other) {
+		bool operator!=(const LinearMemoryIterator<T, B>& other) const {
 			return current_ != other.current_;
 		}
 		template <bool B>
-		bool operator>=(const LinearMemoryIterator<T, B>& other) {
+		bool operator>=(const LinearMemoryIterator<T, B>& other) const {
 			return current_ >= other.current_;
 		}
 		template <bool B>
-		bool operator>(const LinearMemoryIterator<T, B>& other) {
+		bool operator>(const LinearMemoryIterator<T, B>& other) const {
 			return current_ > other.current_;
 		}
 		template <bool B>
-		bool operator<=(const LinearMemoryIterator<T, B>& other) {
+		bool operator<=(const LinearMemoryIterator<T, B>& other) const {
 			return current_ <= other.current_;
 		}
 		template <bool B>
-		bool operator<(const LinearMemoryIterator<T, B>& other) {
+		bool operator<(const LinearMemoryIterator<T, B>& other) const {
 			return current_ < other.current_;
 		}
 		
