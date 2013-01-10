@@ -52,8 +52,8 @@ namespace falling {
 	
 	struct ResourceManager::Impl {
 		String resource_path;
-		std::map<ResourceID, Resource*> resource_cache;
-		std::map<ResourceLoaderID, ResourceLoaderBase*> resource_loaders;
+		Map<ResourceID, Resource*> resource_cache;
+		Map<ResourceLoaderID, ResourceLoaderBase*> resource_loaders;
 		bool is_in_resource_loader_fiber = false;
 		ResourceLoaderFiberManager fiber_manager;
 		LinearAllocator allocator;
