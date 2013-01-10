@@ -138,6 +138,14 @@ namespace falling {
 		return stream;
 	}
 	
+	template <typename T>
+	FormattedStream& operator<<(FormattedStream& stream, const ArrayRef<T>& array) {
+		stream << '[';
+		stream << join(array, ", ");
+		stream << ']';
+		return stream;
+	}
+	
 	template <typename T, bool C>
 	FormattedStream& operator<<(FormattedStream& stream, const LinearMemoryIterator<T, C>& it) {
 		stream << it.get();
