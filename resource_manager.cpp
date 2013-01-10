@@ -66,7 +66,7 @@ namespace falling {
 		return *p;
 	}
 	
-	void ResourceManager::initialize_with_path(const String &path_to_resources) {
+	void ResourceManager::initialize_with_path(StringRef path_to_resources) {
 		if (impl().resource_path != "") {
 			Warning() << "Resource path already initialized!";
 		}

@@ -27,7 +27,7 @@ namespace falling {
 		
 		// StringStream-like
 		String str() const { return string(); }
-		void str(const String& s) { set_string(s); }
+		void str(StringRef s) { set_string(s); }
 	private:
 		MemoryBufferStream buffer_;
 	};

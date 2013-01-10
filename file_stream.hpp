@@ -24,7 +24,7 @@ namespace falling {
 		// FileStream API
 		~FileStreamBase();
 		FileStreamBase& operator=(FileStreamBase&& other);
-		const String& path() const { return path_; }
+		StringRef path() const { return path_; }
 		void close();
 		bool is_open() const;
 		bool eof() const;

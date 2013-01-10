@@ -30,7 +30,7 @@ namespace falling {
 	
 	class ResourceManager {
 	public:
-		static void initialize_with_path(const String& path_to_resources);
+		static void initialize_with_path(StringRef path_to_resources);
 		static IAllocator& allocator();
 		
 		template <typename T>

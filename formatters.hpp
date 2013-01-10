@@ -56,7 +56,7 @@ namespace falling {
 	}
 	
 	template <typename T>
-	ClosureFormatter truncate(const T& value, uint32 width, const String& ellipsis = "") {
+	ClosureFormatter truncate(const T& value, uint32 width, StringRef ellipsis = "") {
 		return closure_formatter([=](FormattedStream& stream) {
 			StringStream ss;
 			ss << value;
