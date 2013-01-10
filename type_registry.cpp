@@ -6,7 +6,8 @@
 namespace falling {
 
 struct TypeRegistry::Impl {
-	std::map<String, const ObjectTypeBase*> type_map;
+	Array<const ObjectTypeBase*> types;
+	std::map<String, size_t> type_map;
 };
 
 TypeRegistry::Impl* TypeRegistry::impl() {
@@ -15,11 +16,21 @@ TypeRegistry::Impl* TypeRegistry::impl() {
 }
 
 void TypeRegistry::add(const ObjectTypeBase* type) {
-	impl()->type_map[type->name()] = type;
+	impl()->type_map[type->name()] = impl()->types.size();
+	impl()->types.push_back(type);
 }
 
 const ObjectTypeBase* TypeRegistry::get(const String& name) {
-	return find_or(impl()->type_map, name, nullptr);
+	size_t idx = find_or(impl()->type_map, name, SIZE_T_MAX);
+	if (idx >= impl()->types.size()) {
+		return nullptr;
+	} else {
+		return impl()->types[idx];
+	}
+}
+
+ArrayRef<const ObjectTypeBase*> TypeRegistry::object_types() {
+	return impl()->types;
 }
 
 }

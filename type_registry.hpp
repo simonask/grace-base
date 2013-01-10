@@ -14,6 +14,7 @@ public:
 	template <typename T>
 	static void add();
 	static void add(const ObjectTypeBase* type);
+	static ArrayRef<const ObjectTypeBase*> object_types();
 	
 	static const ObjectTypeBase* get(const String& name);
 private:
