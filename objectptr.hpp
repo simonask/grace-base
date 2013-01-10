@@ -26,10 +26,10 @@ struct ObjectPtr/*<T, typename std::enable_if<IsDerivedFromObject<T>::Value>::ty
 	ObjectPtr<T>& operator=(ObjectPtr<U> other) { ptr_ = other.get(); return *this; }
 	ObjectPtr<T>& operator=(const ObjectPtr<T>& other) { ptr_ = other.ptr_; return *this; }
 	template <typename U>
-	bool operator==(ObjectPtr<U> other) const { ptr_ == other.ptr_; }
+	bool operator==(ObjectPtr<U> other) const { return ptr_ == other.get(); }
 	bool operator==(const ObjectPtr<T>& other) const { return ptr_ == other.ptr_; }
 	template <typename U>
-	bool operator!=(ObjectPtr<U> other) const { ptr_ != other.ptr_; }
+	bool operator!=(ObjectPtr<U> other) const { return ptr_ != other.get(); }
 	bool operator!=(const ObjectPtr<T>& other) const { return ptr_ != other.ptr_; }
 	explicit operator bool() const { return ptr_ != nullptr; }
 	
