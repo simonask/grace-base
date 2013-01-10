@@ -54,7 +54,7 @@ namespace falling {
 			return get_auto_list<typename AutoListType::ValueType, AutoListType::LinkOffset>();
 		}
 	private:
-		std::map<const StructuredType*, std::map<size_t, VirtualAutoListBase*>> auto_lists;
+		Map<const StructuredType*, Map<size_t, VirtualAutoListBase*>> auto_lists;
 		Array<DeferredAttributeDeserialization> deferred_;
 	};
 	
@@ -77,7 +77,7 @@ namespace falling {
 			}
 		} else {
 			base_ptr = new VirtualAutoList<T, MemberOffset>;
-			std::map<size_t, VirtualAutoListBase*> m = {{MemberOffset, base_ptr}};
+			Map<size_t, VirtualAutoListBase*> m = {{MemberOffset, base_ptr}};
 			auto_lists[type] = std::move(m);
 		}
 		
@@ -113,8 +113,8 @@ namespace falling {
 		~BasicUniverse() { clear(); }
 	private:
 		IAllocator& allocator_;
-		std::map<String, ObjectPtr<>> object_map_;
-		std::map<ObjectPtr<const Object>, String> reverse_object_map_;
+		Map<String, ObjectPtr<>> object_map_;
+		Map<ObjectPtr<const Object>, String> reverse_object_map_;
 		Array<Object*> memory_map_;
 		ObjectPtr<> root_;
 	};

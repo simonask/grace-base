@@ -3,7 +3,7 @@
 #define UNIVERSE_HPP_VHU9428R
 
 #include "base/string.hpp"
-#include <map>
+#include "base/map.hpp"
 #include "object/object.hpp"
 #include "object/objectptr.hpp"
 #include "base/array_ref.hpp"
