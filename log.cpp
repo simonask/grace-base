@@ -13,6 +13,7 @@ namespace falling {
 	struct LogManager::Impl {
 		Signal<const LogEntry&> on_log;
 		LogLevel current_log_level = DefaultLogLevel;
+		bool stdio_echo = true;
 	};
 	
 	LogManager::Impl& LogManager::get() {
@@ -28,13 +29,21 @@ namespace falling {
 		return get().current_log_level;
 	}
 	
+	bool LogManager::stdio_echo_enabled() {
+		return get().stdio_echo;
+	}
+	
+	void LogManager::set_stdio_echo_enabled(bool e) {
+		get().stdio_echo = e;
+	}
+	
 	void LogManager::log(const LogEntry& entry) {
 		if (entry.level <= current_log_level()) {
 			get().on_log(entry);
 			
-#if !defined(DEBUG)
-			if (get().on_log.num_connections() == 0) {
-#endif
+			bool stdio_echo = get().stdio_echo;
+			
+			if (stdio_echo) {
 				auto io = entry.level == LogLevelInformation ? stdout : stderr;
 				switch (entry.level) {
 					case LogLevelNone: break;
@@ -47,9 +56,7 @@ namespace falling {
 				String str = entry.ss.string(scratch);
 				fwrite(str.data(), str.size(), 1, io);
 				fwrite("\n", 1, 1, io);
-#if !defined(DEBUG)
 			}
-#endif
 		}
 	}
 }

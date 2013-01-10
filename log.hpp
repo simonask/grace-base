@@ -53,6 +53,8 @@ namespace falling {
 		static void log(const LogEntry& entry);
 		static Signal<const LogEntry&>& on_log();
 		static LogLevel& current_log_level();
+		static bool stdio_echo_enabled();
+		static void set_stdio_echo_enabled(bool e);
 	private:
 		struct Impl;
 		static Impl& get();
