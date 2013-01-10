@@ -43,4 +43,14 @@ namespace falling {
 		}
 		return String::NPos;
 	}
+	
+	size_t rfind(StringRef str, char needle) {
+		if (str.size() == 0) return String::NPos;
+		for (ssize_t i = str.size()-1; i >= 0; --i) {
+			if (str[i] == needle) {
+				return i;
+			}
+		}
+		return String::NPos;
+	}
 }
