@@ -13,6 +13,7 @@
 #include "base/basic.hpp"
 #include "base/iterators.hpp"
 #include "base/array_ref.hpp"
+#include "base/maybe.hpp"
 
 #include <algorithm>
 
@@ -43,11 +44,13 @@ namespace falling {
 	class Map {
 	public:
 		using Self = Map<Key,Value,Cmp>;
+		using mapped_type = Value;
+		using key_type = const Key;
 		Map(IAllocator& alloc = default_allocator());
 		Map(const Self&, IAllocator& alloc = default_allocator());
 		Map(Self&& other);
 		Map(ArrayRef<Key> keys, ArrayRef<Value> values, IAllocator& alloc = default_allocator());
-		Map(std::initializer_list<Pair<Key, Value>> list, IAllocator& alloc);
+		Map(std::initializer_list<Pair<Key, Value>> list, IAllocator& alloc = default_allocator());
 		
 		IAllocator& allocator() const;
 		size_t size() const;
@@ -82,9 +85,11 @@ namespace falling {
 		const_iterator end() const;
 		
 		iterator erase(iterator it);
+		template <typename ComparableKey>
+		iterator erase(const ComparableKey& key);
 		
 		template <typename InputIterator>
-		iterator insert(InputIterator a, InputIterator b);
+		void insert(InputIterator a, InputIterator b);
 		template <typename InputIterator>
 		iterator insert_move(InputIterator a, InputIterator b);
 		template <typename ComparableAndConvertibleKey = Key>
@@ -148,6 +153,8 @@ namespace falling {
 			return *this;
 		}
 		
+		ValueType& value() const { return *value_it_; }
+		
 		PairType get() const        { return PairType{*key_it_, *value_it_}; }
 		PairType operator->() const { return get(); }
 		PairType operator*() const  { return get(); }
@@ -164,6 +171,11 @@ namespace falling {
 		template <bool B>
 		bool operator!=(const MapIteratorImpl<Key,Value,B>& other) const {
 			return !(*this == other);
+		}
+		
+		// XXX: This is provided as an optimization for insertion, not for general purpose.
+		ptrdiff_t operator-(const Self& other) const {
+			return key_it_ - other.key_it_;
 		}
 	private:
 		KeyIterator key_it_;
@@ -320,7 +332,7 @@ namespace falling {
 		if (found == end()) {
 			found = set(key, V());
 		}
-		return found->second;
+		return found.value();
 	}
 	
 	template <typename K, typename V, typename C>
@@ -353,11 +365,40 @@ namespace falling {
 		return const_iterator(keys_ + size_, values_ + size_);
 	}
 	
+	template <typename InputIterator> struct GetIteratorDistanceTypeIfSupported;
+	template <typename InputIterator> struct GetIteratorDistanceTypeIfSupported {
+		using DiffType = decltype(InputIterator() - InputIterator());
+	};
+	
+	
+	template <typename IteratorCategory, typename Iterator> struct GetIteratorDistanceIfSupported;
+	template <typename Iterator> struct GetIteratorDistanceIfSupported<std::random_access_iterator_tag, Iterator> {
+		using DiffType = typename std::iterator_traits<Iterator>::difference_type;
+		static DiffType distance(Iterator a, Iterator b) {
+			return b - a;
+		}
+	};
+	template <typename IteratorCategory, typename Iterator> struct GetIteratorDistanceIfSupported {
+		using DiffType = size_t;
+		static DiffType distance(Iterator a, Iterator b) {
+			return SIZE_MAX;
+		}
+	};
+	
+	template <typename AnyIterator>
+	auto iterator_distance_if_supported(AnyIterator a, AnyIterator b)
+	-> typename GetIteratorDistanceIfSupported<typename std::iterator_traits<AnyIterator>::iterator_category, AnyIterator>::DiffType
+	{
+		return GetIteratorDistanceIfSupported<typename std::iterator_traits<AnyIterator>::iterator_category, AnyIterator>::distance(a, b);
+	}
+	
 	template <typename K, typename V, typename C>
 	template <typename InputIterator>
-	typename Map<K,V,C>::iterator Map<K,V,C>::insert(InputIterator a, InputIterator b) {
-		size_t n = b - a;
-		reserve(size_ + n); // May overallocate because keys in a...b may already exist in the map.
+	void Map<K,V,C>::insert(InputIterator a, InputIterator b) {
+		auto n = iterator_distance_if_supported(a, b);
+		if (n != SIZE_MAX) {
+			reserve(size_ + n); // May overallocate because keys in a...b may already exist in the map.
+		}
 		for (auto it = a; it != b; ++it) {
 			insert_one(it->first, it->second);
 		}
@@ -403,8 +444,8 @@ namespace falling {
 				new(values_ + size_) V;
 				
 				// shift existing values by one
-				std::move_backward(keys_,   keys_   + size_, keys_   + size_ + 1);
-				std::move_backward(values_, values_ + size_, values_ + size_ + 1);
+				std::move_backward(keys_ + insert_idx,   keys_   + size_, keys_   + size_ + 1);
+				std::move_backward(values_ + insert_idx, values_ + size_, values_ + size_ + 1);
 				++size_;
 				
 				// assign new key and value
@@ -434,7 +475,7 @@ namespace falling {
 		if (found == keys_ + size_ || *found != key) {
 			return end();
 		} else {
-			size_t idx = keys_ - found;
+			size_t idx = found - keys_;
 			return iterator(found, values_ + idx);
 		}
 	}
@@ -470,6 +511,42 @@ namespace falling {
 			alloc_size_ = (uint32)new_size;
 		}
 	}
+	
+	template <typename K, typename V, typename C>
+	template <typename ComparableKey>
+	typename Map<K,V,C>::iterator Map<K,V,C>::erase(const ComparableKey& key) {
+		auto it = find(key);
+		if (it != end()) {
+			return erase(it);
+		}
+		return end();
+	}
+	
+	template <typename K, typename V, typename C>
+	typename Map<K,V,C>::iterator Map<K,V,C>::erase(iterator it) {
+		K* k = const_cast<K*>(&it->first);
+		V* v = &it->second;
+		ASSERT(k >= keys_ && k < keys_ + size_); // iterator from another map!
+		ASSERT(v >= values_ && v < values_ + size_); // iterator from another map!
+		size_t idx = k - keys_;
+		std::move(k + 1, keys_ + size_, k);
+		std::move(v + 1, values_ + size_, v);
+		--size_;
+		keys_[size_].~K();
+		values_[size_].~V();
+		return iterator(keys_ + idx, values_ + idx);
+	}
+}
+
+namespace std {
+	template <typename Key, typename Value, bool IsConst>
+	struct iterator_traits<falling::MapIteratorImpl<Key, Value, IsConst>> {
+		using difference_type = ptrdiff_t;
+		using value_type = typename falling::MapIteratorImpl<Key, Value, IsConst>::PairType;
+		using pointer = value_type*;
+		using reference = value_type&;
+		using iterator_category = std::random_access_iterator_tag;
+	};
 }
 
 #endif
