@@ -26,8 +26,10 @@ namespace falling {
 	StringRef substr(StringRef str, size_t pos, size_t len) {
 		size_t begin = pos;
 		if (begin > str.size()) begin = str.size();
-		size_t end = pos + len;
-		if (end > str.size()) end = str.size();
+		if (len > str.size() - begin) {
+			len = str.size() - begin;
+		}
+		size_t end = begin + len;
 		return StringRef(str.data() + begin, str.data() + end);
 	}
 	
