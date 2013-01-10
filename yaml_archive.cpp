@@ -37,7 +37,7 @@ namespace falling {
 			
 			ArchiveNode* root() const { return roots.size() ? roots[0] : nullptr; }
 			ArchiveNode* top() const { return stack.back().first; }
-			const String& top_key() const { return stack.back().second; }
+			StringRef top_key() const { return stack.back().second; }
 			String& top_key() { return stack.back().second; }
 			
 			StateType state() const {
@@ -249,7 +249,7 @@ namespace falling {
 				yaml_emitter_emit(emitter, &event);
 			}
 			
-			void emit_string(const String& str) {
+			void emit_string(StringRef str) {
 				yaml_event_t event;
 				yaml_scalar_event_initialize(&event, nullptr, nullptr, (yaml_char_t*)str.data(), (int)str.size(), true, true, YAML_ANY_SCALAR_STYLE);
 				yaml_emitter_emit(emitter, &event);

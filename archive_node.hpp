@@ -68,7 +68,7 @@ struct ArchiveNode {
 	
 	const std::map<String, ArchiveNode*>& internal_map() const { return map_; }
 	std::map<String, ArchiveNode*>& internal_map() { return map_; }
-	const String& internal_string() const { return string_value; }
+	StringRef internal_string() const { return string_value; }
 	const Array<ArchiveNode*>& internal_array() const { return array_; }
 	Array<ArchiveNode*>& internal_array() { return array_; }
 	Archive& archive() const { return archive_; }

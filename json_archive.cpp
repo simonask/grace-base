@@ -37,7 +37,7 @@ static void print_indentation(OutputStream& oss, int level) {
 	}
 }
 
-static void print_string(OutputStream& oss, const String& str) {
+static void print_string(OutputStream& oss, StringRef str) {
 	FormattedStream os(oss);
 	// TODO: Escape
 	os << '"';

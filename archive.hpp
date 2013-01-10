@@ -28,8 +28,8 @@ struct Archive {
 	virtual ArchiveNode* make(NodeType type = NodeType::Empty) = 0;
 	virtual const ArchiveNode& empty() const = 0;
 	
-	const ArchiveNode& operator[](const String& key) const;
-	ArchiveNode& operator[](const String& key);
+	const ArchiveNode& operator[](StringRef key) const;
+	ArchiveNode& operator[](StringRef key);
 	
 	IAllocator& allocator() const { return allocator_; }
 protected:

@@ -7,11 +7,11 @@
 #include "serialization/deserialize_object.hpp"
 
 namespace falling {
-	ArchiveNode& Archive::operator[](const String& key) {
+	ArchiveNode& Archive::operator[](StringRef key) {
 		return root()[key];
 	}
 	
-	const ArchiveNode& Archive::operator[](const String& key) const {
+	const ArchiveNode& Archive::operator[](StringRef key) const {
 		return root()[key];
 	}
 }
