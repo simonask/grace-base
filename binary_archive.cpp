@@ -65,7 +65,7 @@ namespace falling {
 			case ArchiveNodeType::Map: {
 				uint32 map_length = (uint32)map_.size();
 				write_bytes(os, &map_length);
-				for (auto& it: map_) {
+				for (auto it: map_) {
 					uint32_t string_length = (uint32)it.first.size();
 					write_bytes(os, &string_length);
 					write_bytes(os, it.first.data(), string_length);

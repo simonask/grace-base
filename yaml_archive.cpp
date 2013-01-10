@@ -32,7 +32,7 @@ namespace falling {
 			
 			std::deque<std::pair<ArchiveNode*, String>> stack; // node and non-empty string if node is a mapping waiting for a value
 			Array<ArchiveNode*> roots;
-			std::map<String, ArchiveNode*> anchors;
+			Map<String, ArchiveNode*> anchors;
 			YAMLParserState(YAMLArchive& archive) : archive(archive) {}
 			
 			ArchiveNode* root() const { return roots.size() ? roots[0] : nullptr; }

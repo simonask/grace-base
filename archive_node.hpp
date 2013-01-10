@@ -3,7 +3,7 @@
 #define ARCHIVE_NODE_HPP_EP8GSONT
 
 #include "base/string.hpp"
-#include <map>
+#include "base/map.hpp"
 //#include <iostream>
 
 #include "serialization/archive_node_type.hpp"
@@ -66,8 +66,8 @@ struct ArchiveNode {
 	ArchiveNode& array_push();
 	size_t array_size() const { return array_.size(); }
 	
-	const std::map<String, ArchiveNode*>& internal_map() const { return map_; }
-	std::map<String, ArchiveNode*>& internal_map() { return map_; }
+	const Map<String, ArchiveNode*>& internal_map() const { return map_; }
+	Map<String, ArchiveNode*>& internal_map() { return map_; }
 	StringRef internal_string() const { return string_value; }
 	const Array<ArchiveNode*>& internal_array() const { return array_; }
 	Array<ArchiveNode*>& internal_array() { return array_; }
@@ -87,7 +87,7 @@ protected:
 	Type type_;
 public:
 	// TODO: Use an 'any'/'variant' type for the following:
-	std::map<String, ArchiveNode*> map_;
+	Map<String, ArchiveNode*> map_;
 	Array<ArchiveNode*> array_;
 	String string_value;
 	union {

@@ -63,7 +63,7 @@ namespace {
 	};
 	
 	void merge_archive_node_map(ArchiveNode& into, const ArchiveNode& from) {
-		for (auto& pair: from.internal_map()) {
+		for (auto pair: from.internal_map()) {
 			into.internal_map()[pair.first] = pair.second;
 		}
 	}
@@ -95,7 +95,7 @@ namespace {
 				break;
 			}
 			case ArchiveNodeType::Map: {
-				for (auto& it: from.internal_map()) {
+				for (auto it: from.internal_map()) {
 					ArchiveNode& n = to[it.first];
 					copy_archive_node(n, *it.second);
 				}

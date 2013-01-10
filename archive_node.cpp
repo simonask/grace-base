@@ -39,7 +39,7 @@ ArchiveNode& ArchiveNode::operator[](size_t idx) {
 
 const ArchiveNode& ArchiveNode::operator[](StringRef key) const {
 	if (type() != Type::Map) return archive_.empty();
-	return *find_or(map_, String(key), &archive_.empty());
+	return *find_or(map_, key, &archive_.empty());
 }
 
 ArchiveNode& ArchiveNode::operator[](StringRef key) {
