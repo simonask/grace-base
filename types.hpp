@@ -11,6 +11,7 @@
 
 #include "type/boolean_type.hpp"
 #include "type/array_type.hpp"
+#include "type/map_type.hpp"
 #include "type/maybe_type.hpp"
 #include "type/color_type.hpp"
 #include "type/vector_type.hpp"
