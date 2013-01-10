@@ -64,7 +64,7 @@ namespace falling {
 		reset();
 	}
 	
-	const String& PropertyAnimator::property() const {
+	StringRef PropertyAnimator::property() const {
 		return property_name_;
 	}
 	

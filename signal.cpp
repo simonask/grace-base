@@ -19,11 +19,11 @@ String SignalTypeBase::build_signal_name(ArrayRef<const Type*> signature) {
 	return ss.str();
 }
 	
-	void nonexistent_slot_warning(ObjectPtr<> receiver, const String& slot_name) {
+	void nonexistent_slot_warning(ObjectPtr<> receiver, StringRef slot_name) {
 		Warning() << "Object " << receiver->object_id() << " dot not have a slot named " << slot_name << ".";
 	}
 	
-	void slot_type_mismatch_warning(ObjectPtr<> receiver, const String& slot_name, String expected_signature_description, String signature_description) {
+	void slot_type_mismatch_warning(ObjectPtr<> receiver, StringRef slot_name, String expected_signature_description, String signature_description) {
 		Warning() << "Tried to connect signal to slot '" << slot_name << "', which has a different signature. Expected " << expected_signature_description << ", got " << signature_description << ".";
 	}
 	

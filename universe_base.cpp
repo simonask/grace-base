@@ -49,7 +49,7 @@ namespace falling {
 		ASSERT(false); // NIY
 		UNREACHABLE();
 	}
-	void error_category_already_initialized_with_different_type(const String& name) {
+	void error_category_already_initialized_with_different_type(StringRef name) {
 		Error() << "Object category has already been initialized with a different type: " << name;
 	}
 	

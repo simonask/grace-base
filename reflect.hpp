@@ -26,7 +26,7 @@ struct ObjectTypeBuilder {
 	template <typename SuperClass>
 	Self& super() { return super(get_type<SuperClass>()); }
 	
-	void check_attribute_name_(const String& name) {
+	void check_attribute_name_(StringRef name) {
 		const char* reserved_names[] = {"class", "aspects"};
 		for (auto it: reserved_names) {
 			if (name == StringRef(it)) {

@@ -58,7 +58,7 @@ namespace falling {
 		Array<DeferredAttributeDeserialization> deferred_;
 	};
 	
-	void error_category_already_initialized_with_different_type(const String& name);
+	void error_category_already_initialized_with_different_type(StringRef name);
 	void warn_attempt_to_get_objects_of_unindexed_type(const ObjectTypeBase*);
 	
 	template <typename T, size_t MemberOffset>

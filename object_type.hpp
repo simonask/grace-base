@@ -16,7 +16,7 @@ namespace falling {
 
 struct ObjectTypeBase : StructuredType {
 	String name() const override { return name_; }
-	const String& description() const { return description_; }
+	StringRef description() const { return description_; }
 	const ObjectTypeBase* super() const;
 	
 	template <typename T, typename R, typename... Args>
@@ -72,7 +72,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	void deserialize(T& object, const ArchiveNode&, IUniverse&) const;
 	void serialize(const T& object, ArchiveNode&, IUniverse&) const;
 	
-	const ISlot* find_slot_by_name(const String& name) const {
+	const ISlot* find_slot_by_name(StringRef name) const {
 		for (auto& it: slots_) {
 			if (it->name() == name) return it;
 		}

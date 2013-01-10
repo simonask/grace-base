@@ -45,7 +45,7 @@ namespace falling {
 		
 		ObjectPtr<> object() const;
 		void set_object(ObjectPtr<> obj);
-		const String& property() const;
+		StringRef property() const;
 		void set_property(String name);
 		
 		
