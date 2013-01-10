@@ -1,13 +1,13 @@
 #include "type/type_registry.hpp"
 #include "object/object_type.hpp"
 #include "base/basic.hpp"
-#include <map>
+#include "base/map.hpp"
 
 namespace falling {
 
 struct TypeRegistry::Impl {
 	Array<const ObjectTypeBase*> types;
-	std::map<String, size_t> type_map;
+	Map<String, size_t> type_map;
 };
 
 TypeRegistry::Impl* TypeRegistry::impl() {

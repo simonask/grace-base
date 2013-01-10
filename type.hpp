@@ -7,7 +7,7 @@
 #include "base/vector.hpp"
 #include "memory/static_allocator.hpp"
 #include "base/string.hpp"
-#include <map>
+#include "base/map.hpp"
 #include "io/string_stream.hpp"
 #include <algorithm>
 #include <limits.h>
