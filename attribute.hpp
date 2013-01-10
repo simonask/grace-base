@@ -161,7 +161,7 @@ struct MethodAttribute : AttributeForObjectOfType<ObjectType, MemberType, Getter
 	}
 	
  	void set(ObjectType& object, MemberType value) const {
-		(object.*setter_)(std::move(value));
+		(object.*setter_)(SetterArgumentType(std::move(value)));
 	}
 	
 	GetterPointer getter_;

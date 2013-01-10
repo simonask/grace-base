@@ -20,7 +20,7 @@ void TypeRegistry::add(const ObjectTypeBase* type) {
 	impl()->types.push_back(type);
 }
 
-const ObjectTypeBase* TypeRegistry::get(const String& name) {
+const ObjectTypeBase* TypeRegistry::get(StringRef name) {
 	size_t idx = find_or(impl()->type_map, name, SIZE_T_MAX);
 	if (idx >= impl()->types.size()) {
 		return nullptr;

@@ -16,7 +16,7 @@ public:
 	static void add(const ObjectTypeBase* type);
 	static ArrayRef<const ObjectTypeBase*> object_types();
 	
-	static const ObjectTypeBase* get(const String& name);
+	static const ObjectTypeBase* get(StringRef name);
 private:
 	TypeRegistry();
 	struct Impl;

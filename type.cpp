@@ -132,7 +132,7 @@ bool EnumType::name_for_value(ssize_t value, String& name) const {
 	return false;
 }
 
-bool EnumType::value_for_name(const String& name, ssize_t& out_value) const {
+bool EnumType::value_for_name(StringRef name, ssize_t& out_value) const {
 	for (auto& tuple: entries_) {
 		if (std::get<0>(tuple) == name) {
 			out_value = std::get<1>(tuple);

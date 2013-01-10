@@ -17,7 +17,7 @@ struct MaybeType : TypeFor<Maybe<T>> {
 	void deserialize(Maybe<T>& place, const ArchiveNode&, IUniverse&) const;
 	void serialize(const Maybe<T>& place, ArchiveNode&, IUniverse&) const;
 	
-	const String& name() const { return name_; }
+	StringRef name() const { return name_; }
 	
 	const Type* inner_type() const { return get_type<T>(); }
 private:

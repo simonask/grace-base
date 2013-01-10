@@ -158,7 +158,7 @@ struct EnumType : SimpleType {
 	ssize_t max() const { return max_; }
 	ssize_t min() const { return min_; }
 	bool name_for_value(ssize_t value, String& out_name) const;
-	bool value_for_name(const String& name, ssize_t& out_value) const;
+	bool value_for_name(StringRef name, ssize_t& out_value) const;
 	
 	void deserialize_raw(byte*, const ArchiveNode&, IUniverse&) const override;
 	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
