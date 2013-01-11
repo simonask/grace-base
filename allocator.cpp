@@ -153,7 +153,7 @@ namespace falling {
 	void* SystemAllocator::allocate(size_t nbytes, size_t alignment) {
 		void* ptr = system_alloc(nbytes, alignment);
 		usage_ += system_alloc_size(ptr);
-		return system_alloc(nbytes, alignment);
+		return ptr;
 	}
 		
 	void SystemAllocator::free(void* ptr) {
