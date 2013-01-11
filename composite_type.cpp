@@ -206,7 +206,7 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, IUnivers
 	void resolve_exposed_attribute(const IAttribute*& inout_attr, ObjectPtr<>& inout_object) {
 		bool is_real = false;
 		while (true) {
-			const ExposedAttribute* exattr = dynamic_cast<const ExposedAttribute*>(exattr);
+			const ExposedAttribute* exattr = dynamic_cast<const ExposedAttribute*>(inout_attr);
 			if (exattr != nullptr) {
 				const CompositeType* ct = dynamic_cast<const CompositeType*>(inout_object->object_type());
 				ASSERT(ct != nullptr); // ExposedAttribute on non-composite object.
