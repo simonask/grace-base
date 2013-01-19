@@ -28,6 +28,7 @@ struct Type {
 	
 	virtual String name() const = 0;
 	virtual size_t size() const = 0;
+	virtual size_t alignment() const = 0;
 	virtual bool is_abstract() const { return false; }
 	virtual bool is_copy_constructible() const { return true; }
 	virtual bool is_move_constructible() const { return true; }
@@ -70,6 +71,7 @@ struct TypeFor : TypeType {
 		this->move_construct_unless_abstract(to, std::move(*original));
 	}
 	size_t size() const { return sizeof(ObjectType); }
+	size_t alignment() const { return alignof(ObjectType); }
 	bool is_copy_constructible() const { return IsCopyConstructibleNonRef<ObjectType>::Value; }
 	bool is_move_constructible() const { return IsMoveConstructibleNonRef<ObjectType>::Value; }
 	
@@ -124,6 +126,7 @@ struct VoidType : Type {
 	static const char Name[];
 	String name() const override { return Name; }
 	size_t size() const override { return 0; }
+	size_t alignment() const override { return 0; }
 	bool is_abstract() const override { return true; }
 private:
 	VoidType() {}
@@ -138,6 +141,7 @@ struct SimpleType : Type {
 	void move_construct(byte* place, byte* from) const { copy_construct(place, from); }
 	
 	size_t size() const override { return width_; }
+	size_t alignment() const override { return width_; }
 	size_t num_components() const { return width_ / component_width_; }
 	bool is_signed() const { return is_signed_; }
 	virtual void* cast(const SimpleType* to, void* o) const = 0;
