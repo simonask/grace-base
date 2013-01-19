@@ -36,6 +36,7 @@ namespace falling {
         
         void push_back(const T& x);
         void push_back(T&& x);
+		void pop_back();
         void clear();
         T& front();
         const T& front() const;
@@ -157,6 +158,14 @@ namespace falling {
 	template <typename T>
 	void ArrayList<T>::push_back(T&& object) {
 		insert_move(&object, &object + 1);
+	}
+	
+	template <typename T>
+	void ArrayList<T>::pop_back() {
+		if (size() == 0) {
+			throw IndexOutOfBoundsException();
+		}
+		erase(end()-1);
 	}
 	
 	template <typename T>
@@ -283,6 +292,38 @@ namespace falling {
     }
 	
 	template <typename T>
+	T& ArrayList<T>::front() {
+		if (size() == 0) {
+			throw IndexOutOfBoundsException();
+		}
+		return *begin();
+	}
+	
+	template <typename T>
+	const T& ArrayList<T>::front() const {
+		if (size() == 0) {
+			throw IndexOutOfBoundsException();
+		}
+		return *begin();
+	}
+	
+	template <typename T>
+	T& ArrayList<T>::back() {
+		if (size() == 0) {
+			throw IndexOutOfBoundsException();
+		}
+		return *(end()-1);
+	}
+	
+	template <typename T>
+	const T& ArrayList<T>::back() const {
+		if (size() == 0) {
+			throw IndexOutOfBoundsException();
+		}
+		return *(end()-1);
+	}
+	
+	template <typename T>
 	void ArrayList<T>::resize(size_t new_size, T filler) {
 		if (new_size > size_) {
 			while (size_ < new_size) {
@@ -373,7 +414,7 @@ namespace falling {
 	
 	template <typename T>
 	void ArrayList<T>::delete_and_remove_block(BlockIterator b) {
-		ASSERT(b->current != b->begin); // Block has live objects.
+		ASSERT(b->current == b->begin); // Block has live objects.
 		Block* ptr = b.get();
 		blocks_.erase(b);
 		allocator_.free_large(ptr, (byte*)ptr->end - (byte*)ptr);
@@ -522,7 +563,7 @@ namespace falling {
 			size_t remaining = n;
 			while (remaining > 0) {
 				size_t begin_to_current = current_ - block_->begin;
-				if (remaining < begin_to_current) {
+				if (remaining <= begin_to_current) {
 					current_ -= remaining;
 					remaining = 0;
 				} else {
