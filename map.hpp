@@ -14,6 +14,7 @@
 #include "base/iterators.hpp"
 #include "base/array_ref.hpp"
 #include "base/maybe.hpp"
+#include "base/pair.hpp"
 
 #include <algorithm>
 
@@ -22,18 +23,6 @@ namespace falling {
 		template <typename A, typename B>
 		bool operator()(const A& a, const B& b) const {
 			return a < b;
-		}
-	};
-	
-	template <typename Key, typename Value>
-	struct Pair {
-		Key first;
-		Value second;
-		
-		// This is necessary for operator-> on map iterators.
-		// XXX: Is there a nicer way to do this?
-		Pair<Key, Value>* operator->() {
-			return this;
 		}
 	};
 	
