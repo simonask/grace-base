@@ -9,9 +9,9 @@
 #include "serialization/yaml_archive.hpp"
 #include "io/util.hpp"
 #include "base/parse.hpp"
+#include "base/pair.hpp"
 
 #include <yaml.h>
-#include <deque>
 #include <stdexcept>
 
 namespace falling {
@@ -30,7 +30,7 @@ namespace falling {
 				Sequence,
 			};
 			
-			std::deque<std::pair<ArchiveNode*, String>> stack; // node and non-empty string if node is a mapping waiting for a value
+			ArrayList<Pair<ArchiveNode*, String>> stack; // node and non-empty string if node is a mapping waiting for a value
 			Array<ArchiveNode*> roots;
 			Map<String, ArchiveNode*> anchors;
 			YAMLParserState(YAMLArchive& archive) : archive(archive) {}
@@ -55,7 +55,7 @@ namespace falling {
 			
 			void push(ArchiveNode* node) {
 				if (node->type() == ArchiveNodeType::Array || node->type() == ArchiveNodeType::Map) {
-					stack.push_back(std::make_pair(node, ""));
+					stack.push_back(Pair<ArchiveNode*,String>{node, String("")});
 				} else {
 					throw YAMLParserError("Invalid node type for parser stack.");
 				}
