@@ -18,7 +18,7 @@ namespace falling {
 		virtual const Type* key_type() const = 0;
 		virtual const Type* value_type() const = 0;
 	protected:
-		String build_map_type_name();
+		String build_map_type_name() const;
 	};
 	
 	template <typename K, typename V, typename Cmp>

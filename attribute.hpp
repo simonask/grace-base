@@ -80,16 +80,14 @@ namespace falling {
 		}
 	
 		bool set_any(Object* object, const Any& value) const {
-			if (value.is_a<MemberType>()) {
-				bool result = false;
-				value.get<MemberType>().map([&](const MemberType& v) {
-					set_polymorphic(object, v);
-					result = true;
-				});
-				return result;
-			}
-			detail::warn_set_any_wrong_type(name_, get_type<MemberType>(), value.type());
-			return false;
+			bool result = false;
+			value.when<MemberType>([&](const MemberType& v) {
+				set_polymorphic(object, v);
+				result = true;
+			}).otherwise([&]() {
+				detail::warn_set_any_wrong_type(name_, get_type<MemberType>(), value.type());
+			});
+			return result;
 		}
 	
 		bool get_polymorphic(Object* object, MemberType& out_value) const {

@@ -10,7 +10,7 @@
 #include "io/string_stream.hpp"
 
 namespace falling {
-	String MapType::build_map_type_name() {
+	String MapType::build_map_type_name() const {
 		StringStream ss;
 		ss << "Map<" << key_type()->name() << ", " << value_type()->name() << '>';
 		return ss.string();
