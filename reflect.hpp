@@ -37,14 +37,14 @@ struct ObjectTypeBuilder {
 	}
 	
 	template <typename MemberType>
-	Self& property(MemberType T::* member, String name, String description/*, MemberType default_value = MemberType()*/) {
+	Self& property(MemberType T::* member, StringRef name, StringRef description/*, MemberType default_value = MemberType()*/) {
 		check_attribute_name_(name);
 		type_->properties_.push_back(new_static MemberAttribute<T, MemberType>(static_allocator(), std::move(name), std::move(description), member));
 		return *this;
 	}
 	
 	template <typename GetterReturnType, typename SetterArgumentType, typename SetterReturnType>
-	Self& property(GetterReturnType (T::*getter)() const, SetterReturnType (T::*setter)(SetterArgumentType), String name, String description) {
+	Self& property(GetterReturnType (T::*getter)() const, SetterReturnType (T::*setter)(SetterArgumentType), StringRef name, StringRef description = "") {
 		check_attribute_name_(name);
 		typedef typename RemoveConstRef<GetterReturnType>::Type RawType;
 		type_->properties_.push_back(new_static MethodAttribute<T, RawType, GetterReturnType, SetterArgumentType, SetterReturnType>(static_allocator(), std::move(name), std::move(description), getter, setter));
@@ -52,18 +52,18 @@ struct ObjectTypeBuilder {
 	}
 	
 	template <typename... Args>
-	Self& signal(Signal<Args...> T::* member, String name, String description) {
+	Self& signal(Signal<Args...> T::* member, StringRef name, StringRef description = "") {
 		return property(member, name, description);
 	}
 	
 	template <typename R, typename... Args>
-	Self& slot(R(T::*function)(Args...), String name, String description) {
+	Self& slot(R(T::*function)(Args...), StringRef name, StringRef description = "") {
 		type_->slots_.push_back(new_static SlotForTypeWithSignature<T, R, Args...>(static_allocator(), std::move(name), std::move(description), function));
 		return *this;
 	}
 	
 	template <typename R, typename... Args>
-	Self& slot(R(T::*function)(Args...) const, String name, String description) {
+	Self& slot(R(T::*function)(Args...) const, StringRef name, StringRef description = "") {
 		type_->slots_.push_back(new_static SlotForTypeWithSignature<const T, R, Args...>(static_allocator(), std::move(name), std::move(description), function));
 		return *this;
 	}
