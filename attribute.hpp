@@ -36,10 +36,10 @@ namespace falling {
 
 	template <typename ObjectType, typename MemberType, typename GetterType = MemberType>
 	struct AttributeForObjectOfType : AttributeOfType<MemberType> {
-		String name_;
-		String description_;
+		StringRef name_;
+		StringRef description_;
 	
-		AttributeForObjectOfType(IAllocator& alloc, StringRef name, StringRef description) : name_(name, alloc), description_(description, alloc) {}
+		AttributeForObjectOfType(IAllocator& alloc, StringRef name, StringRef description) : name_(name), description_(description) {}
 		
 		StringRef name() const { return name_; }
 		StringRef description() const { return description_; }
