@@ -306,8 +306,10 @@ namespace falling {
 		ASSERT(stored_type_ != nullptr);
 		size_t sz = stored_type_->size();
 		if (sz > Size) {
-			byte* memory = (byte*)allocator_.allocate(sz, sz); // TODO: Type::alignment support?
+			byte* memory = (byte*)allocator_.allocate(sz, stored_type_->alignment()); // TODO: Type::alignment support?
 			*reinterpret_cast<byte**>(&memory_) = memory;
+		} else {
+			ASSERT(stored_type_->alignment() <= Alignment);
 		}
 	}
 	
