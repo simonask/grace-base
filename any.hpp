@@ -19,8 +19,8 @@
 namespace falling {
 	class Any {
 	public:
-		static const size_t Size = 24;
-		static const size_t Alignment = 32;
+		static const size_t Size = 16;
+		static const size_t Alignment = 16;
 		
 		Any();
 		explicit Any(IAllocator& alloc);
@@ -69,10 +69,10 @@ namespace falling {
 		template <typename T>
 		T unsafe_get() const;
 	private:
-		IAllocator& allocator_;
 		typedef typename std::aligned_storage<Size, Alignment>::type Storage;
 		Storage memory_;
 		const Type* stored_type_ = nullptr;
+		IAllocator& allocator_;
 		
 		void allocate_storage();
 		void deallocate_storage();
