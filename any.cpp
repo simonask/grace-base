@@ -9,6 +9,7 @@
 #include "base/any.hpp"
 #include "serialization/archive_node.hpp"
 #include "type/array_type.hpp"
+#include "type/map_type.hpp"
 
 namespace falling {
 	void AnyType::deserialize(Any &place, const ArchiveNode &n, IUniverse &u) const {
@@ -44,17 +45,14 @@ namespace falling {
 				break;
 			}
 			case ArchiveNodeType::Map: {
-				ASSERT(false); // MapType not implemented yet!
-				UNREACHABLE();
-				break;
-				/*Map<String, Any> v;
+				Map<String, Any> v;
 				for (auto pair: n.internal_map()) {
 					Any x;
 					deserialize(x, *pair.second, u);
 					v[pair.first] = move(x);
 				}
 				place = move(v);
-				break;*/
+				break;
 			}
 		}
 	}
