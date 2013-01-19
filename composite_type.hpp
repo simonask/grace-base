@@ -85,6 +85,7 @@ struct CompositeType : StructuredType {
 	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const override;
 	String name() const override { return name_; }
 	size_t size() const override { return size_; }
+	size_t alignment() const override { return alignof(Object); }
 	
 	// DerivedType interface
 	size_t num_elements() const { return aspects_.size(); }
