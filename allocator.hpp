@@ -28,7 +28,8 @@ namespace falling {
 		IAllocator() {}
 		virtual ~IAllocator() {}
 		virtual void* allocate(size_t nbytes, size_t alignment) = 0;
-		virtual void free(void* ptr) = 0; // Should not call finalizer!
+		virtual void* reallocate(void* ptr, size_t old_size, size_t new_size, size_t alignment) = 0;
+		virtual void free(void* ptr, size_t nbytes) = 0; // Should not call finalizer!
         virtual void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) = 0;
         virtual void free_large(void* ptr, size_t actual_size) = 0;
 		virtual size_t usage() const = 0;
@@ -46,7 +47,9 @@ namespace falling {
 	public:
 		~SystemAllocator();
 		void* allocate(size_t nbytes, size_t alignment) final;
-		void free(void* ptr) final;
+		void* reallocate(void* ptr, size_t old_size, size_t new_size, size_t alignment) final;
+		void free(void* ptr, size_t nbytes) final;
+		void free(void* ptr); // simple version that doesn't poison memory.
         void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) final;
         void free_large(void* ptr, size_t actual_size) final;
 		
@@ -68,7 +71,8 @@ namespace falling {
 		~LinearAllocator();
 		
 		void* allocate(size_t nbytes, size_t alignment) final;
-		void free(void* ptr) final;
+		void* reallocate(void* ptr, size_t old_size, size_t new_size, size_t alignment) final;
+		void free(void* ptr, size_t nbytes) final;
         void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) final;
         void free_large(void* ptr, size_t actual_size) final;
 		
@@ -98,7 +102,8 @@ namespace falling {
 		~ScratchAllocator();
 		void* allocate_with_finalizer(size_t nbytes, size_t alignment, void(*finalize)(void*));
 		void* allocate(size_t nbytes, size_t alignment) final;
-		void free(void* ptr) final { /* no-op */ }
+		void* reallocate(void* ptr, size_t old_size, size_t new_size, size_t alignment) final;
+		void free(void* ptr, size_t nbytes) final { /* no-op */ }
         void* allocate_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) final;
         void free_large(void* ptr, size_t actual_size) final { /* no-op */ }
 		
@@ -144,19 +149,14 @@ namespace falling {
 		}
 	}
 	
-	inline void* LinearAllocator::allocate(size_t nbytes, size_t alignment) {
-		intptr_t c = (intptr_t)current_;
-		if (alignment > 1) {
-			c += alignment - ((c % alignment) & ~(alignment-1));
+	
+	inline void* LinearAllocator::reallocate(void *ptr, size_t old_size, size_t new_size, size_t alignment) {
+		void* new_ptr = allocate(new_size, alignment);
+		ASSERT(ptr < new_ptr);
+		if (ptr != nullptr) {
+			::memcpy(new_ptr, ptr, old_size);
 		}
-		current_ = (byte*)c;
-		void* ptr = current_;
-		current_ += nbytes;
-		if (current_ < begin_ || current_ > end_) {
-			throw OutOfMemoryError();
-		}
-		detail::poison_memory((byte*)ptr, (byte*)ptr + nbytes, detail::UNINITIALIZED_MEMORY_PATTERN);
-		return ptr;
+		return new_ptr;
 	}
     
     inline void* LinearAllocator::allocate_large(size_t nbytes, size_t alignment, size_t &out_actually_allocated) {
@@ -164,7 +164,7 @@ namespace falling {
         return allocate(nbytes, alignment);
     }
 	
-	inline void LinearAllocator::free(void*) {
+	inline void LinearAllocator::free(void*, size_t) {
 		// no-op
 	}
     
@@ -187,6 +187,15 @@ namespace falling {
 		last_current_ = base_.current();
 		detail::poison_memory(ptr, ptr + nbytes, detail::UNINITIALIZED_MEMORY_PATTERN);
 		return ptr;
+	}
+	
+	inline void* ScratchAllocator::reallocate(void *ptr, size_t old_size, size_t new_size, size_t alignment) {
+		void* new_ptr = allocate(new_size, alignment);
+		ASSERT(ptr < new_ptr);
+		if (ptr != nullptr) {
+			::memcpy(new_ptr, ptr, old_size);
+		}
+		return new_ptr;
 	}
 	
 	inline void* ScratchAllocator::allocate_with_finalizer(size_t nbytes, size_t alignment, void (*finalize)(void *)) {
@@ -227,13 +236,19 @@ namespace falling {
 		}
 		base_.reset(reset_);
 	}
+	
+	template <typename T>
+	inline void destroy(T* ptr, falling::IAllocator& alloc) {
+		ptr->~T();
+		alloc.free(ptr, sizeof(T));
+	}
 }
 
 inline void* operator new(size_t nbytes) {
-	return falling::default_allocator().allocate(nbytes, 16);
+	return falling::default_allocator().allocate(nbytes, 0);
 }
 inline void* operator new[](size_t nbytes) {
-	return falling::default_allocator().allocate(nbytes, 16);
+	return falling::default_allocator().allocate(nbytes, 0);
 }
 
 inline void operator delete(void* ptr) {
@@ -247,10 +262,6 @@ inline void* operator new(size_t nbytes, falling::IAllocator& alloc, size_t alig
 	return alloc.allocate(nbytes, alignment ? alignment : 1);
 }
 
-template <typename T>
-inline void destroy(T* ptr, falling::IAllocator& alloc) {
-	ptr->~T();
-	alloc.free(ptr);
-}
+
 
 #endif

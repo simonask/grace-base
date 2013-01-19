@@ -16,6 +16,13 @@
 
 #define DETECT_OVERRUN 0
 #define DETECT_REUSE_AFTER_FREE 0
+#if defined(malloc_size)
+#define MALLOC_SIZE ::malloc_size
+#elif defined(_msize)
+#define MALLOC_SIZE ::_msize
+#else
+#undef MALLOC_SIZE
+#endif
 
 namespace falling {
 #if !defined(PAGE_SIZE)
@@ -56,6 +63,16 @@ namespace falling {
 
 
 	namespace {
+		void system_free(void*, size_t = 0);
+		
+		size_t system_alloc_size(void* ptr) {
+#if defined(MALLOC_SIZE)
+			return ptr ? MALLOC_SIZE(ptr) : 0;
+#else
+			return 0;
+#endif
+		}
+		
 		void* system_alloc(size_t nbytes, size_t alignment) {
 #if DETECT_OVERRUN || DETECT_REUSE_AFTER_FREE
 			size_t object_size = PAGE_SIZE;
@@ -72,7 +89,7 @@ namespace falling {
 			::mprotect(guard, PAGE_SIZE, PROT_NONE);
 			return object;
 #else
-			if (alignment < sizeof(void*)*2) {
+			if (alignment <= sizeof(void*)*2) {
 				void* p = ::malloc(nbytes);
 				if (!p)
 					throw OutOfMemoryError();
@@ -94,13 +111,44 @@ namespace falling {
 #endif
 		}
 		
-		void system_free(void* ptr) {
+		void* system_realloc(void* ptr, size_t old_size, size_t new_size, size_t alignment) {
+#if DETECT_OVERRUN || DETECT_REUSE_AFTER_FREE
+			if (old_size < new_size) {
+				void* new_ptr = system_alloc(nbytes, alignment);
+				memcpy(new_ptr, ptr, old_size);
+				system_free(ptr);
+				return new_ptr;
+			} else {
+				return ptr;
+			}
+#else
+			if (alignment <= sizeof(void*)*2) {
+				void* p = ::realloc(ptr, new_size);
+				if (!p) {
+					throw OutOfMemoryError();
+				}
+				// TODO: Register for leak check;
+				return p;
+			} else {
+				if (old_size < new_size) {
+					void* new_ptr = system_alloc(new_size, alignment);
+					memcpy(new_ptr, ptr, old_size);
+					system_free(ptr);
+					return new_ptr;
+				} else {
+					return ptr;
+				}
+			}
+#endif
+		}
+		
+		void system_free(void* ptr, size_t poison_bytes) {
 #if DETECT_OVERRUN || DETECT_REUSE_AFTER_FREE
             void* begin = (void*)((intptr_t)ptr & ~(PAGE_SIZE-1));
             size_t allocated_size = PAGE_SIZE;
 #else
             void* begin = ptr;
-            size_t allocated_size = ::malloc_size(ptr);
+            size_t allocated_size = poison_bytes;
 #endif
             detail::poison_memory((byte*)begin, (byte*)begin + allocated_size, detail::FREED_MEMORY_PATTERN);
             
@@ -111,10 +159,6 @@ namespace falling {
 #else
             ::free(ptr);
 #endif
-		}
-		
-		size_t system_alloc_size(void* ptr) {
-			return ::malloc_size(ptr);
 		}
         
         void* system_alloc_large(size_t nbytes, size_t alignment, size_t& out_actually_allocated) {
@@ -155,11 +199,24 @@ namespace falling {
 		usage_ += system_alloc_size(ptr);
 		return ptr;
 	}
+	
+	void* SystemAllocator::reallocate(void *ptr, size_t old_size, size_t new_size, size_t alignment) {
+		usage_ -= old_size;
+		void* result = system_realloc(ptr, old_size, new_size, alignment);
+		usage_ += new_size;
+		return result;
+	}
 		
 	void SystemAllocator::free(void* ptr) {
 		size_t sz = system_alloc_size(ptr);
 		usage_ -= sz;
 		system_free(ptr);
+	}
+	
+	void SystemAllocator::free(void* ptr, size_t nbytes) {
+		size_t sz = system_alloc_size(ptr);
+		usage_ -= sz;
+		system_free(ptr, nbytes);
 	}
     
     void* SystemAllocator::allocate_large(size_t nbytes, size_t alignment, size_t& out_actual_size) {
@@ -208,6 +265,30 @@ namespace falling {
 			detail::poison_memory(begin_, end_, detail::FREED_MEMORY_PATTERN);
 			::munmap(begin_, end_-begin_);
 		}
+	}
+	
+	void* LinearAllocator::allocate(size_t nbytes, size_t alignment) {
+		intptr_t c = (intptr_t)current_;
+		if (alignment > 1) {
+			alignment = next_pow2(alignment);
+			intptr_t rest = c & (alignment-1);
+			if (rest != alignment) {
+				c += alignment - rest;
+			}
+		}
+		current_ = (byte*)c;
+		void* ptr = current_;
+		current_ += nbytes;
+		if (current_ < begin_ || current_ > end_) {
+			throw OutOfMemoryError();
+		}
+		detail::poison_memory((byte*)ptr, (byte*)ptr + nbytes, detail::UNINITIALIZED_MEMORY_PATTERN);
+		
+		if (alignment) {
+			ASSERT(((intptr_t)ptr & (alignment-1)) == 0);
+		}
+		
+		return ptr;
 	}
 	
 	static byte linear_allocator_mem[sizeof(LinearAllocator)];

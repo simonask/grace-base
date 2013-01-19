@@ -21,7 +21,7 @@ namespace falling {
 		~FixedAllocator() {
 			while (free_list_) {
 				void* tmp = *free_list_;
-				base_.free(free_list_);
+				base_.free(free_list_, Max);
 				free_list_ = (void**)tmp;
 			}
 		}
@@ -39,10 +39,17 @@ namespace falling {
 			}
 		}
 		
-		void free(void* ptr) final {
+		void free(void* ptr, size_t nbytes) final {
+			ASSERT(nbytes <= Max);
 			usage_ -= Max;
 			*(void**)ptr = free_list_;
 			free_list_ = (void**)ptr;
+		}
+		
+		void* reallocate(void* ptr, size_t new_size, size_t old_size, size_t alignment) final {
+			ASSERT(new_size <= Max);
+			ASSERT(alignment <= Alignment);
+			return ptr;
 		}
 		
 		void* allocate_large(size_t nbytes, size_t alignment, size_t& actual) final {
@@ -52,7 +59,7 @@ namespace falling {
 		
 		void free_large(void* ptr, size_t actual_size) final {
 			ASSERT(actual_size <= Max);
-			this->free(ptr);
+			this->free(ptr, actual_size);
 		}
 		
 		size_t usage() const { return usage_; }
