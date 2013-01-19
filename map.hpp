@@ -245,8 +245,8 @@ namespace falling {
 		destruct_range(values_, values_+size_);
 		size_ = 0;
 		if (free_memory) {
-			allocator_.free(keys_);
-			allocator_.free(values_);
+			allocator_.free(keys_, sizeof(K) * alloc_size_);
+			allocator_.free(values_, sizeof(V) * alloc_size_);
 			keys_ = nullptr;
 			values_ = nullptr;
 			alloc_size_ = 0;
@@ -504,8 +504,8 @@ namespace falling {
 				keys_[i].~K();
 				values_[i].~V();
 			}
-			allocator_.free(keys_);
-			allocator_.free(values_);
+			allocator_.free(keys_, sizeof(K) * alloc_size_);
+			allocator_.free(values_, sizeof(V) * alloc_size_);
 			keys_ = new_keys;
 			values_ = new_values;
 			alloc_size_ = (uint32)new_size;

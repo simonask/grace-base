@@ -311,7 +311,7 @@ namespace falling {
 	}
 	
 	inline void String::clear() {
-		allocator_.free((void*)data_);
+		allocator_.free((void*)data_, size_);
 		data_ = nullptr;
 		size_ = 0;
 	}

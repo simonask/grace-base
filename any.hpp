@@ -316,7 +316,7 @@ namespace falling {
 		size_t sz = stored_type_->size();
 		if (sz > Size) {
 			byte* memory = *reinterpret_cast<byte**>(&memory_);
-			allocator_.free(memory);
+			allocator_.free(memory, sz);
 		}
 	}
 }

@@ -207,15 +207,24 @@ void Array<T>::reserve(size_t new_size) {
 		if (new_size*sizeof(T) > 0x2000) { // Allocate precisely as much as needed when above 8K
 			req_size = new_size;
 		} else {
-			while (req_size < new_size) req_size *= 2;
+			// Growth factor: 1.5
+			req_size *= 3;
+			req_size += req_size & 1;
+			req_size /= 2;
 		}
-		T* new_data = (T*)allocator_.allocate(sizeof(T)*req_size, alignof(T));
-		for (size_t i = 0; i < size_; ++i) {
-			new(new_data+i) T(std::move(data_[i]));
-			data_[i].~T();
+		req_size = req_size > new_size ? req_size : new_size;
+		ASSERT(req_size >= new_size);
+		if (std::is_trivially_copyable<T>::value) {
+			data_ = (T*)allocator_.reallocate(data_, sizeof(T) * alloc_size_, sizeof(T) * req_size, alignof(T));
+		} else {
+			T* new_data = (T*)allocator_.allocate(sizeof(T)*req_size, alignof(T));
+			for (size_t i = 0; i < size_; ++i) {
+				new(new_data+i) T(std::move(data_[i]));
+				data_[i].~T();
+			}
+			allocator_.free(data_, sizeof(T) * alloc_size_);
+			data_ = new_data;
 		}
-		allocator_.free(data_);
-		data_ = new_data;
 		alloc_size_ = (uint32)req_size;
 	}
 }
@@ -291,7 +300,7 @@ void Array<T>::clear(bool deallocate) {
 	}
 	size_ = 0;
 	if (deallocate) {
-		allocator_.free(data_);
+		allocator_.free(data_, sizeof(T) * alloc_size_);
 		data_ = nullptr;
 		alloc_size_ = 0;
 	}

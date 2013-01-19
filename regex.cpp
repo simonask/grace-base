@@ -65,7 +65,7 @@ namespace falling {
 	Regex& Regex::operator=(Regex&& other) {
 		if (regex_) {
 			regfree((regex_t*)regex_);
-			allocator().free(regex_);
+			allocator().free(regex_, sizeof(regex_t));
 			regex_ = nullptr;
 		}
 		regex_ = other.regex_;
