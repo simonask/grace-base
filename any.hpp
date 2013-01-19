@@ -17,6 +17,8 @@
 #include <type_traits>
 
 namespace falling {
+	template <bool> struct AnyWhenImpl;
+
 	class Any {
 	public:
 		static const size_t Size = 16;
@@ -59,9 +61,9 @@ namespace falling {
 		void clear();
 		
 		template <typename T, typename Function>
-		const Any& when(Function function) const;
+		AnyWhenImpl<true> when(Function function) const;
 		template <typename T, typename Function>
-		Any& when(Function function);
+		AnyWhenImpl<false> when(Function function);
 		template <typename Function>
 		void otherwise(Function function) const;
 		template <typename T>
@@ -228,26 +230,93 @@ namespace falling {
 		}
 	}
 	
-	template <typename T, typename Function>
-	Any& Any::when(Function function) {
-		if ((const Type*)get_type<T>() == get_type<Any>()) {
-			function(*this);
-		} else if (get_type<T>() == stored_type_) {
-			T* object = reinterpret_cast<T*>(ptr());
-			function(*object);
+	template <typename T> struct AnyWhenFunctionCaller;
+	template <> struct AnyWhenFunctionCaller<Any> {
+		template <typename Function>
+		static bool call(Any& any, Function f) {
+			f(any);
+			return true;
 		}
-		return *this;
+		template <typename Function>
+		static bool call(const Any& any, Function f) {
+			f(any);
+			return true;
+		}
+	};
+	template <> struct AnyWhenFunctionCaller<NothingType> {
+		template <typename Function>
+		static bool call(Any& any, Function f) {
+			if (any.is_empty()) {
+				f();
+				return true;
+			}
+			return false;
+		}
+		template <typename Function>
+		static bool call(const Any& any, Function f) {
+			if (any.is_empty()) {
+				f();
+				return true;
+			}
+			return false;
+		}
+	};
+	template <typename T> struct AnyWhenFunctionCaller {
+		template <typename Function>
+		static bool call(Any& any, Function f) {
+			bool result = false;
+			any.get<T>().map([&](T& v) {
+				result = true;
+				f(v);
+			});
+			return result;
+		}
+		template <typename Function>
+		static bool call(const Any& any, Function f) {
+			bool result = false;
+			any.get<T>().map([&](const T& v) {
+				result = true;
+				f(v);
+			});
+			return result;
+		}
+	};
+	
+	template <bool IsConst>
+	struct AnyWhenImpl {
+		using Self = AnyWhenImpl<IsConst>;
+		using AnyType = typename std::conditional<IsConst, const Any, Any>::type;
+		using AnyTypeRef = AnyType&;
+		
+		template <typename T, typename Function>
+		Self when(Function function) {
+			if (was_handled) return *this;
+			was_handled = AnyWhenFunctionCaller<T>::call(any, std::forward<Function>(function));
+			return *this;
+		}
+		
+		template <typename Function>
+		void otherwise(Function f) {
+			if (!was_handled) {
+				f();
+			}
+		}
+	private:
+		AnyTypeRef any;
+		bool was_handled = false;
+		friend class Any;
+		AnyWhenImpl(AnyTypeRef ref) : any(ref) {}
+		AnyWhenImpl(const AnyWhenImpl<IsConst>& other) = default;
+	};
+	
+	template <typename T, typename Function>
+	AnyWhenImpl<false> Any::when(Function function) {
+		return AnyWhenImpl<false>(*this).when<T>(std::forward<Function>(function));
 	}
 	
 	template <typename T, typename Function>
-	const Any& Any::when(Function function) const {
-		if ((const Type*)get_type<T> == get_type<Any>()) {
-			function(*this);
-		} else if (get_type<T>() == stored_type_) {
-			const T* object = reinterpret_cast<const T*>(ptr());
-			function(*object);
-		}
-		return *this;
+	AnyWhenImpl<true> Any::when(Function function) const {
+		return AnyWhenImpl<true>(*this).when<T>(std::forward<Function>(function));
 	}
 	
 	template <typename Function>
