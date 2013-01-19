@@ -134,7 +134,7 @@ namespace falling {
 		for (auto object: memory_map_) {
 			const StructuredType* type = object->object_type();
 			type->destruct(reinterpret_cast<byte*>(object), *this);
-			allocator_.free(object);
+			allocator_.free(object, type->size());
 		}
 		// TODO: Test for references?
 		object_map_.clear();
