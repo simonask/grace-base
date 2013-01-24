@@ -42,7 +42,8 @@ struct ObjectPtr/*<T, typename std::enable_if<IsDerivedFromObject<T>::Value>::ty
 	const Type* type() const { return ptr_ ? get_type(*ptr_) : get_type<T>(); }
 	
 	
-	bool operator<(const ObjectPtr<T>& other) const { return ptr_ < other.ptr_; }
+	template <typename U>
+	bool operator<(const ObjectPtr<U>& other) const { return get() < other.get(); }
 private:
 	T* ptr_;
 };
