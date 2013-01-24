@@ -16,7 +16,7 @@
 namespace falling {
 	class ResourcePtrType : public Type {
 	public:
-		String name() const { return "ResourcePtr"; }
+		StringRef name() const { return "ResourcePtr"; }
 	private:
 		String name_;
 	};
