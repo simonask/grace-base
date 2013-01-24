@@ -16,9 +16,12 @@
 namespace falling {
 	template <typename T> class Array;
 	
-	template <typename T, typename Container = Array<T>, typename Compare = std::less<T>>
+	template <typename T, typename Container = Array<T>, typename Compare = Less>
 	class PriorityQueue {
 	public:
+		using iterator = typename Container::iterator;
+		using const_iterator = typename Container::const_iterator;
+	
 		explicit PriorityQueue(IAllocator& alloc = default_allocator());
 		PriorityQueue(Compare cmp, IAllocator& alloc = default_allocator());
 		PriorityQueue(const PriorityQueue<T,Container,Compare>& other, IAllocator& alloc = default_allocator());
@@ -27,7 +30,7 @@ namespace falling {
 		bool operator==(ArrayRef<T> range) const;
 		bool operator!=(ArrayRef<T> range) const;
 		
-		void insert(T element);
+		iterator insert(T element);
 		
 		T& top();
 		const T& top() const;
@@ -40,12 +43,15 @@ namespace falling {
 		IAllocator& allocator() const;
 		size_t size() const;
 		
-		using iterator = typename Container::iterator;
-		using const_iterator = typename Container::const_iterator;
 		iterator begin() { return container_.begin(); }
 		iterator end() { return container_.end(); }
 		const_iterator begin() const { return container_.begin(); }
 		const_iterator end() const { return container_.end(); }
+		
+		template <typename ComparableKey>
+		iterator find(const ComparableKey& key);
+		template <typename ComparableKey>
+		const_iterator find(const ComparableKey& key) const;
 		
 		FORWARD_TO_MEMBER(clear, container_, Container)
 		FORWARD_TO_MEMBER(erase, container_, Container)
@@ -65,9 +71,9 @@ namespace falling {
 	PriorityQueue<T,C,Cmp>::PriorityQueue(PriorityQueue<T,C,Cmp>&& other) : cmp_(std::move(other.cmp_)), container_(std::move(other.container_)) {}
 	
 	template <typename T, typename C, typename Cmp>
-	void PriorityQueue<T,C,Cmp>::insert(T element) {
+	typename PriorityQueue<T,C,Cmp>::iterator PriorityQueue<T,C,Cmp>::insert(T element) {
 		auto insertion_place = std::lower_bound(begin(), end(), element, cmp_);
-		container_.insert(std::move(element), insertion_place);
+		return container_.insert(std::move(element), insertion_place);
 	}
 	
 	template <typename T, typename C, typename Cmp>
@@ -125,7 +131,22 @@ namespace falling {
 	template <typename T, typename C, typename Cmp>
 	bool PriorityQueue<T,C,Cmp>::operator!=(ArrayRef<T> range) const {
 		return !(*this == range);
-		
+	}
+	
+	template <typename T, typename C, typename Cmp>
+	template <typename ComparableKey>
+	typename PriorityQueue<T,C,Cmp>::iterator PriorityQueue<T,C,Cmp>::find(const ComparableKey &key) {
+		auto it = std::lower_bound(container_.begin(), container_.end(), key, cmp_);
+		if (*it == key) return it;
+		return end();
+	}
+	
+	template <typename T, typename C, typename Cmp>
+	template <typename ComparableKey>
+	typename PriorityQueue<T,C,Cmp>::const_iterator PriorityQueue<T,C,Cmp>::find(const ComparableKey &key) const {
+		auto it = std::lower_bound(container_.begin(), container_.end(), key, cmp_);
+		if (*it == key) return it;
+		return end();
 	}
 	
 	class FormattedStream;
