@@ -7,11 +7,21 @@
 
 namespace falling {
 
-/*template <typename T = Object, typename Enable = void>
-struct ObjectPtr;*/
+/*
+	RULES ABOUT ObjectPtr<T>:
+	
+	1) You may not hold a non-null ObjectPtr<T> outside an Object without registering it
+	   with the Universe.
+	
+	2) ObjectPtr<T>-typed attributes on Objects are automatically registered.
+	
+	3) Unregistered references may be held by objects, as long as they're not used (set or
+	   dereferenced) before initialize() is called on the object holding them.
+*/
+
 
 template <typename T = Object>
-struct ObjectPtr/*<T, typename std::enable_if<IsDerivedFromObject<T>::Value>::type>*/ {
+struct ObjectPtr {
 	typedef T PointeeType;
 	
 	ObjectPtr() : ptr_(nullptr) {}
@@ -70,6 +80,45 @@ template <typename OutputStream, typename T>
 OutputStream& operator<<(OutputStream& os, const ObjectPtr<T>& ptr) {
 	os << '(' << ptr.type()->name() << "*)" << (void*)ptr.get();
 	return os;
+}
+
+
+
+struct ObjectPtrRootBase {
+	virtual void set(ObjectPtr<> root) const = 0;
+	virtual ObjectPtr<> get() const = 0;
+	virtual void* ptr() const = 0;
+};
+template <typename T>
+struct ObjectPtrRoot : ObjectPtrRootBase {
+	ObjectPtr<T>* root;
+	ObjectPtrRoot(ObjectPtr<T>* root) : root(root) {}
+	void set(ObjectPtr<> r) const final {
+		*root = aspect_cast<T>(r);
+	}
+	ObjectPtr<> get() const final {
+		return *root;
+	}
+	void* ptr() const final {
+		return root;
+	}
+};
+
+
+void register_object_root_impl(ObjectPtrRootBase* root_descriptor, IUniverse& universe);
+void unregister_object_root_impl(void* root, IUniverse& universe);
+	
+template <typename T>
+void register_object_root(ObjectPtr<T>* root, IUniverse& universe) {
+#if !defined(DISABLE_EDITOR_FEATURES)
+	register_object_root_impl(new(default_allocator()) ObjectPtrRoot<T>(root), universe);
+#endif
+}
+template <typename T>
+void unregister_object_root(ObjectPtr<T>* root, IUniverse& universe) {
+#if !defined(DISABLE_EDITOR_FEATURES)
+	unregister_object_root_impl(root, universe);
+#endif
 }
 
 }
