@@ -87,7 +87,7 @@ namespace falling {
 	struct AnyType : TypeFor<Any> {
 		void deserialize(Any& place, const ArchiveNode& n, IUniverse& u) const;
 		void serialize(const Any& place, ArchiveNode&, IUniverse&) const;
-		String name() const { return "Any"; }
+		StringRef name() const { return "Any"; }
 		size_t size() const { return sizeof(Any); }
 	};
 	
