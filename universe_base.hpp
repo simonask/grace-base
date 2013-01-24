@@ -28,6 +28,7 @@ namespace falling {
 		bool clear_and_instantiate(const ArchiveNode& scene_root, String& out_error) final;
 		bool serialize_root(ArchiveNode& root, String& out_error) final;
 		void defer_attribute_deserialization(ObjectPtr<> obj, const IAttribute* attr, const ArchiveNode* serialized) final;
+		IAllocator& allocator() const final { return allocator_; }
 		
 		// UniverseBase interface
 		template <typename T>
@@ -53,7 +54,11 @@ namespace falling {
 		AutoListType& get_auto_list() {
 			return get_auto_list<typename AutoListType::ValueType, AutoListType::LinkOffset>();
 		}
+		
+	protected:
+		UniverseBase(IAllocator& alloc) : allocator_(alloc), auto_lists(alloc), deferred_(alloc) {}
 	private:
+		IAllocator& allocator_;
 		Map<const StructuredType*, Map<size_t, VirtualAutoListBase*>> auto_lists;
 		Array<DeferredAttributeDeserialization> deferred_;
 	};
@@ -109,10 +114,9 @@ namespace falling {
 		void run_initializers() final;
 		void clear() final;
 		
-		BasicUniverse(IAllocator& alloc = default_allocator()) : allocator_(alloc) {}
+		BasicUniverse(IAllocator& alloc = default_allocator()) : UniverseBase(alloc), object_map_(alloc), reverse_object_map_(alloc), memory_map_(alloc) {}
 		~BasicUniverse() { clear(); }
 	private:
-		IAllocator& allocator_;
 		Map<String, ObjectPtr<>> object_map_;
 		Map<ObjectPtr<const Object>, String> reverse_object_map_;
 		Array<Object*> memory_map_;

@@ -26,6 +26,7 @@ namespace falling {
 		virtual ObjectPtr<> root() const = 0;
 		virtual void set_root(const ObjectPtr<> root) = 0;
 		virtual void clear() = 0;
+		virtual IAllocator& allocator() const = 0;
 		
 		// Editor/dev-time API
 		virtual bool rename_object(ObjectPtr<>, StringRef new_id) = 0;

@@ -61,7 +61,7 @@ namespace falling {
 	
 	ObjectPtr<> BasicUniverse::create_object(const StructuredType* type, StringRef id) {
 		size_t sz = type->size();
-		byte* memory = (byte*)allocator_.allocate(sz, 1);
+		byte* memory = (byte*)allocator().allocate(sz, type->alignment());
 		type->construct(memory, *this);
 		Object* object = reinterpret_cast<Object*>(memory);
 		memory_map_.push_back(object);
@@ -134,7 +134,7 @@ namespace falling {
 		for (auto object: memory_map_) {
 			const StructuredType* type = object->object_type();
 			type->destruct(reinterpret_cast<byte*>(object), *this);
-			allocator_.free(object, type->size());
+			allocator().free(object, type->size());
 		}
 		// TODO: Test for references?
 		object_map_.clear();
