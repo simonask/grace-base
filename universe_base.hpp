@@ -41,7 +41,7 @@ namespace falling {
 		
 		template <typename T>
 		ObjectPtr<T> create_root(String id) {
-			ObjectPtr<> o = this->create_root(get_type<T>(), std::move(id));
+			ObjectPtr<> o = this->create_object_and_set_as_root(get_type<T>(), std::move(id));
 			ObjectPtr<T> ptr = o.cast<T>();
 			ASSERT(ptr != nullptr);
 			return ptr;
