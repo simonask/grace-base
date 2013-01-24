@@ -19,13 +19,6 @@
 #include <algorithm>
 
 namespace falling {
-	struct Less {
-		template <typename A, typename B>
-		bool operator()(const A& a, const B& b) const {
-			return a < b;
-		}
-	};
-	
 	template <typename Key, typename Value, bool IsConst>
 	class MapIteratorImpl;
 

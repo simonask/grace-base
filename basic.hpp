@@ -182,6 +182,13 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 	constexpr T round_up(T val, T boundary) {
 		return round_up_impl(val, boundary, val % boundary);
 	}
+	
+	struct Less {
+		template <typename A, typename B>
+		bool operator()(const A& a, const B& b) const {
+			return a < b;
+		}
+	};
 
 #if defined(__i386__) || defined(__x86_64__)
 #define TRAP() do{ __asm__ __volatile__("int3\n"); }while(0)
