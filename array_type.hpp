@@ -9,7 +9,7 @@ namespace falling {
 
 struct ArrayType : DerivedType {
 public:
-	String name() const override { return name_; }
+	StringRef name() const override { return name_; }
 	bool is_variable_length() const { return is_variable_length_; }
 	const Type* element_type() const { return element_type_; }
 	const Type* type_of_element(size_t idx) const { return element_type(); }

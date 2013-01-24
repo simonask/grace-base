@@ -21,7 +21,7 @@ namespace falling {
 		virtual void deserialize(Color& place, const ArchiveNode&, IUniverse&) const;
 		virtual void serialize(const Color& place, ArchiveNode&, IUniverse&) const;
 		
-		String name() const;
+		StringRef name() const;
 		size_t size() const { return sizeof(Color); }
 	};
 	

@@ -13,7 +13,7 @@ struct ReferenceType : Type {
 	
 	virtual const Type* pointee_type() const = 0;
 	
-	String name() const override { return name_; }
+	StringRef name() const override { return name_; }
 	bool deferred_instantiation() const final { return true; }
 protected:
 	static String build_reference_type_name(String base_name, const Type* pointee);

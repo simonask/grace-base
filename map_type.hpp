@@ -32,7 +32,7 @@ namespace falling {
 		const Type* value_type() const { return get_type<V>(); }
 		
 		// Type interface
-		String name() const {
+		StringRef name() const {
 			return this->build_map_type_name();
 		}
 	};

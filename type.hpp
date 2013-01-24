@@ -26,7 +26,7 @@ struct Type {
 	virtual void move_construct(byte* to, byte* from) const = 0;
 	virtual void destruct(byte* place, IUniverse&) const = 0;
 	
-	virtual String name() const = 0;
+	virtual StringRef name() const = 0;
 	virtual size_t size() const = 0;
 	virtual size_t alignment() const = 0;
 	virtual bool is_abstract() const { return false; }
@@ -124,7 +124,7 @@ struct VoidType : Type {
 	virtual void copy_construct(byte*, const byte*) const override {}
 	virtual void move_construct(byte*, byte*) const override {}
 	static const char Name[];
-	String name() const override { return Name; }
+	StringRef name() const override { return Name; }
 	size_t size() const override { return 0; }
 	size_t alignment() const override { return 0; }
 	bool is_abstract() const override { return true; }
@@ -134,7 +134,7 @@ private:
 
 struct SimpleType : Type {
 	SimpleType(String name, size_t width, size_t component_width, bool is_float, bool is_signed) : name_(std::move(name)), width_(width), component_width_(component_width), is_float_(is_float), is_signed_(is_signed) {}
-	String name() const override { return name_; }
+	StringRef name() const override { return name_; }
 	void construct(byte* place, IUniverse&) const { std::fill(place, place + size(), 0); }
 	void destruct(byte*, IUniverse&) const {}
 	void copy_construct(byte* place, const byte* from) const { std::copy(from, from + size(), place); }
@@ -195,14 +195,14 @@ struct StringType : TypeFor<String> {
 	void deserialize(String& place, const ArchiveNode&, IUniverse&) const final;
 	void serialize(const String& place, ArchiveNode&, IUniverse&) const final;
 	
-	String name() const final;
+	StringRef name() const final;
 };
 	
 struct StringRefType : TypeFor<StringRef> {
 	static const StringRefType* get();
 	void deserialize(StringRef& place, const ArchiveNode&, IUniverse&) const final;
 	void serialize(const StringRef& place, ArchiveNode&, IUniverse&) const final;
-	String name() const final;
+	StringRef name() const final;
 };
 
 struct DerivedType : Type {

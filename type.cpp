@@ -222,7 +222,7 @@ const StringType* StringType::get() {
 	return &type;
 }
 
-String StringType::name() const {
+StringRef StringType::name() const {
 	return "String";
 }
 	
@@ -239,7 +239,7 @@ void StringRefType::serialize(const StringRef &place, ArchiveNode & node, IUnive
 	node.set(place);
 }
 
-String StringRefType::name() const {
+StringRef StringRefType::name() const {
 	return "StringRef";
 }
 

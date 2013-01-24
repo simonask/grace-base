@@ -35,7 +35,7 @@ namespace falling {
 		a.set(color.alpha());
 	}
 	
-	String ColorType::name() const {
+	StringRef ColorType::name() const {
 		return "Color";
 	}
 	

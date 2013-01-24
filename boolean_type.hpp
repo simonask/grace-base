@@ -17,7 +17,7 @@ namespace falling {
 	public:
 		void deserialize(bool& place, const ArchiveNode&, IUniverse&) const;
 		void serialize(const bool& place, ArchiveNode&, IUniverse&) const;
-		String name() const { return String("bool", static_allocator()); }
+		StringRef name() const { return "bool"; }
 	};
 	
 	template <>
