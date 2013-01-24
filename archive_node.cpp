@@ -69,7 +69,7 @@ ArchiveNode& ArchiveNode::operator[](StringRef key) {
 		ASSERT(false); // Cannot serialize a reference into another serialized tree.
 	}
 
-	String ArchiveNodeConstPtrType::name() const {
+	StringRef ArchiveNodeConstPtrType::name() const {
 		return "const ArchiveNode*";
 	}
 }

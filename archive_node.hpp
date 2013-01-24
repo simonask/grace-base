@@ -4,7 +4,6 @@
 
 #include "base/string.hpp"
 #include "base/map.hpp"
-//#include <iostream>
 
 #include "serialization/archive_node_type.hpp"
 #include "type/type.hpp"
@@ -111,7 +110,7 @@ struct ArchiveNodeConstPtrType : TypeFor<const ArchiveNode*> {
 	using T = const ArchiveNode*;
 	void deserialize(T& place, const ArchiveNode&, IUniverse&) const final;
 	void serialize(const T& place, ArchiveNode&, IUniverse&) const final;
-	String name() const final;
+	StringRef name() const final;
 };
 	
 template <>
