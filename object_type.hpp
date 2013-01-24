@@ -15,7 +15,7 @@
 namespace falling {
 
 struct ObjectTypeBase : StructuredType {
-	String name() const override { return name_; }
+	StringRef name() const override { return name_; }
 	StringRef description() const { return description_; }
 	const ObjectTypeBase* super() const;
 	

@@ -18,7 +18,7 @@ namespace falling {
 	struct SignalTypeBase : Type {
 	public:
 		ArrayRef<const Type*> signature() const { return signature_; }
-		String name() const { return name_; }
+		StringRef name() const { return name_; }
 		bool deferred_instantiation() const final { return true; }
 	protected:
 		String name_;
