@@ -61,12 +61,12 @@ public:
 	void clear(bool deallocate = true);
 	
 	template <typename InputIterator>
-	void insert(InputIterator begin, InputIterator end);
+	iterator insert(InputIterator begin, InputIterator end);
 	
 	template <typename InputIterator>
-	void insert(InputIterator begin, InputIterator end, iterator before);
+	iterator insert(InputIterator begin, InputIterator end, iterator before);
 	
-	void insert(T element, iterator before);
+	iterator insert(T element, iterator before);
 	
 	template <typename... Args>
 	void emplace_back(Args... args);
@@ -237,13 +237,13 @@ void Array<T>::resize(size_t new_size, T x) {
 
 template <typename T>
 template <typename InputIterator>
-void Array<T>::insert(InputIterator b, InputIterator e) {
-	insert(b, e, end());
+typename Array<T>::iterator Array<T>::insert(InputIterator b, InputIterator e) {
+	return insert(b, e, end());
 }
 
 template <typename T>
 template <typename InputIterator>
-void Array<T>::insert(InputIterator b, InputIterator e, iterator before) {
+typename Array<T>::iterator Array<T>::insert(InputIterator b, InputIterator e, iterator before) {
 	size_t add_len = e - b;
 	size_t num_move = end() - before;
 	size_t before_idx = before - begin();
@@ -277,12 +277,13 @@ void Array<T>::insert(InputIterator b, InputIterator e, iterator before) {
 		}
 	}
 	size_ += add_len;
+	return before;
 }
 	
 template <typename T>
-void Array<T>::insert(T element, iterator before) {
+typename Array<T>::iterator Array<T>::insert(T element, iterator before) {
 	// TODO: Move semantics
-	insert(&element, &element + 1, before);
+	return insert(&element, &element + 1, before);
 }
 
 template <typename T>
