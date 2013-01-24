@@ -18,6 +18,7 @@ namespace falling {
 		
 		template <typename T>
 		void write_bytes(OutputStream& os, const T* value) {
+			static_assert(std::is_pod<T>::value, "Cannot write bytes of non-POD object to stream.");
 			auto ptr = reinterpret_cast<const byte*>(value);
 			for (auto p = ptr; p < ptr+sizeof(T); ++p) {
 				write_byte(os, *p);
@@ -32,6 +33,7 @@ namespace falling {
 		
 		template <typename T>
 		bool read_bytes(const byte*& p, const byte* end, T* value) {
+			static_assert(std::is_pod<T>::value, "Cannot read bytes of non-POD object from stream.");
 			if (end - p < sizeof(T)) return false;
 			byte* dst = reinterpret_cast<byte*>(value);
 			for (size_t i = 0; i < sizeof(T); ++i) {
@@ -188,8 +190,9 @@ namespace falling {
 			Array<byte> buffer = read_all<Array<byte>>(is);
 			const byte* p = buffer.data();
 			const byte* end = p + stream_length;
-			if (!read_bytes(p, end, &stream_length)) {
-				out_error = "Wrong stream length, or not all data is available yet.";
+			uint32 data_length;
+			if (!read_bytes(p, end, &data_length)) {
+				out_error = "Wrong data length, or not all data is available yet.";
 				return 0;
 			}
 			
