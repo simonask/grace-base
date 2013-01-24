@@ -37,7 +37,7 @@ struct ObjectTypeBuilder {
 	}
 	
 	template <typename MemberType>
-	Self& property(MemberType T::* member, StringRef name, StringRef description/*, MemberType default_value = MemberType()*/) {
+	Self& property(MemberType T::* member, StringRef name, StringRef description = ""/*, MemberType default_value = MemberType()*/) {
 		check_attribute_name_(name);
 		type_->properties_.push_back(new_static MemberAttribute<T, MemberType>(static_allocator(), std::move(name), std::move(description), member));
 		return *this;
