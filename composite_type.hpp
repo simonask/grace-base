@@ -83,7 +83,7 @@ struct CompositeType : StructuredType {
 	void move_construct(byte* place, byte* original) const override { ASSERT(false); }
 	void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
 	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const override;
-	String name() const override { return name_; }
+	StringRef name() const override { return name_; }
 	size_t size() const override { return size_; }
 	size_t alignment() const override { return alignof(Object); }
 	
