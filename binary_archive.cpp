@@ -96,7 +96,7 @@ namespace falling {
 		switch (type) {
 			case ArchiveNodeType::Empty: { clear(); return true; }
 			case ArchiveNodeType::String: {
-				clear(ArchiveNodeType::String);
+				clear_as(ArchiveNodeType::String);
 				uint32 string_length;
 				if (!read_bytes(p, end, &string_length)) {
 					out_error = "Invalid string length (corrupt stream).";
@@ -111,7 +111,7 @@ namespace falling {
 				return true;
 			}
 			case ArchiveNodeType::Array: {
-				clear(ArchiveNodeType::Array);
+				clear_as(ArchiveNodeType::Array);
 				uint32 array_length;
 				if (!read_bytes(p, end, &array_length)) {
 					out_error = "Invalid array length (corrupt stream).";
@@ -127,7 +127,7 @@ namespace falling {
 				return true;
 			}
 			case ArchiveNodeType::Map: {
-				clear(ArchiveNodeType::Map);
+				clear_as(ArchiveNodeType::Map);
 				uint32 map_length;
 				if (!read_bytes(p, end, &map_length)) {
 					out_error = "Invalid map length (corrupt stream).";
@@ -149,7 +149,7 @@ namespace falling {
 				return true;
 			}
 			case ArchiveNodeType::Integer: {
-				clear(ArchiveNodeType::Integer);
+				clear_as(ArchiveNodeType::Integer);
 				if (!read_bytes(p, end, &integer_value)) {
 					out_error = "Invalid integer value (corrupt stream).";
 					return false;
@@ -157,7 +157,7 @@ namespace falling {
 				return true;
 			}
 			case ArchiveNodeType::Float: {
-				clear(ArchiveNodeType::Float);
+				clear_as(ArchiveNodeType::Float);
 				if (!read_bytes(p, end, &float_value)) {
 					out_error = "Invalid float value (corrupt stream).";
 					return false;

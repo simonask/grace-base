@@ -7,9 +7,13 @@
 namespace falling {
 class IUniverse;
 
+IAllocator& ArchiveNode::allocator() const {
+	return archive().allocator();
+}
+
 ArchiveNode& ArchiveNode::array_push() {
 	if (type() != Type::Array) {
-		clear(Type::Array);
+		clear_as(Type::Array);
 	}
 	ArchiveNode* n = archive_.make();
 	array_.push_back(n);
@@ -26,7 +30,7 @@ const ArchiveNode& ArchiveNode::operator[](size_t idx) const {
 
 ArchiveNode& ArchiveNode::operator[](size_t idx) {
 	if (type() != Type::Array) {
-		clear(Type::Array);
+		clear_as(Type::Array);
 	}
 	if (idx < array_.size()) {
 		return *array_[idx];
@@ -44,7 +48,7 @@ const ArchiveNode& ArchiveNode::operator[](StringRef key) const {
 
 ArchiveNode& ArchiveNode::operator[](StringRef key) {
 	if (type() != Type::Map) {
-		clear(Type::Map);
+		clear_as(Type::Map);
 	}
 	auto it = map_.find(String(key));
 	if (it == map_.end()) {
@@ -54,6 +58,10 @@ ArchiveNode& ArchiveNode::operator[](StringRef key) {
 	} else {
 		return *it->second;
 	}
+}
+
+size_t ArchiveNode::array_size() const {
+	return array_.size();
 }
 	
 	const ArchiveNodeConstPtrType* BuildTypeInfo<const ArchiveNode*>::build() {
