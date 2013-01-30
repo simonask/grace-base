@@ -70,6 +70,10 @@ namespace falling {
 		Maybe<T> get() const;
 		template <typename T>
 		T unsafe_get() const;
+		
+		
+		const byte* ptr() const;
+		byte* ptr();
 	private:
 		typedef typename std::aligned_storage<Size, Alignment>::type Storage;
 		Storage memory_;
@@ -78,8 +82,6 @@ namespace falling {
 		
 		void allocate_storage();
 		void deallocate_storage();
-		const byte* ptr() const;
-		byte* ptr();
 		
 		friend struct AnyType;
 	};
@@ -264,21 +266,23 @@ namespace falling {
 	template <typename T> struct AnyWhenFunctionCaller {
 		template <typename Function>
 		static bool call(Any& any, Function f) {
-			bool result = false;
-			any.get<T>().map([&](T& v) {
-				result = true;
+			const Type* t = get_type<typename RemoveConstRef<T>::Type>();
+			if (any.type() == t) {
+				T& v = *reinterpret_cast<typename RemoveConstRef<T>::Type*>(any.ptr());
 				f(v);
-			});
-			return result;
+				return true;
+			}
+			return false;
 		}
 		template <typename Function>
 		static bool call(const Any& any, Function f) {
-			bool result = false;
-			any.get<T>().map([&](const T& v) {
-				result = true;
+			const Type* t = get_type<typename RemoveConstRef<T>::Type>();
+			if (any.type() == t) {
+				const T& v = *reinterpret_cast<const typename RemoveConstRef<T>::Type*>(any.ptr());
 				f(v);
-			});
-			return result;
+				return true;
+			}
+			return false;
 		}
 	};
 	
@@ -366,9 +370,8 @@ namespace falling {
 			} else {
 				return reinterpret_cast<byte*>(&memory_);
 			}
-		} else {
-			return nullptr;
 		}
+		return nullptr;
 	}
 	
 	inline void Any::allocate_storage() {
