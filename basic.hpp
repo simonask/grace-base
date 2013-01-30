@@ -196,9 +196,9 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 #define TRAP() do{ __asm__ __volatile__("bkpt 0\n"); }while(0)
 #endif
 
-#define ASSERT(X) do{ if (!(X)) { fprintf(stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); TRAP(); } } while(0)
-
 #define UNREACHABLE() __builtin_unreachable()
+
+#define ASSERT(X) do{ if (!(X)) { fprintf(stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); TRAP(); UNREACHABLE(); } } while(0)
 
 
 #if defined(__has_feature) && __has_feature(cxx_lambdas)
