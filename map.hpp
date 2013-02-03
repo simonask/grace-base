@@ -15,6 +15,7 @@
 #include "base/array_ref.hpp"
 #include "base/maybe.hpp"
 #include "base/pair.hpp"
+#include "base/array_utils.hpp"
 
 #include <algorithm>
 
@@ -476,22 +477,13 @@ namespace falling {
 	
 	template <typename K, typename V, typename C>
 	void Map<K,V,C>::reserve(size_t new_size) {
-		ASSERT(new_size < UINT32_MAX);
-		if (new_size > alloc_size_) {
-			K* new_keys = (K*)allocator_.allocate(sizeof(K) * new_size, alignof(K));
-			V* new_values = (V*)allocator_.allocate(sizeof(V) * new_size, alignof(V));
-			for (size_t i = 0; i < size_; ++i) {
-				new(new_keys + i) K(move(keys_[i]));
-				new(new_values + i) V(move(values_[i]));
-				keys_[i].~K();
-				values_[i].~V();
-			}
-			allocator_.free(keys_, sizeof(K) * alloc_size_);
-			allocator_.free(values_, sizeof(V) * alloc_size_);
-			keys_ = new_keys;
-			values_ = new_values;
-			alloc_size_ = (uint32)new_size;
-		}
+		size_t k_alloc_size = alloc_size_;
+		size_t v_alloc_size = alloc_size_;
+		keys_ = falling::resize_allocation<K>(allocator_, keys_, &k_alloc_size, size_, new_size, 3, 2);
+		values_ = falling::resize_allocation(allocator_, values_, &v_alloc_size, size_, new_size, 3, 2);
+		ASSERT(k_alloc_size == v_alloc_size);
+		ASSERT(k_alloc_size < UINT32_MAX);
+		alloc_size_ = (uint32)k_alloc_size;
 	}
 	
 	template <typename K, typename V, typename C>
