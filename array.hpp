@@ -6,6 +6,7 @@
 #include "base/array_ref.hpp"
 #include "memory/allocator.hpp"
 #include "base/iterators.hpp"
+#include "base/array_utils.hpp"
 
 #if defined(USE_STD_VECTOR)
 #include <vector>
@@ -202,31 +203,9 @@ T Array<T>::pop_back() {
 
 template <typename T>
 void Array<T>::reserve(size_t new_size) {
-	if (new_size > alloc_size_) {
-		size_t req_size = alloc_size_ ? alloc_size_ : 1;
-		if (new_size*sizeof(T) > 0x2000) { // Allocate precisely as much as needed when above 8K
-			req_size = new_size;
-		} else {
-			// Growth factor: 1.5
-			req_size *= 3;
-			req_size += req_size & 1;
-			req_size /= 2;
-		}
-		req_size = req_size > new_size ? req_size : new_size;
-		ASSERT(req_size >= new_size);
-		if (std::is_trivially_copyable<T>::value) {
-			data_ = (T*)allocator_.reallocate(data_, sizeof(T) * alloc_size_, sizeof(T) * req_size, alignof(T));
-		} else {
-			T* new_data = (T*)allocator_.allocate(sizeof(T)*req_size, alignof(T));
-			for (size_t i = 0; i < size_; ++i) {
-				new(new_data+i) T(std::move(data_[i]));
-				data_[i].~T();
-			}
-			allocator_.free(data_, sizeof(T) * alloc_size_);
-			data_ = new_data;
-		}
-		alloc_size_ = (uint32)req_size;
-	}
+	size_t alloc_size = alloc_size_;
+	data_ = falling::resize_allocation<T>(allocator_, data_, &alloc_size, size_, new_size, 3, 2);
+	alloc_size_ = (uint32)alloc_size;
 }
 
 template <typename T>
