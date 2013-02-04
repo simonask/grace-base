@@ -21,7 +21,7 @@ namespace falling {
 	
 	class Resource {
 	public:
-		Resource() : refcount_(0), loader_(nullptr) {}
+		Resource(IAllocator& alloc = default_allocator()) : refcount_(0), loader_(nullptr) {}
 		virtual ~Resource() {}
 		
 		const ResourceID& resource_id() const { return id_; }
