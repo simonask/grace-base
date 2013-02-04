@@ -43,6 +43,8 @@ namespace falling {
 			}
 			*inout_alloc_size = req_size;
 			return new_data;
+		} else if (new_size < *inout_alloc_size) {
+			// TODO: Downsize.
 		}
 		return data;
 	}
