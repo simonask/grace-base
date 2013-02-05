@@ -13,47 +13,33 @@
 
 namespace falling {
 	void AnyType::deserialize(Any &place, const ArchiveNode &n, IUniverse &u) const {
-		switch (n.type()) {
-			case ArchiveNodeType::Empty: {
-				place = Nothing; break;
+		ArchiveNode::IntegerType inum;
+		ArchiveNode::FloatType fnum;
+		if (n.is_empty()) {
+			place = Nothing;
+		} else if (n >> inum) {
+			place = inum;
+		} else if (n >> fnum) {
+			place = fnum;
+		} else if (n.is_array()) {
+			Array<Any> v;
+			v.reserve(n.array_size());
+			for (size_t i = 0; i < n.array_size(); ++i) {
+				Any x;
+				deserialize(x, n[i], u);
+				v.push_back(move(x));
 			}
-			case ArchiveNodeType::Float: {
-				float64 v;
-				n.get(v);
-				place = v;
-				break;
-			}
-			case ArchiveNodeType::Integer: {
-				int64 v;
-				n.get(v);
-				place = v;
-				break;
-			}
-			case ArchiveNodeType::String: {
-				place = n.string_value;
-				break;
-			}
-			case ArchiveNodeType::Array: {
-				Array<Any> v;
-				v.reserve(n.array_size());
-				for (size_t i = 0; i < n.array_size(); ++i) {
-					Any x;
-					deserialize(x, n[i], u);
-					v.push_back(move(x));
-				}
-				place = move(v);
-				break;
-			}
-			case ArchiveNodeType::Map: {
-				Map<String, Any> v;
-				for (auto pair: n.internal_map()) {
-					Any x;
-					deserialize(x, *pair.second, u);
-					v[pair.first] = move(x);
-				}
-				place = move(v);
-				break;
-			}
+			place = move(v);
+		} else if (n.is_map()) {
+			Map<String, Any> v;
+			n.map_each_pair([&](StringRef key, const ArchiveNode* value) {
+				Any x;
+				deserialize(x, *value, u);
+				v[key] = move(x);
+			});
+			place = move(v);
+		} else {
+			ASSERT(false);
 		}
 	}
 	
