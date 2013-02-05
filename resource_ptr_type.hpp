@@ -39,7 +39,7 @@ namespace falling {
 	template <typename T>
 	void ResourcePtrTypeImpl<T>::deserialize(ResourcePtr<T>& place, const ArchiveNode& node, IUniverse&) const {
 		ResourceID rid;
-		if (node.get(rid)) {
+		if (node >> rid) {
 			place = load_resource<T>(rid);
 		}
 	}
@@ -47,7 +47,7 @@ namespace falling {
 	template <typename T>
 	void ResourcePtrTypeImpl<T>::serialize(const ResourcePtr<T>& place, ArchiveNode& node, IUniverse&) const {
 		if (place != nullptr) {
-			node = place->resource_id();
+			node << place->resource_id();
 		} else {
 			node.clear();
 		}
