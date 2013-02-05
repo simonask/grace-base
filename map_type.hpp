@@ -11,30 +11,52 @@
 
 #include "type/type.hpp"
 #include "base/map.hpp"
-#include "serialization/archive_node.hpp"
 
 namespace falling {
+	struct IMapReader;
+	struct IMapWriter;
+
 	struct MapType : public Type {
 		virtual const Type* key_type() const = 0;
 		virtual const Type* value_type() const = 0;
+		StringRef name() const final { return name_; }
 	protected:
-		String build_map_type_name() const;
+		MapType() {}
+		void build_map_type_name();
+		String name_;
+		
+		void deserialize_map_from_array(IMapWriter&, const ArchiveNode&, IUniverse&) const;
+		void serialize_map_to_array(IMapReader&, ArchiveNode&, IUniverse&) const;
+		void deserialize_map(IMapWriter&, const ArchiveNode&, IUniverse&) const;
+		void serialize_map(IMapReader&, ArchiveNode&, IUniverse&) const;
+	};
+	
+	template <typename K, typename V>
+	struct MapTypeWithKeyValueType : public MapType {
+		MapTypeWithKeyValueType() { build_map_type_name(); }
+		const Type* key_type() const final { return get_type<K>(); }
+		const Type* value_type() const final { return get_type<V>(); }
 	};
 	
 	template <typename K, typename V, typename Cmp>
-	struct MapTypeImpl : public TypeFor<Map<K,V,Cmp>, MapType> {
-		// TypeFor interface
+	struct MapTypeImpl;
+	
+	template <typename V, typename Cmp>
+	struct MapTypeImpl<String, V, Cmp> : TypeFor<Map<String, V, Cmp>, MapTypeWithKeyValueType<String, V>> {
+		void deserialize(Map<String,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
+		void serialize(const Map<String,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
+	};
+	
+	template <typename V, typename Cmp>
+	struct MapTypeImpl<StringRef, V, Cmp> : TypeFor<Map<StringRef, V, Cmp>, MapTypeWithKeyValueType<StringRef, V>> {
+		void deserialize(Map<StringRef,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
+		void serialize(const Map<StringRef,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
+	};
+	
+	template <typename K, typename V, typename Cmp>
+	struct MapTypeImpl : TypeFor<Map<K, V, Cmp>, MapTypeWithKeyValueType<K, V>> {
 		void deserialize(Map<K,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
 		void serialize(const Map<K,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
-		
-		// MapType interface
-		const Type* key_type() const { return get_type<K>(); }
-		const Type* value_type() const { return get_type<V>(); }
-		
-		// Type interface
-		StringRef name() const {
-			return this->build_map_type_name();
-		}
 	};
 	
 	template <typename K, typename V, typename Cmp>
@@ -45,50 +67,90 @@ namespace falling {
 		}
 	};
 	
-	template <typename K, typename V, typename Cmp>
-	void MapTypeImpl<K,V,Cmp>::deserialize(Map<K, V, Cmp> &place, const ArchiveNode &node, IUniverse &universe) const {
-		if (key_type() == get_type<String>()) {
-			// Use the built-in support for string keys in the archive backend.
-			if (node.is_map()) {
-				for (auto pair: node.internal_map()) {
-					V v;
-					value_type()->deserialize_raw(reinterpret_cast<byte*>(&v), *pair.second, universe);
-					place[pair.first] = move(v);
-				}
-				return;
+	struct IMapReader {
+		virtual void* current_key() = 0;
+		virtual void* current_value() = 0;
+		virtual bool next() = 0;
+	};
+	
+	struct IMapWriter {
+		virtual void set_and_move(byte* key, byte* value) = 0;
+	};
+	
+	template <typename MapType>
+	struct MapReader : IMapReader {
+		MapReader(const MapType& m) : map_(m) {}
+		const MapType& map_;
+		typename MapType::const_iterator p_;
+		bool init_ = false;
+		
+		bool next() final {
+			if (!init_) {
+				p_ = map_.begin();
+				init_ = true;
+			} else {
+				++p_;
 			}
+			return p_ != map_.end();
 		}
 		
-		if (node.is_array()) {
-			for (size_t i = 0; i < node.array_size(); ++i) {
-				const ArchiveNode& pair = node[i];
-				K k;
-				V v;
-				key_type()->deserialize_raw(reinterpret_cast<byte*>(&k), pair[0], universe);
-				value_type()->deserialize_raw(reinterpret_cast<byte*>(&v), pair[1], universe);
-				place.set(move(k), move(v));
-			}
+		void* current_key() final {
+			ASSERT(init_);
+			return (void*)&p_->first;
 		}
+		void* current_value() final {
+			ASSERT(init_);
+			return (void*)&p_->second;
+		}
+	};
+	
+	template <typename MapType>
+	struct MapWriter : IMapWriter {
+		MapWriter(MapType& m) : map_(m) {}
+		MapType& map_;
+		
+		void set_and_move(byte* key, byte* value) final {
+			using K = typename MapType::key_type;
+			using V = typename MapType::mapped_type;
+			K* k = reinterpret_cast<K*>(key);
+			V* v = reinterpret_cast<V*>(value);
+			map_[move(*k)] = move(*v);
+		}
+	};
+	
+	template <typename K, typename V, typename Cmp>
+	void MapTypeImpl<K,V,Cmp>::deserialize(Map<K, V, Cmp> &place, const ArchiveNode &node, IUniverse &universe) const {
+		MapWriter<Map<K,V,Cmp>> w(place);
+		deserialize_map_from_array(w, node, universe);
 	}
 	
 	template <typename K, typename V, typename Cmp>
 	void MapTypeImpl<K,V,Cmp>::serialize(const Map<K, V, Cmp> &place, ArchiveNode &node, IUniverse &universe) const {
-		if (key_type() == get_type<String>()) {
-			// Use the built-in support for string keys in the archive backend.
-			for (auto pair: place) {
-				ArchiveNode& v = node[pair.first];
-				value_type()->serialize_raw(reinterpret_cast<const byte*>(&pair.second), v, universe);
-			}
-			return;
-		}
-		
-		for (auto pair: place) {
-			ArchiveNode& out_pair = node.array_push();
-			ArchiveNode& k = out_pair.array_push();
-			ArchiveNode& v = out_pair.array_push();
-			key_type()->serialize_raw(reinterpret_cast<const byte*>(&pair.first), k, universe);
-			value_type()->serialize_raw(reinterpret_cast<const byte*>(&pair.second), k, universe);
-		}
+		MapReader<Map<K,V,Cmp>> e(place);
+		serialize_map_as_array(e, node, universe);
+	}
+	
+	template <typename V, typename Cmp>
+	void MapTypeImpl<String,V,Cmp>::deserialize(Map<String, V, Cmp> &place, const ArchiveNode &node, IUniverse &universe) const {
+		MapWriter<Map<String,V,Cmp>> w(place);
+		this->deserialize_map(w, node, universe);
+	}
+	
+	template <typename V, typename Cmp>
+	void MapTypeImpl<String,V,Cmp>::serialize(const Map<String, V, Cmp> &place, ArchiveNode &node, IUniverse &universe) const {
+		MapReader<Map<String,V,Cmp>> e(place);
+		this->serialize_map(e, node, universe);
+	}
+	
+	template <typename V, typename Cmp>
+	void MapTypeImpl<StringRef,V,Cmp>::deserialize(Map<StringRef, V, Cmp> &place, const ArchiveNode &node, IUniverse &universe) const {
+		ASSERT(false); // Cannot deserialize StringRef!
+	}
+	
+	template <typename V, typename Cmp>
+	void MapTypeImpl<StringRef,V,Cmp>::serialize(const Map<StringRef, V, Cmp> &place, ArchiveNode &node, IUniverse &universe) const {
+		MapReader<Map<StringRef,V,Cmp>> e(place);
+		serialize_map(e, node, universe);
 	}
 }
 

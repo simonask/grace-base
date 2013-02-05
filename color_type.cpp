@@ -13,10 +13,10 @@ namespace falling {
 	
 	void ColorType::deserialize(Color& color, const ArchiveNode& node, IUniverse&) const {
 		if (node.is_map()) {
-			node["r"].get(color.red());
-			node["g"].get(color.green());
-			node["b"].get(color.blue());
-			if (!node["a"].get(color.alpha())) {
+			node["r"] >> color.red();
+			node["g"] >> color.green();
+			node["b"] >> color.blue();
+			if (!(node["a"] >> color.alpha())) {
 				color.alpha() = 1.f;
 			}
 			return;
@@ -29,10 +29,10 @@ namespace falling {
 		auto& g = node["g"];
 		auto& b = node["b"];
 		auto& a = node["a"];
-		r.set(color.red());
-		g.set(color.green());
-		b.set(color.blue());
-		a.set(color.alpha());
+		r << color.red();
+		g << color.green();
+		b << color.blue();
+		a << color.alpha();
 	}
 	
 	StringRef ColorType::name() const {

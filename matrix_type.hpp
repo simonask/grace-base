@@ -50,7 +50,7 @@ namespace falling {
 					for (size_t c = 0; c < N; ++c) {
 						const ArchiveNode& element = row[c];
 						T x;
-						if (element.get(x)) {
+						if (element >> x) {
 							place.row_at(r)[c] = x;
 						} else {
 							Warning() << "Could not deserialize matrix element.";
@@ -71,7 +71,7 @@ namespace falling {
 			ArchiveNode& row = node.array_push();
 			for (size_t c = 0; c < N; ++c) {
 				ArchiveNode& column = row.array_push();
-				column.set(place.row_at(r)[c]);
+				column << place.row_at(r)[c];
 			}
 		}
 	}

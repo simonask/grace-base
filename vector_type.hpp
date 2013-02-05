@@ -36,14 +36,14 @@ namespace falling {
 	void VectorTypeImpl<T,N>::deserialize(TVector<T, N>& vector, const ArchiveNode& node, IUniverse&) const {
 		for (size_t i = 0; i < N; ++i) {
 			const ArchiveNode& component = node[VectorComponentNames[i]];
-			component.get(vector[i]);
+			component >> vector[i];
 		}
 	}
 	
 	template <typename T, size_t N>
 	void VectorTypeImpl<T,N>::serialize(const TVector<T, N>& vector, ArchiveNode& node, IUniverse&) const {
 		for (size_t i = 0; i < N; ++i) {
-			node[VectorComponentNames[i]] = vector[i];
+			node[VectorComponentNames[i]] << vector[i];
 		}
 	}
 	
@@ -67,6 +67,22 @@ namespace falling {
 			return type;
 		}
 	};
+	
+	template <typename ElementType, size_t N>
+	bool operator>>(const ArchiveNode& node, TVector<ElementType, N>& vec) {
+		bool success = true;
+		for (size_t i = 0; i < N; ++i) {
+			success = (node[VectorComponentNames[i]] >> vec[i]) && success;
+		}
+		return success;
+	}
+	
+	template <typename ElementType, size_t N>
+	void operator<<(ArchiveNode& node, TVector<ElementType, N>& vec) {
+		for (size_t i = 0; i < N; ++i) {
+			node[VectorComponentNames[i]] << vec[i];
+		}
+	}
 }
 
 #endif

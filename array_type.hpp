@@ -3,9 +3,11 @@
 #define ARRAY_TYPE_HPP_JIO2A6YN
 
 #include "type/type.hpp"
-#include "serialization/archive_node.hpp"
 
 namespace falling {
+
+struct IArrayReader;
+struct IArrayWriter;
 
 struct ArrayType : DerivedType {
 public:
@@ -18,6 +20,9 @@ protected:
 	String name_;
 	const Type* element_type_;
 	bool is_variable_length_;
+	
+	void deserialize_array(IArrayWriter&, const ArchiveNode&, IUniverse&) const;
+	void serialize_array(IArrayReader&, ArchiveNode&, IUniverse&) const;
 };
 
 struct FixedArrayType : ArrayType {
@@ -46,7 +51,6 @@ public:
 	
 	void deserialize(Container& place, const ArchiveNode& node, IUniverse&) const;
 	void serialize(const Container& place, ArchiveNode& node, IUniverse&) const;
-	Object* cast(const DerivedType* to, Object* o) const { return nullptr; }
 };
 
 template <typename T>
@@ -57,25 +61,59 @@ struct BuildTypeInfo<Array<T>> {
 	}
 };
 
+struct IArrayReader {
+	virtual void* get_current() = 0;
+	virtual bool next() = 0;
+};
+
+struct IArrayWriter {
+	virtual void reserve(size_t sz) = 0;
+	virtual void push_back_move(void* data) = 0;
+};
+
+template <typename T>
+struct ArrayReader : IArrayReader {
+	ArrayReader(const T& a) : array_(a) {}
+	const T& array_;
+	typename T::const_iterator p_;
+	bool init_ = false;
+	
+	bool next() final {
+		if (!init_) {
+			init_ = true;
+			p_ = array_.begin();
+		} else {
+			++p_;
+		}
+		return p_ != array_.end();
+	}
+	void* get_current() final {
+		return (void*)p_.get();
+	}
+};
+
+template <typename T>
+struct ArrayWriter : IArrayWriter {
+	ArrayWriter(T& a) : array_(a) {}
+	T& array_;
+	
+	void reserve(size_t sz) final { array_.reserve(sz); }
+	void push_back_move(void* data) {
+		using V = typename T::value_type;
+		array_.push_back(move(*reinterpret_cast<V*>(data)));
+	}
+};
+
 template <typename T>
 void VariableLengthArrayType<T>::deserialize(T& obj, const ArchiveNode& node, IUniverse& universe) const {
-	if (node.is_array()) {
-		size_t sz = node.array_size();
-		obj.reserve(sz);
-		for (size_t i = 0; i < sz; ++i) {
-			ElementType element;
-			get_type<ElementType>()->deserialize_raw(reinterpret_cast<byte*>(&element), node[i], universe);
-			obj.push_back(std::move(element));
-		}
-	}
+	ArrayWriter<T> w(obj);
+	this->deserialize_array(w, node, universe);
 }
 
 template <typename T>
 void VariableLengthArrayType<T>::serialize(const T& obj, ArchiveNode& node, IUniverse& universe) const {
-	for (auto& it: obj) {
-		ArchiveNode& element = node.array_push();
-		get_type<ElementType>()->serialize_raw(reinterpret_cast<const byte*>(&it), element, universe);
-	}
+	ArrayReader<T> r(obj);
+	this->serialize_array(r, node, universe);
 }
 
 }

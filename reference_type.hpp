@@ -45,14 +45,17 @@ struct ReferenceTypeImpl : TypeFor<T, ReferenceType> {
 template <typename T>
 void ReferenceTypeImpl<T>::deserialize(T& ptr, const ArchiveNode& node, IUniverse& universe) const {
 	if (node.is_scalar()) {
-		ptr = aspect_cast<typename T::PointeeType>(universe.get_object(node.string_value));
+		StringRef object_name;
+		if (node >> object_name) {
+			ptr = aspect_cast<typename T::PointeeType>(universe.get_object(object_name));
+		}
 	}
 }
 
 template <typename T>
 void ReferenceTypeImpl<T>::serialize(const T& ptr, ArchiveNode& node, IUniverse& universe) const {
 	if (ptr) {
-		node = ptr->object_id();
+		node << ptr->object_id();
 	} else {
 		node.clear();
 	}
