@@ -18,7 +18,7 @@ namespace {
 	const ObjectTypeBase* get_class_from_map(const ArchiveNode& node, String& out_error) {
 		String clsname;
 		const ArchiveNode& cls_node = node["class"];
-		if (!cls_node.get(clsname)) {
+		if (!(cls_node >> clsname)) {
 			out_error = "Class not specified.";
 			return nullptr;
 		}
@@ -59,48 +59,35 @@ namespace {
 	
 	struct MergedArchiveNode : public ArchiveNode {
 	public:
-		MergedArchiveNode(Archive& archive) : ArchiveNode(archive, ArchiveNodeType::Map) {}
+		MergedArchiveNode(Archive& archive) : ArchiveNode(archive) {}
 	};
 	
 	void merge_archive_node_map(ArchiveNode& into, const ArchiveNode& from) {
-		for (auto pair: from.internal_map()) {
-			into.internal_map()[pair.first] = pair.second;
-		}
+		from.value().when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& from_map) {
+			if (!into.is_map()) {
+				into.value() = ArchiveNode::MapType(into.allocator());
+			}
+			into.value().when<ArchiveNode::MapType>([&](ArchiveNode::MapType& into_map) {
+				for (auto pair: from_map) {
+					into_map[pair.first] = pair.second;
+				}
+			});
+		});
 	}
 	
 	void copy_archive_node(ArchiveNode& to, const ArchiveNode& from) {
-		switch (from.type()) {
-			case ArchiveNodeType::Empty: to.clear(); break;
-			case ArchiveNodeType::Float:
-				double f;
-				from.get(f);
-				to.set(f);
-				break;
-			case ArchiveNodeType::Integer:
-				int64 n;
-				from.get(n);
-				to.set(n);
-				break;
-			case ArchiveNodeType::String: {
-				String s;
-				from.get(s);
-				to.set(std::move(s));
-				break;
+		if (from.is_scalar()) {
+			to.value() = from.value();
+		} else if (from.is_array()) {
+			for (size_t i = 0; i < from.array_size(); ++i) {
+				ArchiveNode& n = to.array_push();
+				copy_archive_node(n, from[i]);
 			}
-			case ArchiveNodeType::Array: {
-				for (size_t i = 0; i < from.array_size(); ++i) {
-					ArchiveNode& n = to.array_push();
-					copy_archive_node(n, from[i]);
-				}
-				break;
-			}
-			case ArchiveNodeType::Map: {
-				for (auto it: from.internal_map()) {
-					ArchiveNode& n = to[it.first];
-					copy_archive_node(n, *it.second);
-				}
-				break;
-			}
+		} else if (from.is_map()) {
+			from.map_each_pair([&](StringRef key, const ArchiveNode* child) {
+				ArchiveNode& n = to[key];
+				copy_archive_node(n, *child);
+			});
 		}
 	}
 }
@@ -113,7 +100,7 @@ ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
 	
 	MergedArchiveNode merged_node(node.archive());
 	ResourceID template_rid;
-	if (node["template"].get(template_rid)) {
+	if (node["template"] >> template_rid) {
 		ResourcePtr<ObjectTemplate> templ = load_resource<ObjectTemplate>(template_rid);
 		if (templ != nullptr) {
 			copy_archive_node(merged_node, templ->archive.root());
@@ -129,7 +116,7 @@ ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
 	}
 	
 	String id;
-	if (!merged_node["id"].get(id)) {
+	if (!(merged_node["id"] >> id)) {
 		Warning() << "Object without id.";
 	}
 	

@@ -6,7 +6,6 @@
 #include "object/object.hpp"
 #include "type/type.hpp"
 #include "object/objectptr.hpp"
-#include "serialization/archive_node_type.hpp"
 #include "base/stack_array.hpp"
 
 #include "base/string.hpp"
@@ -19,13 +18,12 @@ struct ArchiveNode;
 struct IUniverse;
 
 struct Archive {
-	typedef ArchiveNodeType::Type NodeType;
 	virtual ~Archive() {}
 	virtual ArchiveNode& root() = 0;
 	virtual const ArchiveNode& root() const = 0;
 	virtual void write(OutputStream& os) const = 0;
 	virtual size_t read(InputStream& is, String& out_error) = 0;
-	virtual ArchiveNode* make(NodeType type = NodeType::Empty) = 0;
+	virtual ArchiveNode* make() = 0;
 	virtual const ArchiveNode& empty() const = 0;
 	
 	const ArchiveNode& operator[](StringRef key) const;

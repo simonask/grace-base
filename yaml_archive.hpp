@@ -18,7 +18,7 @@ namespace falling {
 	struct YAMLArchive;
 	
 	struct YAMLArchiveNode : ArchiveNode {
-		YAMLArchiveNode(YAMLArchive&, ArchiveNodeType::Type type);
+		YAMLArchiveNode(YAMLArchive&);
 	};
 	
 	struct YAMLArchive : public Archive {
@@ -29,23 +29,23 @@ namespace falling {
 		void write(OutputStream& os) const override;
 		size_t read(InputStream& is, String& out_error) override;
 		bool can_parse(const byte* begin, const byte* end) const;
-		ArchiveNode* make(NodeType type = NodeType::Empty) override { return make_internal(type); }
+		ArchiveNode* make() override { return make_internal(); }
 		const ArchiveNode& empty() const override { return empty_; }
 		
 		void clear();
 	private:
-		YAMLArchiveNode* make_internal(NodeType type = NodeType::Empty);
+		YAMLArchiveNode* make_internal();
 		YAMLArchiveNode* root_;
 		const YAMLArchiveNode empty_;
 		ContainedBag<YAMLArchiveNode> nodes_;
 		friend struct YAMLParserState;
 	};
 	
-	inline YAMLArchiveNode::YAMLArchiveNode(YAMLArchive& archive, ArchiveNodeType::Type type) : ArchiveNode(archive, type) {}
+	inline YAMLArchiveNode::YAMLArchiveNode(YAMLArchive& archive) : ArchiveNode(archive) {}
 	
 	inline ArchiveNode& YAMLArchive::root() {
 		if (root_ == nullptr) {
-			root_ = make_internal(ArchiveNodeType::Map);
+			root_ = make_internal();
 		}
 		return *root_;
 	}

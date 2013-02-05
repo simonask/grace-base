@@ -12,6 +12,15 @@
 
 namespace falling {
 	namespace {
+		enum NodeType : uint8 {
+			Empty,
+			Array,
+			Map,
+			Integer,
+			Float,
+			String,
+		};
+	
 		void write_byte(OutputStream& os, byte b) {
 			os.write(&b, 1);
 		}
@@ -45,48 +54,74 @@ namespace falling {
 	}
 	
 	void BinaryArchiveNode::write(OutputStream& os) const {
-		ArchiveNodeType::Type t = type();
+		NodeType t;
+		if (is_empty()) {
+			t = NodeType::Empty;
+		} else if (is_string()) {
+			t = NodeType::String;
+		} else if (is_array()) {
+			t = NodeType::Array;
+		} else if (is_map()) {
+			t = NodeType::Map;
+		} else if (is_integer()) {
+			t = NodeType::Integer;
+		} else if (is_float()) {
+			t = NodeType::Float;
+		} else {
+			ASSERT(false); // Invalid node!
+		}
+		
 		ASSERT(t <= UINT8_MAX);
 		write_byte(os, (byte)t);
 		switch (t) {
-			case ArchiveNodeType::Empty: { break; }
-			case ArchiveNodeType::String: {
-				uint32 string_length = (uint32)string_value.size();
-				write_bytes(os, &string_length);
-				write_bytes(os, string_value.data(), string_length);
-				break;
-			}
-			case ArchiveNodeType::Array: {
-				uint32 array_length = array_.size();
-				write_bytes(os, &array_length);
-				for (auto it: array_) {
-					((BinaryArchiveNode*)it)->write(os);
-				}
-				break;
-			}
-			case ArchiveNodeType::Map: {
-				uint32 map_length = (uint32)map_.size();
-				write_bytes(os, &map_length);
-				for (auto it: map_) {
-					uint32_t string_length = (uint32)it.first.size();
+			case NodeType::Empty: { break; }
+			case NodeType::String: {
+				value_.when<StringType>([&](const StringType& string_value) {
+					uint32 string_length = (uint32)string_value.size();
 					write_bytes(os, &string_length);
-					write_bytes(os, it.first.data(), string_length);
-					((BinaryArchiveNode*)it.second)->write(os);
-				}
+					write_bytes(os, string_value.data(), string_length);
+				});
 				break;
 			}
-			case ArchiveNodeType::Integer: {
-				write_bytes(os, &integer_value);
+			case NodeType::Array: {
+				value_.when<ArrayType>([&](const ArrayType& array) {
+					uint32 array_length = array.size();
+					write_bytes(os, &array_length);
+					for (auto it: array) {
+						((BinaryArchiveNode*)it)->write(os);
+					}
+				});
 				break;
 			}
-			case ArchiveNodeType::Float: {
-				write_bytes(os, &float_value);
+			case NodeType::Map: {
+				value_.when<MapType>([&](const MapType& map) {
+					uint32 map_length = (uint32)map.size();
+					write_bytes(os, &map_length);
+					for (auto it: map) {
+						uint32_t string_length = (uint32)it.first.size();
+						write_bytes(os, &string_length);
+						write_bytes(os, it.first.data(), string_length);
+						((BinaryArchiveNode*)it.second)->write(os);
+					}
+				});
+				break;
+			}
+			case NodeType::Integer: {
+				value_.when<IntegerType>([&](const IntegerType& n) {
+					write_bytes(os, &n);
+				});
+				break;
+			}
+			case NodeType::Float: {
+				value_.when<FloatType>([&](const FloatType& f) {
+					write_bytes(os, &f);
+				});
 				break;
 			}
 		}
 	}
 	
-	bool BinaryArchiveNode::read(const byte*& p, const byte *end, String &out_error) {
+	bool BinaryArchiveNode::read(const byte*& p, const byte *end, falling::String &out_error) {
 		byte type;
 		if (!read_bytes(p, end, &type)) {
 			out_error = "Unexpected end of stream.";
@@ -94,9 +129,8 @@ namespace falling {
 		}
 		
 		switch (type) {
-			case ArchiveNodeType::Empty: { clear(); return true; }
-			case ArchiveNodeType::String: {
-				clear_as(ArchiveNodeType::String);
+			case NodeType::Empty: { clear(); return true; }
+			case NodeType::String: {
 				uint32 string_length;
 				if (!read_bytes(p, end, &string_length)) {
 					out_error = "Invalid string length (corrupt stream).";
@@ -106,18 +140,19 @@ namespace falling {
 					out_error = "Unexpected end of stream (corrupt string length).";
 					return false;
 				}
-				string_value = String(reinterpret_cast<const char*>(p), string_length);
+				value_ = StringType(reinterpret_cast<const char*>(p), string_length, allocator());
 				p += string_length;
 				return true;
 			}
-			case ArchiveNodeType::Array: {
-				clear_as(ArchiveNodeType::Array);
+			case NodeType::Array: {
 				uint32 array_length;
 				if (!read_bytes(p, end, &array_length)) {
 					out_error = "Invalid array length (corrupt stream).";
 					return false;
 				}
-				array_.reserve(array_length);
+				ArrayType tmp(allocator());
+				tmp.reserve(array_length);
+				value_ = move(tmp);
 				for (uint32 i = 0; i < array_length; ++i) {
 					BinaryArchiveNode& node = static_cast<BinaryArchiveNode&>(array_push());
 					if (!node.read(p, end, out_error)) {
@@ -126,8 +161,7 @@ namespace falling {
 				}
 				return true;
 			}
-			case ArchiveNodeType::Map: {
-				clear_as(ArchiveNodeType::Map);
+			case NodeType::Map: {
 				uint32 map_length;
 				if (!read_bytes(p, end, &map_length)) {
 					out_error = "Invalid map length (corrupt stream).";
@@ -139,7 +173,7 @@ namespace falling {
 						out_error = "Invalid map key length (corrupt stream).";
 						return false;
 					}
-					String key = String(reinterpret_cast<const char*>(p), string_length);
+					StringRef key = StringRef(reinterpret_cast<const char*>(p), string_length);
 					p += string_length;
 					BinaryArchiveNode& value = static_cast<BinaryArchiveNode&>((*this)[key]);
 					if (!value.read(p, end, out_error)) {
@@ -148,20 +182,22 @@ namespace falling {
 				}
 				return true;
 			}
-			case ArchiveNodeType::Integer: {
-				clear_as(ArchiveNodeType::Integer);
+			case NodeType::Integer: {
+				IntegerType integer_value;
 				if (!read_bytes(p, end, &integer_value)) {
 					out_error = "Invalid integer value (corrupt stream).";
 					return false;
 				}
+				*this << integer_value;
 				return true;
 			}
-			case ArchiveNodeType::Float: {
-				clear_as(ArchiveNodeType::Float);
+			case NodeType::Float: {
+				FloatType float_value;
 				if (!read_bytes(p, end, &float_value)) {
 					out_error = "Invalid float value (corrupt stream).";
 					return false;
 				}
+				*this << float_value;
 				return true;
 			}
 			default:
@@ -170,20 +206,20 @@ namespace falling {
 		}
 	}
 	
-	BinaryArchive::BinaryArchive(IAllocator& alloc) : Archive(alloc), root_(*this, ArchiveNodeType::Map), empty_(*this, ArchiveNodeType::Empty), nodes_(alloc) {
+	BinaryArchive::BinaryArchive(IAllocator& alloc) : Archive(alloc), root_(*this), empty_(*this), nodes_(alloc) {
 		clear();
 	}
 	
 	void BinaryArchive::write(OutputStream &os) const {
 		StringStream ss;
 		root_.write(ss);
-		String data = ss.str();
+		falling::String data = ss.str();
 		uint32 stream_length = (uint32)data.size();
 		write_bytes(os, &stream_length);
 		FormattedStream(os) << data;
 	}
 	
-	size_t BinaryArchive::read(InputStream& is, String& out_error) {
+	size_t BinaryArchive::read(InputStream& is, falling::String& out_error) {
 		clear();
 		if (is.has_length()) {
 			size_t stream_length = is.length();
@@ -220,8 +256,8 @@ namespace falling {
 		root_.clear();
 	}
 	
-	BinaryArchiveNode* BinaryArchive::make_internal(ArchiveNodeType::Type t) {
-		BinaryArchiveNode* node = nodes_.allocate(*this, t);
+	BinaryArchiveNode* BinaryArchive::make_internal() {
+		BinaryArchiveNode* node = nodes_.allocate(*this);
 		return node;
 	}
 	

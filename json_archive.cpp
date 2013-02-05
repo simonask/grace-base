@@ -6,13 +6,13 @@ JSONArchive::JSONArchive(IAllocator& alloc) : Archive(alloc), root_(nullptr), no
 	empty_ = make_internal();
 }
 
-JSONArchiveNode* JSONArchive::make_internal(ArchiveNode::Type node_type) {
-	return nodes_.allocate(*this, node_type);
+JSONArchiveNode* JSONArchive::make_internal() {
+	return nodes_.allocate(*this);
 }
 
 ArchiveNode& JSONArchive::root() {
 	if (root_ == nullptr) {
-		root_ = make_internal(ArchiveNodeType::Map);
+		root_ = make_internal();
 	}
 	return *root_;
 }
@@ -47,23 +47,23 @@ static void print_string(OutputStream& oss, StringRef str) {
 
 void JSONArchiveNode::write(OutputStream& oss, bool print_inline, int indent) const {
 	FormattedStream os(oss);
-	switch (type()) {
-		case ArchiveNodeType::Empty: os << "null"; break;
-		case ArchiveNodeType::Array: {
+	if (is_empty()) { os << "null"; }
+	else if (is_array()) {
+		value_.when<ArrayType>([&](const ArrayType& arr) {
 			os << '[';
 			if (print_inline) {
-				for (size_t i = 0; i < array_.size(); ++i) {
-					dynamic_cast<const JSONArchiveNode*>(array_[i])->write(os, true, indent);
-					if (i+1 != array_.size()) {
+				for (size_t i = 0; i < array_size(); ++i) {
+					dynamic_cast<const JSONArchiveNode*>(arr[i])->write(os, true, indent);
+					if (i+1 != arr.size()) {
 						os << ", ";
 					}
 				}
 			} else {
-				for (size_t i = 0; i < array_.size(); ++i) {
+				for (size_t i = 0; i < array_size(); ++i) {
 					os << '\n';
 					print_indentation(os, indent+1);
-					dynamic_cast<const JSONArchiveNode*>(array_[i])->write(os, indent > 2, indent+1);
-					if (i+1 != array_.size()) {
+					dynamic_cast<const JSONArchiveNode*>(arr[i])->write(os, indent > 2, indent+1);
+					if (i+1 != arr.size()) {
 						os << ',';
 					}
 				}
@@ -71,29 +71,29 @@ void JSONArchiveNode::write(OutputStream& oss, bool print_inline, int indent) co
 				print_indentation(os, indent);
 			}
 			os << ']';
-			break;
-		}
-		case ArchiveNodeType::Map: {
+		});
+	} else if (is_map()) {
+		value_.when<MapType>([&](const MapType& map) {
 			os << '{';
 			if (print_inline) {
-				for (auto it = map_.begin(); it != map_.end();) {
+				for (auto it = map.begin(); it != map.end();) {
 					print_string(os, it->first);
 					os << ": ";
 					dynamic_cast<const JSONArchiveNode*>(it->second)->write(os, true, indent);
 					++it;
-					if (it != map_.end()) {
+					if (it != map.end()) {
 						os << ", ";
 					}
 				}
 			} else {
-				for (auto it = map_.begin(); it != map_.end();) {
+				for (auto it = map.begin(); it != map.end();) {
 					os << '\n';
 					print_indentation(os, indent+1);
 					print_string(os, it->first);
 					os << ": ";
 					dynamic_cast<const JSONArchiveNode*>(it->second)->write(os, indent > 2, indent+1);
 					++it;
-					if (it != map_.end()) {
+					if (it != map.end()) {
 						os << ',';
 					}
 				}
@@ -101,11 +101,19 @@ void JSONArchiveNode::write(OutputStream& oss, bool print_inline, int indent) co
 				print_indentation(os, indent);
 			}
 			os << '}';
-			break;
-		}
-		case ArchiveNodeType::Integer: os << integer_value; break;
-		case ArchiveNodeType::Float: os << float_value; break;
-		case ArchiveNodeType::String: print_string(os, string_value); break;
+		});
+	} else if (is_integer()) {
+		IntegerType n;
+		(*this) >> n;
+		os << n;
+	} else if (is_float()) {
+		FloatType f;
+		(*this) >> f;
+		os << f;
+	} else if (is_string()) {
+		StringRef str;
+		(*this) >> str;
+		print_string(os, str);
 	}
 }
 	

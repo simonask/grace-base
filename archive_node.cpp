@@ -7,61 +7,118 @@
 namespace falling {
 class IUniverse;
 
+ArchiveNode::ArchiveNode(Archive& archive) : archive_(archive), value_(archive.allocator()) {}
+
+bool ArchiveNode::is_integer() const {
+	return value_.type() == get_type<IntegerType>();
+}
+
+bool ArchiveNode::is_float() const {
+	return value_.type() == get_type<FloatType>();
+}
+
+bool ArchiveNode::is_array() const {
+	return value_.type() == get_type<ArrayType>();
+}
+
+bool ArchiveNode::is_map() const {
+	return value_.type() == get_type<MapType>();
+}
+
+bool ArchiveNode::is_string() const {
+	return value_.type() == get_type<StringType>();
+}
+
+bool ArchiveNode::is_scalar() const {
+	return !is_array() && !is_map();
+}
+
+bool ArchiveNode::is_empty() const {
+	return value_.is_empty();
+}
+
 IAllocator& ArchiveNode::allocator() const {
 	return archive().allocator();
 }
 
 ArchiveNode& ArchiveNode::array_push() {
-	if (type() != Type::Array) {
-		clear_as(Type::Array);
+	if (!is_array()) {
+		value_ = ArrayType(allocator());
 	}
 	ArchiveNode* n = archive_.make();
-	array_.push_back(n);
+	value_.when<ArrayType>([&](ArrayType& array) {
+		array.push_back(n);
+	});
 	return *n;
 }
 
 const ArchiveNode& ArchiveNode::operator[](size_t idx) const {
-	ASSERT(type() == Type::Array);
-	if (idx >= array_.size()) {
-		return archive_.empty();
-	}
-	return *array_[idx];
+	if (!is_array()) return archive_.empty();
+	const ArchiveNode* result = &archive_.empty();
+	value_.when<ArrayType>([&](const ArrayType& array) {
+		if (idx < array.size()) {
+			result = array[idx];
+		}
+	});
+	return *result;
 }
 
 ArchiveNode& ArchiveNode::operator[](size_t idx) {
-	if (type() != Type::Array) {
-		clear_as(Type::Array);
+	if (!is_array()) {
+		value_ = ArrayType(allocator());
 	}
-	if (idx < array_.size()) {
-		return *array_[idx];
-	} else {
-		array_.reserve(idx+1);
-		while (array_.size() < idx+1) { array_.push_back(archive_.make()); }
-		return *array_[idx];
-	}
+	
+	ArchiveNode* result;
+	value_.when<ArrayType>([&](ArrayType& array) {
+		if (idx < array.size()) {
+			result = array[idx];
+		} else {
+			array.reserve(idx+1);
+			while (array.size() < idx+1) { array.push_back(make_child()); }
+			result = array[idx];
+		}
+	});
+	return *result;
 }
 
 const ArchiveNode& ArchiveNode::operator[](StringRef key) const {
-	if (type() != Type::Map) return archive_.empty();
-	return *find_or(map_, key, &archive_.empty());
+	if (!is_map()) {
+		return archive_.empty();
+	}
+	const ArchiveNode* result;
+	value_.when<MapType>([&](const MapType& map) {
+		result = find_or(map, key, &archive_.empty());
+	});
+	return *result;
 }
 
 ArchiveNode& ArchiveNode::operator[](StringRef key) {
-	if (type() != Type::Map) {
-		clear_as(Type::Map);
+	if (!is_map()) {
+		value_ = MapType(allocator());
 	}
-	auto it = map_.find(String(key));
-	if (it == map_.end()) {
-		ArchiveNode* n = archive_.make();
-		map_[String(key)] = n;
-		return *n;
-	} else {
-		return *it->second;
-	}
+	ArchiveNode* result;
+	value_.when<MapType>([&](MapType& map) {
+		auto it = map.find(key);
+		if (it == map.end()) {
+			result = make_child();
+			map[String(key, allocator())] = result;
+		} else {
+			result = it->second;
+		}
+	});
+	return *result;
+}
+
+ArchiveNode* ArchiveNode::make_child() {
+	return archive_.make();
 }
 
 size_t ArchiveNode::array_size() const {
-	return array_.size();
+	size_t sz = 0;
+	value_.when<ArrayType>([&](const ArrayType& array) {
+		sz = array.size();
+	});
+	return sz;
 }
 	
 	const ArchiveNodeConstPtrType* BuildTypeInfo<const ArchiveNode*>::build() {
@@ -79,5 +136,22 @@ size_t ArchiveNode::array_size() const {
 
 	StringRef ArchiveNodeConstPtrType::name() const {
 		return "const ArchiveNode*";
+	}
+	
+	const ArchiveNodePtrType* BuildTypeInfo<ArchiveNode*>::build() {
+		static const ArchiveNodePtrType type = ArchiveNodePtrType();
+		return &type;
+	}
+	
+	void ArchiveNodePtrType::deserialize(ArchiveNodePtrType::T &place, const falling::ArchiveNode & node, falling::IUniverse &) const {
+		ASSERT(false); // Cannot deserialize a non-const pointer to an ArchiveNode.
+	}
+	
+	void ArchiveNodePtrType::serialize(const ArchiveNodePtrType::T &place, falling::ArchiveNode &, falling::IUniverse &) const {
+		ASSERT(false); // Cannot serialize a reference into another serialized tree.
+	}
+	
+	StringRef ArchiveNodePtrType::name() const {
+		return "ArchiveNode*";
 	}
 }

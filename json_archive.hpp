@@ -12,7 +12,7 @@ namespace falling {
 struct JSONArchive;
 
 struct JSONArchiveNode : ArchiveNode {
-	JSONArchiveNode(JSONArchive& archive, ArchiveNodeType::Type t = ArchiveNodeType::Empty);
+	JSONArchiveNode(JSONArchive& archive);
 	void write(OutputStream& os) const { write(os, false, 0); }
 	void write(OutputStream& os, bool print_inline, int indent) const;
 	bool read(const byte*& p, const byte* end, String& out_error);
@@ -24,7 +24,7 @@ struct JSONArchive : Archive {
 	const ArchiveNode& root() const override;
 	void write(OutputStream& os) const override;
 	size_t read(InputStream& is, String& out_error) override;
-	ArchiveNode* make(ArchiveNode::Type t = ArchiveNodeType::Empty) override { return make_internal(t); }
+	ArchiveNode* make() override { return make_internal(); }
 	
 	const ArchiveNode& empty() const { return *empty_; }
 private:
@@ -32,10 +32,10 @@ private:
 	JSONArchiveNode* empty_;
 	JSONArchiveNode* root_;
 	ContainedBag<JSONArchiveNode> nodes_;
-	JSONArchiveNode* make_internal(ArchiveNodeType::Type t = ArchiveNodeType::Empty);
+	JSONArchiveNode* make_internal();
 };
 
-inline JSONArchiveNode::JSONArchiveNode(JSONArchive& archive, ArchiveNode::Type t) : ArchiveNode(archive, t) {}
+inline JSONArchiveNode::JSONArchiveNode(JSONArchive& archive) : ArchiveNode(archive) {}
 }
 
 #endif /* end of include guard: JSON_ARCHIVE_HPP_4OX35IUJ */

@@ -9,6 +9,7 @@ struct IUniverse;
 struct ArchiveNode;
 
 ObjectPtr<> deserialize_object(const ArchiveNode& representation, IUniverse& universe);
+void deserialize_object(ObjectPtr<> place, const ArchiveNode& representation, IUniverse& universe);
 
 }
 

@@ -42,19 +42,19 @@ namespace falling {
 			
 			StateType state() const {
 				if (stack.size() == 0) return TopLevel;
-				if (top()->type() == ArchiveNodeType::Array) return Sequence;
-				if (top()->type() == ArchiveNodeType::Map) {
+				if (top()->is_array()) return Sequence;
+				if (top()->is_map()) {
 					return top_key().size() == 0 ? MappingExpectingKey : MappingExpectingValue;
 				}
 				return TopLevel;
 			}
 			
-			ArchiveNode* make(ArchiveNodeType::Type t) {
-				return archive.make(t);
+			ArchiveNode* make() {
+				return archive.make();
 			}
 			
 			void push(ArchiveNode* node) {
-				if (node->type() == ArchiveNodeType::Array || node->type() == ArchiveNodeType::Map) {
+				if (node->is_array() || node->is_map()) {
 					stack.push_back(Pair<ArchiveNode*,String>{node, String("")});
 				} else {
 					throw YAMLParserError("Invalid node type for parser stack.");
@@ -67,17 +67,28 @@ namespace falling {
 						roots.push_back(node);
 						break;
 					case Sequence:
-						top()->internal_array().push_back(node);
+						if (!top()->is_array()) {
+							top()->value() = ArchiveNode::ArrayType(top()->allocator());
+						}
+						top()->value().when<ArchiveNode::ArrayType>([&](ArchiveNode::ArrayType& array) {
+							array.push_back(node);
+						});
 						break;
 					case MappingExpectingKey: {
-						if (node->type() != ArchiveNodeType::String) {
+						if (!node->is_string()) {
 							throw YAMLParserError("Expected map key, but didn't get a string.");
 						}
-						top_key() = node->internal_string();
+						*node >> top_key();
 						break;
 					}
 					case MappingExpectingValue: {
-						top()->internal_map()[top_key()] = node;
+						// Insert value in top mapping.
+						if (!top()->is_map()) {
+							top()->value() = ArchiveNode::MapType(top()->allocator());
+						}
+						top()->value().when<ArchiveNode::MapType>([&](ArchiveNode::MapType& map) {
+							map[top_key()] = node;
+						});
 						top_key() = "";
 						break;
 					}
@@ -91,7 +102,9 @@ namespace falling {
 			}
 			
 			void begin_sequence(const char* anchor) {
-				push(make(ArchiveNodeType::Array));
+				auto n = make();
+				n->value() = ArchiveNode::ArrayType(n->allocator());
+				push(n);
 				if (anchor != nullptr) anchors[anchor] = top();
 			}
 			
@@ -104,7 +117,9 @@ namespace falling {
 			}
 			
 			void begin_mapping(const char* anchor) {
-				push(make(ArchiveNodeType::Map));
+				auto n = make();
+				n->value() = ArchiveNode::MapType(n->allocator());
+				push(n);
 				if (anchor != nullptr) anchors[anchor] = top();
 			}
 			
@@ -129,7 +144,7 @@ namespace falling {
 			}
 			
 			void scalar(const char* value_as_string, size_t len) {
-				ArchiveNode* node = make(ArchiveNodeType::Empty);
+				ArchiveNode* node = make();
 				String input(value_as_string, len);
 				if (input == "~") { // Ruby convention for representing nil
 					add_value_to_top(node);
@@ -146,7 +161,7 @@ namespace falling {
 					}
 					if (is_integer) {
 						Maybe<int64> n = parse<int64>(input);
-						node->set(n.get_or(0));
+						*node << n.get_or(0);
 						add_value_to_top(node);
 						return;
 					}
@@ -158,10 +173,10 @@ namespace falling {
 				const char* conversion_success_location = buffer.data() + len;
 				float64 value = strtod(buffer.data(), &endptr);
 				if (endptr == conversion_success_location) {
-					node->set(value);
+					*node << value;
 				} else {
 					// Nope, it was a string!
-					node->set(std::move(input));
+					*node << std::move(input);
 				}
 				add_value_to_top(node);
 			}
@@ -179,48 +194,44 @@ namespace falling {
 			}
 			
 			void serialize(const ArchiveNode* node) {
-				switch (node->type()) {
-					case ArchiveNodeType::Empty: emit_nil(); break;
-					case ArchiveNodeType::Array: {
-						emit_begin_sequence();
-						for (auto it: node->internal_array()) {
+				if (node->is_empty()) {
+					emit_nil();
+				} else if (node->is_array()) {
+					emit_begin_sequence();
+					node->value().when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& array) {
+						for (auto it: array) {
 							serialize(it);
 						}
-						emit_end_sequence();
-						break;
-					}
-					case ArchiveNodeType::Map: {
-						emit_begin_mapping();
-						for (auto it: node->internal_map()) {
-							emit_string(it.first);
-							serialize(it.second);
+					});
+					emit_end_sequence();
+				} else if (node->is_map()) {
+					emit_begin_mapping();
+					node->value().when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
+						for (auto pair: map) {
+							emit_string(pair.first);
+							serialize(pair.second);
 						}
-						emit_end_mapping();
-						break;
-					}
-					case ArchiveNodeType::Float: {
-						StringStream ss;
-						float64 value;
-						node->get(value);
-						ss << value;
-						emit_string(ss.str());
-						break;
-					}
-					case ArchiveNodeType::Integer: {
-						StringStream ss;
-						int64 value;
-						node->get(value);
-						ss << value;
-						emit_string(ss.str());
-						break;
-					}
-					case ArchiveNodeType::String: {
-						if (node->internal_string() == "~") {
-							emit_string("\\~");
-						} else {
-							emit_string(node->internal_string());
-						}
-						break;
+					});
+					emit_end_mapping();
+				} else if (node->is_float()) {
+					ArchiveNode::FloatType f;
+					*node >> f;
+					StringStream ss;
+					ss << f;
+					emit_string(ss.str());
+				} else if (node->is_integer()) {
+					ArchiveNode::IntegerType n;
+					*node >> n;
+					StringStream ss;
+					ss << n;
+					emit_string(ss.str());
+				} else if (node->is_string()) {
+					StringRef str;
+					*node >> str;
+					if (str == "~") {
+						emit_string("\\~");
+					} else {
+						emit_string(str);
 					}
 				}
 			}
@@ -270,7 +281,7 @@ namespace falling {
 		int yaml_write_handler_t(void *data, unsigned char *buffer, size_t size);
 	}
 	
-	YAMLArchive::YAMLArchive(IAllocator& alloc) : Archive(alloc), root_(nullptr), empty_(*this, ArchiveNodeType::Empty), nodes_(alloc) {
+	YAMLArchive::YAMLArchive(IAllocator& alloc) : Archive(alloc), root_(nullptr), empty_(*this), nodes_(alloc) {
 		clear();
 	}
 	
@@ -357,8 +368,8 @@ namespace falling {
 		yaml_parser_delete(&parser);
 		
 		if (state.root() != nullptr) {
-			if (state.root()->type() != ArchiveNodeType::Map) {
-				root().internal_map()["yaml_document"] = state.root();
+			if (!state.root()->is_map()) {
+				root().value() = Dictionary<ArchiveNode*>({{"yaml_document", state.root()}}, root().allocator());
 			} else {
 				root_ = (YAMLArchiveNode*)state.root();
 			}
@@ -386,7 +397,7 @@ namespace falling {
 		root_ = nullptr;
 	}
 	
-	YAMLArchiveNode* YAMLArchive::make_internal(ArchiveNodeType::Type t) {
-		return nodes_.allocate(*this, t);
+	YAMLArchiveNode* YAMLArchive::make_internal() {
+		return nodes_.allocate(*this);
 	}
 }

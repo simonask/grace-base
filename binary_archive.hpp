@@ -18,7 +18,7 @@ namespace falling {
 	struct BinaryArchive;
 	
 	struct BinaryArchiveNode : ArchiveNode {
-		BinaryArchiveNode(BinaryArchive&, ArchiveNodeType::Type type);
+		BinaryArchiveNode(BinaryArchive&);
 		
 		void write(OutputStream& os) const;
 		bool read(const byte*& ptr, const byte* end, String& out_error);
@@ -32,18 +32,18 @@ namespace falling {
 		void write(OutputStream& os) const override;
 		size_t read(InputStream& is, String& out_error) override;
 		bool can_parse(const byte* begin, const byte* end) const;
-		ArchiveNode* make(NodeType type = NodeType::Empty) override { return make_internal(type); }
+		ArchiveNode* make() override { return make_internal(); }
 		const ArchiveNode& empty() const override { return empty_; }
 		
 		void clear();
 	private:
-		BinaryArchiveNode* make_internal(NodeType type = NodeType::Empty);
+		BinaryArchiveNode* make_internal();
 		BinaryArchiveNode root_;
 		const BinaryArchiveNode empty_;
 		ContainedBag<BinaryArchiveNode> nodes_;
 	};
 	
-	inline BinaryArchiveNode::BinaryArchiveNode(BinaryArchive& archive, ArchiveNodeType::Type type) : ArchiveNode(archive, type) {}
+	inline BinaryArchiveNode::BinaryArchiveNode(BinaryArchive& archive) : ArchiveNode(archive) {}
 }
 
 #endif
