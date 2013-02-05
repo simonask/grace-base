@@ -55,7 +55,7 @@ namespace falling {
 					auto& slot_node = connection["slot"];
 					StringRef receiver_id;
 					StringRef slot_name;
-					if (receiver_node.get(receiver_id) && slot_node.get(slot_name)) {
+					if ((receiver_node >> receiver_id) && (slot_node >> slot_name)) {
 						ObjectPtr<> receiver = universe.get_object(receiver_id);
 						if (receiver) {
 							signal.connect(receiver, slot_name);
@@ -82,7 +82,7 @@ namespace falling {
 				ArchiveNode& signal_connection = node.array_push();
 				ArchiveNode& receiver_node = signal_connection["receiver"];
 				get_type(receiver)->serialize_raw(reinterpret_cast<byte*>(&receiver), receiver_node, universe);
-				signal_connection["slot"] = slot->name();
+				signal_connection["slot"] << slot->name();
 			}
 		}
 	}

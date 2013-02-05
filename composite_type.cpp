@@ -108,7 +108,7 @@ void CompositeType::deserialize_raw(byte* place, const ArchiveNode& node, IUnive
 void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse& universe) const {
 	ASSERT(frozen_);
 	base_type()->serialize_raw(place, node, universe);
-	node["class"] = base_type()->name();
+	node["class"] << base_type()->name();
 	
 	size_t offset = base_type()->size();
 	ArchiveNode& aspect_array = node["aspects"];

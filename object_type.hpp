@@ -133,7 +133,7 @@ void ObjectType<T>::serialize(const T& object, ArchiveNode& node, IUniverse& uni
 	for (auto& property: properties_) {
 		property->serialize_attribute(&object, node[property->name()], universe);
 	}
-	node["class"] = this->name();
+	node["class"] << this->name();
 }
 
 }
