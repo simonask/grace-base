@@ -19,7 +19,7 @@ namespace falling {
 		StringRef str;
 		int32 n;
 		if (node >> str) {
-			place = str == "false";
+			place = str != "false";
 		} else if (node >> n) {
 			place = n != 0;
 		} else {
