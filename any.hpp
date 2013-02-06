@@ -18,6 +18,23 @@
 
 namespace falling {
 	template <bool> struct AnyWhenImpl;
+	
+#if defined(DEBUG)
+	struct IAnyDebugInfo {
+		virtual ~IAnyDebugInfo() {}
+		virtual IAnyDebugInfo* duplicate(IAllocator&, void* new_object) const = 0;
+	};
+	template <typename T>
+	struct AnyDebugInfo : IAnyDebugInfo {
+		T* object;
+		IAnyDebugInfo* duplicate(IAllocator& alloc, void* new_object) const {
+			AnyDebugInfo<T>* other = new(alloc) AnyDebugInfo<T>;
+			other->object = reinterpret_cast<T*>(new_object);
+			return other;
+		}
+	};
+#endif
+	
 
 	class Any {
 	public:
@@ -80,6 +97,25 @@ namespace falling {
 		const Type* stored_type_ = nullptr;
 		IAllocator& allocator_;
 		
+#if defined(DEBUG)
+		IAnyDebugInfo* debug_info_ = nullptr;
+		void clear_debug_info() {
+			destroy(debug_info_, allocator_);
+			debug_info_ = nullptr;
+		}
+		template <typename T>
+		void set_debug_info() {
+			clear_debug_info();
+			auto di = new(allocator_) AnyDebugInfo<T>;
+			di->object = reinterpret_cast<T*>(ptr());
+			debug_info_ = di;
+		}
+#else
+		void clear_debug_info() {}
+		template <typename T>
+		void set_debug_info() {}
+#endif
+		
 		void allocate_storage();
 		void deallocate_storage();
 		
@@ -135,8 +171,6 @@ namespace falling {
 	
 	inline Any::Any(const Any& other, IAllocator& alloc) : allocator_(alloc) {
 		assign(other);
-		allocate_storage();
-		stored_type_->copy_construct(ptr(), other.ptr());
 	}
 	
 	inline Any::Any(Any&& other, IAllocator& alloc) : allocator_(alloc) {
@@ -198,6 +232,7 @@ namespace falling {
 		clear();
 		stored_type_ = get_type<T>();
 		allocate_storage();
+		set_debug_info<T>();
 		stored_type_->move_construct(ptr(), reinterpret_cast<byte*>(&value));
 	}
 	
@@ -211,6 +246,9 @@ namespace falling {
 		if (stored_type_ != nullptr) {
 			allocate_storage();
 			stored_type_->copy_construct(ptr(), other.ptr());
+#if defined(DEBUG)
+			debug_info_ = other.debug_info_->duplicate(allocator_, ptr());
+#endif
 		}
 	}
 	
@@ -220,6 +258,10 @@ namespace falling {
 		if (stored_type_ != nullptr) {
 			allocate_storage();
 			stored_type_->move_construct(ptr(), other.ptr());
+#if defined(DEBUG)
+			debug_info_ = other.debug_info_;
+			other.debug_info_ = nullptr;
+#endif
 			other.clear();
 		}
 	}
@@ -229,6 +271,7 @@ namespace falling {
 			stored_type_->destruct(ptr(), *(IUniverse*)nullptr); // TODO: Remove IUniverse requirement, since this is undefined behavior...
 			deallocate_storage();
 			stored_type_ = nullptr;
+			clear_debug_info();
 		}
 	}
 	
