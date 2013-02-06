@@ -138,7 +138,7 @@ struct BuildTypeInfo<ArchiveNode*> {
 	inline bool ArchiveNode::operator>>(bool& out_bool) const {
 		StringRef str;
 		if (*this >> str) {
-			out_bool = str == "true";
+			out_bool = str != "false";
 			return true;
 		}
 		return false;
