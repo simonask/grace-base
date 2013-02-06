@@ -140,6 +140,10 @@ struct BuildTypeInfo<ArchiveNode*> {
 			out_integer = (T)n;
 			result = true;
 		});
+		value_.when<FloatType>([&](FloatType f) {
+			out_integer = (T)f;
+			result = true;
+		});
 		return result;
 	}
 	
@@ -149,6 +153,10 @@ struct BuildTypeInfo<ArchiveNode*> {
 		bool result = false;
 		value_.when<FloatType>([&](FloatType f) {
 			out_float = f;
+			result = true;
+		});
+		value_.when<IntegerType>([&](IntegerType n) {
+			out_float = n;
 			result = true;
 		});
 		return result;
