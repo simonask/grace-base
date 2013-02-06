@@ -31,8 +31,10 @@ struct ArchiveNode {
 	
 	// Basic deserializers
 	
+	bool operator>>(bool& out_bool) const;
+	
 	template <typename T>
-	typename std::enable_if<std::is_integral<T>::value, bool>::type
+	typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, bool>::type
 	operator>>(T& out_integer) const;
 	
 	template <typename T>
@@ -49,13 +51,15 @@ struct ArchiveNode {
 	
 	// Basic serializers
 	
+	void operator<<(bool in_bool);
+	
 	template <typename T>
 	typename std::enable_if<std::is_integral<T>::value, void>::type
-	operator<<(const T& in_integer);
+	operator<<(T in_integer);
 	
 	template <typename T>
 	typename std::enable_if<std::is_floating_point<T>::value, void>::type
-	operator<<(const T& in_float);
+	operator<<(T in_float);
 	
 	void operator<<(const String& in_str);
 	void operator<<(StringRef in_str);
@@ -130,9 +134,18 @@ template <>
 struct BuildTypeInfo<ArchiveNode*> {
 	static const ArchiveNodePtrType* build();
 };
+
+	inline bool ArchiveNode::operator>>(bool& out_bool) const {
+		StringRef str;
+		if (*this >> str) {
+			out_bool = str == "true";
+			return true;
+		}
+		return false;
+	}
 	
 	template <typename T>
-	typename std::enable_if<std::is_integral<T>::value, bool>::type
+	typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, bool>::type
 	ArchiveNode::operator>>(T& out_integer) const {
 		bool result = false;
 		value_.when<IntegerType>([&](IntegerType n) {
@@ -210,16 +223,20 @@ struct BuildTypeInfo<ArchiveNode*> {
 		return result;
 	}
 	
+	inline void ArchiveNode::operator<<(bool in_bool) {
+		value_ = StringRef(in_bool ? "true" : "false");
+	}
+	
 	template <typename T>
 	typename std::enable_if<std::is_integral<T>::value, void>::type
-	ArchiveNode::operator<<(const T& in_integer) {
+	ArchiveNode::operator<<(T in_integer) {
 		IntegerType n = (IntegerType)in_integer; // XXX: Potential information loss
 		value_ = n;
 	}
 	
 	template <typename T>
 	typename std::enable_if<std::is_floating_point<T>::value, void>::type
-	ArchiveNode::operator<<(const T& in_float) {
+	ArchiveNode::operator<<(T in_float) {
 		FloatType f = (FloatType)in_float; // XXX: Potential information loss
 		value_ = f;
 	}
