@@ -239,7 +239,9 @@ namespace falling {
 	
 	template <typename T>
 	inline void destroy(T* ptr, falling::IAllocator& alloc) {
-		ptr->~T();
+		if (ptr != nullptr) {
+			ptr->~T();
+		}
 		alloc.free(ptr, sizeof(T));
 	}
 }
