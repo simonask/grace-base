@@ -16,18 +16,10 @@ namespace falling {
 	}
 	
 	void BooleanType::deserialize(bool &place, const ArchiveNode& node, IUniverse &) const {
-		StringRef str;
-		int32 n;
-		if (node >> str) {
-			place = str != "false";
-		} else if (node >> n) {
-			place = n != 0;
-		} else {
-			place = false;
-		}
+		node >> place;
 	}
 	
 	void BooleanType::serialize(const bool &place, ArchiveNode& node, IUniverse &) const {
-		node << (place ? "true" : "false");
+		node << place;
 	}
 }
