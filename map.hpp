@@ -16,6 +16,7 @@
 #include "base/maybe.hpp"
 #include "base/pair.hpp"
 #include "base/array_utils.hpp"
+#include "base/string.hpp" // for definition of Dictionary<T>
 
 #include <algorithm>
 
