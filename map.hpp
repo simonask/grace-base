@@ -48,6 +48,7 @@ namespace falling {
 		
 		template <typename Cmp_ = Cmp>
 		Self& operator=(const Map<Key,Value,Cmp_>& other);
+		Self& operator=(const Map<Key,Value,Cmp>& other);
 		Self& operator=(Self&& other);
 		
 		bool operator==(const Self& other) const;
@@ -175,10 +176,12 @@ namespace falling {
 	
 	template <typename K, typename V, typename C>
 	Map<K,V,C>::Map(const Self& other, IAllocator& alloc) : allocator_(alloc) {
-		reserve(other.size());
-		size_ = alloc_size_;
-		std::copy(other.keys_, other.keys_ + size_, keys_);
-		std::copy(other.values_, other.values_ + size_, values_);
+		reserve(other.size_);
+		for (size_t i = 0; i < other.size_; ++i) {
+			new(keys_+i) K(other.keys_[i]);
+			new(values_+i) V(other.values_[i]);
+		}
+		size_ = other.size_;
 	}
 	
 	template <typename K, typename V, typename C>
@@ -264,6 +267,13 @@ namespace falling {
 	template <typename K, typename V, typename C>
 	template <typename Cmp_>
 	Map<K,V,C>& Map<K,V,C>::operator=(const Map<K,V,Cmp_>& other) {
+		clear(false);
+		insert(other.begin(), other.end());
+		return *this;
+	}
+	
+	template <typename K, typename V, typename C>
+	Map<K,V,C>& Map<K,V,C>::operator=(const Map<K,V,C>& other) {
 		clear(false);
 		insert(other.begin(), other.end());
 		return *this;
