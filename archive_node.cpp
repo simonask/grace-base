@@ -4,6 +4,7 @@
 #include "object/objectptr.hpp"
 #include "type/structured_type.hpp"
 #include "io/formatters.hpp"
+#include "io/stdio_stream.hpp"
 
 namespace falling {
 class IUniverse;
@@ -245,5 +246,13 @@ size_t ArchiveNode::array_size() const {
 	
 	StringRef ArchiveNodePtrType::name() const {
 		return "ArchiveNode*";
+	}
+	
+	void dump_to_stdout(const ArchiveNode& node) {
+		node.dump(StandardOutput);
+	}
+	
+	void dump_to_stdout(const Archive& archive) {
+		dump_to_stdout(archive.root());
 	}
 }
