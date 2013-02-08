@@ -159,24 +159,32 @@ namespace falling {
 	}
 	
 	inline String& String::operator=(const char* utf8) {
+		// TODO: Handle when utf8 is a pointer to the inside of this.
 		clear();
 		assign(utf8);
 		return *this;
 	}
 	
 	inline String& String::operator=(StringRef other) {
+		// TODO: Handle when StringRef is to the inside of this.
 		clear();
 		assign(other.data(), other.size());
 		return *this;
 	}
 	
 	inline String& String::operator=(const String& other) {
+		if (this == &other) {
+			return *this;
+		}
 		clear();
 		assign(other.data(), other.size());
 		return *this;
 	}
 	
 	inline String& String::operator=(String&& other) {
+		if (this == &other) {
+			return *this;
+		}
 		clear();
 		if (&allocator_ == &other.allocator_) {
 			data_ = other.data_;
