@@ -3,6 +3,7 @@
 #include "object/universe.hpp"
 #include "object/objectptr.hpp"
 #include "type/structured_type.hpp"
+#include "io/formatters.hpp"
 
 namespace falling {
 class IUniverse;
@@ -120,6 +121,97 @@ size_t ArchiveNode::array_size() const {
 	});
 	return sz;
 }
+	
+	void ArchiveNode::dump(FormattedStream &os) const {
+		dump(os, 0);
+	}
+	
+	void ArchiveNode::dump(FormattedStream& os, int indent) const {
+		if (is_empty()) {
+			os << "(none)";
+		} else if (is_string()) {
+			value_.when<StringType>([&](StringRef str) {
+				os << "\"" << str << "\"";
+			});
+		} else if (is_integer()) {
+			value_.when<IntegerType>([&](IntegerType n) {
+				os << n;
+			});
+		} else if (is_float()) {
+			value_.when<FloatType>([&](FloatType f) {
+				os << f;
+			});
+		} else if (is_array()) {
+			value_.when<ArrayType>([&](const ArrayType& array) {
+				bool all_are_scalars = true;
+				for (auto child: array) {
+					if (!child->is_scalar()) {
+						all_are_scalars = false;
+						break;
+					}
+				}
+				
+				if (all_are_scalars) {
+					// dump inline array
+					os << '[';
+					for (auto child: array) {
+						child->dump(os, -1);
+						if (child != array.back()) {
+							os << ", ";
+						}
+					}
+					os << ']';
+				} else {
+					// dump multiline array
+					os << "[\n" << repeat(' ', indent);
+					for (auto child: array) {
+						child->dump(os, indent+2);
+						os << '\n' << repeat(' ', indent);
+					}
+					os << ']';
+				}
+			});
+		} else if (is_map()) {
+			value_.when<MapType>([&](const MapType& map) {
+				bool all_are_scalars = true;
+				for (auto pair: map) {
+					if (pair.first.size() > 10 || !pair.second->is_scalar()) {
+						all_are_scalars = false;
+						break;
+					}
+				}
+				
+				auto keys = map.keys();
+				auto values = map.values();
+				if (all_are_scalars) {
+					// dump inline map
+					os << '{';
+					for (size_t i = 0; i < keys.size(); ++i) {
+						os << keys[i] << ": ";
+						values[i]->dump(os, -1);
+						if (i+1 != keys.size()) {
+							os << ", ";
+						}
+					}
+					os << '}';
+				} else {
+					os << "{\n" << repeat(' ', indent);
+					for (size_t i = 0; i < keys.size(); ++i) {
+						os << repeat(' ', 2);
+						os << keys[i] << ": ";
+						values[i]->dump(os, indent+4);
+						if (i+1 != keys.size()) {
+							os << ",";
+						}
+						os << "\n" << repeat(' ', indent);
+					}
+					os << "}";
+				}
+			});
+		} else {
+			ASSERT(false); // Invalid ArchiveNode.
+		}
+	}
 	
 	const ArchiveNodeConstPtrType* BuildTypeInfo<const ArchiveNode*>::build() {
 		static const ArchiveNodeConstPtrType type = ArchiveNodeConstPtrType();

@@ -101,8 +101,12 @@ struct ArchiveNode {
 	using StringType  = String;
 	using IntegerType = int64;
 	using FloatType   = float64;
+	
+	void dump(FormattedStream& os) const;
 protected:
 	explicit ArchiveNode(Archive& archive);
+	
+	void dump(FormattedStream& os, int indent) const;
 protected:
 	Archive& archive_;
 	Any value_;
