@@ -36,6 +36,22 @@ namespace falling {
 	}
 	
 	template <typename T>
+	struct RepeatFormatter : Formatter {
+		T object;
+		uint32 times;
+		RepeatFormatter(T object, uint32 times) : object(move(object)), times(times) {}
+		void write(FormattedStream& stream) const final {
+			for (uint32 i = 0; i < times; ++i) {
+				stream << object;
+			}
+		}
+	};
+	template <typename T>
+	RepeatFormatter<T> repeat(T object, uint32 times) {
+		return RepeatFormatter<T>(move(object), times);
+	}
+	
+	template <typename T>
 	struct TruncateFormatter : Formatter {
 		const T& value;
 		uint32 width;
