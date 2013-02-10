@@ -15,7 +15,7 @@
 
 namespace falling {
 	struct VectorType : public SimpleType {
-		VectorType(String name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(name, width, component_width, is_float, is_signed) {}
+		VectorType(String name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(move(name), width, component_width, is_float, is_signed) {}
 	};
 	
 	template <typename T, size_t N>
@@ -50,7 +50,8 @@ namespace falling {
 	template <typename T, size_t N>
 	struct BuildTypeInfo<TVector<T,N>> {
 		static const VectorTypeImpl<T,N>* build_vector_type() {
-			StringStream ss;
+			ScratchAllocator scratch;
+			StringStream ss(scratch);
 			if (!IsFloatingPoint<T>::Value) {
 				if (IsSigned<T>::Value) {
 					ss << 'i';
@@ -59,7 +60,7 @@ namespace falling {
 				}
 			}
 			ss << "vec" << N;
-			return new_static VectorTypeImpl<T,N>(ss.str());
+			return new_static VectorTypeImpl<T,N>(ss.string(static_allocator()));
 		}
 		
 		static const VectorTypeImpl<T,N>* build() {
