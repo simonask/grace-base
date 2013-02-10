@@ -49,7 +49,6 @@ StringRef Object::object_id() const {
 }
 
 BEGIN_TYPE_INFO(Object)
-	abstract();
 	property(&Object::object_id, &Object::set_object_id, "id", "The unique ID for this object.h");
 	// property(&Object::id_, "ID", "The unique ID for this Object.");
 END_TYPE_INFO()
