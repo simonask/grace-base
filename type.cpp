@@ -7,10 +7,10 @@ namespace falling {
 #define DEFINE_SIMPLE_TYPE(T, IS_FLOAT, IS_SIGNED) \
 const SimpleType* BuildTypeInfo<T>::build() {\
 	if (IS_FLOAT) { \
-		static const FloatType* t = new_static FloatType(#T, sizeof(T)); \
+		static const FloatType* t = new_static FloatType(String(#T, static_allocator()), sizeof(T)); \
 		return t; \
 	} else { \
-		static const IntegerType* t = new_static IntegerType(#T, sizeof(T)); \
+		static const IntegerType* t = new_static IntegerType(String(#T, static_allocator()), sizeof(T)); \
 		return t; \
 	} \
 }
