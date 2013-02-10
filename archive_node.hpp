@@ -228,7 +228,7 @@ struct BuildTypeInfo<ArchiveNode*> {
 	}
 	
 	inline void ArchiveNode::operator<<(bool in_bool) {
-		value_ = StringRef(in_bool ? "true" : "false");
+		value_ = StringType(in_bool ? "true" : "false");
 	}
 	
 	template <typename T>
