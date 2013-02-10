@@ -33,4 +33,22 @@ ArrayRef<const ObjectTypeBase*> TypeRegistry::object_types() {
 	return impl()->types;
 }
 
+void TypeRegistry::add_missing_types() {
+	ScratchAllocator scratch;
+	Array<const ObjectTypeBase*> registered_types = impl()->types;
+	for (auto type: registered_types) {
+		const ObjectTypeBase* s = type;
+		while (s != get_type<Object>()) {
+			if (impl()->type_map.find(s->name()) == impl()->type_map.end()) {
+				add(s);
+			}
+			s = s->super();
+		}
+	}
+	
+	if (impl()->type_map.find("Object") == impl()->type_map.end()) {
+		add(get_type<Object>());
+	}
+}
+
 }
