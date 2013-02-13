@@ -290,8 +290,8 @@ struct BuildTypeInfo<ArchiveNode*> {
 		});
 	}
 	
-	void dump_to_stdout(const ArchiveNode& node);
-	void dump_to_stdout(const Archive& archive);
+	void dump_archive_node_to_stdout(const ArchiveNode& node);
+	void dump_archive_to_stdout(const Archive& archive);
 }
 
 #endif /* end of include guard: ARCHIVE_NODE_HPP_EP8GSONT */

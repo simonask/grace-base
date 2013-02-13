@@ -248,11 +248,11 @@ size_t ArchiveNode::array_size() const {
 		return "ArchiveNode*";
 	}
 	
-	void dump_to_stdout(const ArchiveNode& node) {
+	void dump_archive_node_to_stdout(const ArchiveNode& node) {
 		node.dump(StandardOutput);
 	}
 	
-	void dump_to_stdout(const Archive& archive) {
-		dump_to_stdout(archive.root());
+	void dump_archive_to_stdout(const Archive& archive) {
+		dump_archive_node_to_stdout(archive.root());
 	}
 }
