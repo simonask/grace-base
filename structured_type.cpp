@@ -12,15 +12,23 @@
 
 namespace falling {
 	const ISlot* StructuredType::find_slot_by_name(StringRef name) const {
-		for (auto s: slots()) {
-			if (s->name() == name) return s;
+		const StructuredType* t = this;
+		while (t != nullptr) {
+			for (auto s: t->slots()) {
+				if (s->name() == name) return s;
+			}
+			t = t->super();
 		}
 		return nullptr;
 	}
 	
 	const IAttribute* StructuredType::find_attribute_by_name(StringRef name) const {
-		for (auto a: attributes()) {
-			if (a->name() == name) return a;
+		const StructuredType* t = this;
+		while (t != nullptr) {
+			for (auto a: t->attributes()) {
+				if (a->name() == name) return a;
+			}
+			t = t->super();
 		}
 		return nullptr;
 	}

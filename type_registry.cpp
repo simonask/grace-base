@@ -38,11 +38,11 @@ void TypeRegistry::add_missing_types() {
 	Array<const ObjectTypeBase*> registered_types = impl()->types;
 	for (auto type: registered_types) {
 		const ObjectTypeBase* s = type;
-		while (s != get_type<Object>()) {
+		while (s && s != get_type<Object>()) {
 			if (impl()->type_map.find(s->name()) == impl()->type_map.end()) {
 				add(s);
 			}
-			s = s->super();
+			s = dynamic_cast<const ObjectTypeBase*>(s->super());
 		}
 	}
 	
