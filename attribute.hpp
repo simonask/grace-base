@@ -18,6 +18,7 @@ namespace falling {
 		virtual void deserialize_attribute(Object* object, const ArchiveNode&, IUniverse&) const = 0;
 		virtual void serialize_attribute(const Object* object, ArchiveNode&, IUniverse&) const = 0;
 		virtual bool deferred_instantiation() const = 0; // should return true for attributes that depend on the object hierarchy (such as ObjectPtr).
+		virtual bool is_read_only() const = 0;
 	};
 
 	template <typename T>
@@ -140,7 +141,12 @@ struct MemberAttribute : AttributeForObjectOfType<ObjectType, MemberType, const 
 		this->type()->deserialize_raw(reinterpret_cast<byte*>(ptr), node, universe);
 	}
 	
+	bool is_read_only() const final { return false; }
+	
 	MemberPointer member_;
+};
+
+struct ReadOnlyAttributeError {
 };
 
 template <typename ObjectType,
@@ -162,8 +168,31 @@ struct MethodAttribute : AttributeForObjectOfType<ObjectType, MemberType, Getter
 		(object.*setter_)(SetterArgumentType(std::move(value)));
 	}
 	
+	bool is_read_only() const final { return false; }
+	
 	GetterPointer getter_;
 	SetterPointer setter_;
+};
+
+template <typename ObjectType,
+		  typename MemberType,
+		  typename GetterReturnType>
+struct ReadOnlyMethodAttribute : AttributeForObjectOfType<ObjectType, MemberType, GetterReturnType> {
+	typedef GetterReturnType(ObjectType::*GetterPointer)() const;
+	
+	ReadOnlyMethodAttribute(IAllocator& alloc, StringRef name, StringRef description, GetterPointer getter) : AttributeForObjectOfType<ObjectType, MemberType, GetterReturnType>(alloc, name, description), getter_(getter) {}
+	
+	GetterReturnType get(const ObjectType& object) const {
+		return (object.*getter_)();
+	}
+	
+	void set(ObjectType& object, MemberType dummy) const {
+		throw ReadOnlyAttributeError();
+	}
+	
+	bool is_read_only() const final { return true; }
+	
+	GetterPointer getter_;
 };
 
 }
