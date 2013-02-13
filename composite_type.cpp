@@ -174,6 +174,10 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, IUnivers
 		return ArrayRef<const ISlot* const>(p, p + exposed_slots_.size());
 	}
 	
+	const StructuredType* CompositeType::super() const {
+		return base_type();
+	}
+	
 	Any ExposedAttribute::get_any(const Object* object) const {
 		const StructuredType* st = object->object_type();
 		const CompositeType* ct = dynamic_cast<const CompositeType*>(st);
