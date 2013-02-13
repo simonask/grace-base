@@ -49,6 +49,8 @@ struct Object {
 	void set_object_offset__(uint32 o) { offset_ = o; }
 
 private:
+	StringRef object_type_name() const;
+
 	const StructuredType* type_;
 	IUniverse* universe_;
 	uint32 offset_; // offset within composite

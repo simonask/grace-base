@@ -113,6 +113,8 @@ void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& u
 	for (auto& property: properties_) {
 		ObjectPtr<> o = &object;
 		const ArchiveNode& serialized = node[property->name()];
+		if (property->is_read_only())
+			continue;
 		if (property->deferred_instantiation()) {
 			universe.defer_attribute_deserialization(o, property, &serialized);
 		} else {
