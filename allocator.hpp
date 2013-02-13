@@ -253,10 +253,10 @@ inline void* operator new[](size_t nbytes) {
 	return falling::default_allocator().allocate(nbytes, 0);
 }
 
-inline void operator delete(void* ptr) {
+inline void operator delete(void* ptr) throw() {
 	falling::default_allocator().free(ptr);
 }
-inline void operator delete[](void* ptr) {
+inline void operator delete[](void* ptr) throw() {
 	falling::default_allocator().free(ptr);
 }
 
