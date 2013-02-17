@@ -27,7 +27,7 @@ struct ObjectTypeBuilder {
 	Self& super() { return super(get_type<SuperClass>()); }
 	
 	void check_attribute_name_(StringRef name) {
-		const char* reserved_names[] = {"aspects"};
+		const char* reserved_names[] = {"aspects", "__editor_data"};
 		for (auto it: reserved_names) {
 			if (name == StringRef(it)) {
 				Error() << "The attribute name '" << name << "' is reserved.";
@@ -56,6 +56,14 @@ struct ObjectTypeBuilder {
 		check_attribute_name_(name);
 		typedef typename RemoveConstRef<GetterReturnType>::Type RawType;
 		type_->properties_.push_back(new_static ReadOnlyMethodAttribute<T, RawType, GetterReturnType>(static_allocator(), move(name), move(description), getter));
+		return *this;
+	}
+	
+	template <typename MemberType>
+	Self& property(NullPtr null, NullPtr null2, StringRef name, StringRef description = "") {
+		check_attribute_name_(name);
+		typedef typename RemoveConstRef<MemberType>::Type RawType;
+		type_->properties_.push_back(new_static OpaqueAttribute<T, MemberType>(static_allocator(), move(name), move(description)));
 		return *this;
 	}
 	
