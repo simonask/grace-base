@@ -111,7 +111,7 @@ void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& u
 	if (s) s->deserialize_raw(reinterpret_cast<byte*>(&object), node, universe);
 	
 	for (auto& property: properties_) {
-		ObjectPtr<> o = &object;
+		ObjectPtr<> o = ObjectPtr<>(&object);
 		const ArchiveNode& serialized = node[property->name()];
 		if (property->is_read_only())
 			continue;

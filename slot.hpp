@@ -81,7 +81,7 @@ namespace falling {
 				warn_signal_receiver_argument_type_mismatch(signature(default_allocator()));
 				return false;
 			}
-			T* ptr = this->get_object_polymorphic(receiver.get());
+			T* ptr = this->get_object_polymorphic(receiver);
 			if (ptr != nullptr) {
 				apply_tuple_to_member(ptr, member_, extracted_args);
 				return true;

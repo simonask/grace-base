@@ -1,6 +1,8 @@
 #include "object/object.hpp"
 #include "object/reflect.hpp"
 #include "object/universe.hpp"
+#include "io/resource_ptr.hpp"
+#include "object/object_template.hpp"
 
 namespace falling {
 
@@ -41,11 +43,11 @@ const Object* Object::find_topmost_object() const {
 }
 
 bool Object::set_object_id(StringRef new_id) {
-	return universe_->rename_object(this, new_id);
+	return universe_->rename_object(ObjectPtr<>(this), new_id);
 }
 
 StringRef Object::object_id() const {
-	return universe_->get_id(this);
+	return universe_->get_id(ObjectPtr<const Object>(this));
 }
 
 StringRef Object::object_type_name() const {
@@ -54,8 +56,8 @@ StringRef Object::object_type_name() const {
 
 BEGIN_TYPE_INFO(Object)
 	property(&Object::object_id, &Object::set_object_id, "id", "The unique ID for this object.");
-	property(&Object::object_type_name, nullptr, "class", "The class name for this object.");
-	// property(&Object::id_, "ID", "The unique ID for this Object.");
+	property<StringRef>(nullptr, nullptr, "class", "The class name for this object.");
+	property<ResourcePtr<ObjectTemplate>>(nullptr, nullptr, "template", "The template resource for this object.");
 END_TYPE_INFO()
 
 }

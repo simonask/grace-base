@@ -65,8 +65,8 @@ namespace falling {
 		type->construct(memory, *this);
 		Object* object = reinterpret_cast<Object*>(memory);
 		memory_map_.push_back(object);
-		rename_object(object, id);
-		return object;
+		rename_object(ObjectPtr<>(object), id);
+		return ObjectPtr<>(object);
 	}
 	
 	bool BasicUniverse::rename_object(ObjectPtr<> object, StringRef new_id) {

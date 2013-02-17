@@ -131,7 +131,7 @@ namespace falling {
 			return nullptr;
 		}
 		
-		ObjectPtr<> real_object = object_.get();
+		ObjectPtr<> real_object = object_;
 		const IAttribute* real_attribute = attr;
 		resolve_exposed_attribute(real_attribute, real_object);
 		

@@ -40,12 +40,10 @@ namespace falling {
 
         // Should catch raw member functions:
         template <typename T, typename R>
-        typename std::enable_if<!HasReflection<typename std::remove_const<T>::type>::Value, void>::type
-        connect(T* receiver, R(T::*member)(Args...));
+		void connect(T* receiver, R(T::*member)(Args...));
 		
 		template <typename T, typename R>
-        typename std::enable_if<!HasReflection<typename std::remove_const<T>::type>::Value, void>::type
-        connect(const T* receiver, R(T::*member)(Args...) const);
+		void connect(const T* receiver, R(T::*member)(Args...) const);
 
         // Should catch slots with ObjectPtr:
         template <typename T, typename R>
@@ -113,8 +111,7 @@ namespace falling {
 
     template <typename... Args>
     template <typename T, typename R>
-    typename std::enable_if<!HasReflection<typename std::remove_const<T>::type>::Value, void>::type
-    Signal<Args...>::connect(T* receiver, R(T::*member)(Args...)) {
+    void Signal<Args...>::connect(T* receiver, R(T::*member)(Args...)) {
         // Convert member function call to free function call:
 		connect([=](const Args&... args) {
 			(receiver->*member)(std::forward<Args>(args)...);
@@ -123,8 +120,7 @@ namespace falling {
 	
 	template <typename... Args>
     template <typename T, typename R>
-    typename std::enable_if<!HasReflection<typename std::remove_const<T>::type>::Value, void>::type
-    Signal<Args...>::connect(const T* receiver, R(T::*member)(Args...) const) {
+    void Signal<Args...>::connect(const T* receiver, R(T::*member)(Args...) const) {
         // Convert member function call to free function call:
 		connect([=](const Args&... args) {
 			(receiver->*member)(std::forward<Args>(args)...);

@@ -25,7 +25,8 @@ struct ObjectPtr {
 	typedef T PointeeType;
 	
 	ObjectPtr() : ptr_(nullptr) {}
-	ObjectPtr(T* ptr) : ptr_(ptr) {}
+	explicit ObjectPtr(T* ptr) : ptr_(ptr) {}
+	ObjectPtr(NullPtr null) : ptr_(nullptr) {}
 	template <typename U>
 	ObjectPtr(ObjectPtr<U> other) { ptr_ = other.get(); }
 	ObjectPtr(const ObjectPtr<T>& other) { ptr_ = other.ptr_; }
@@ -73,7 +74,7 @@ aspect_cast(ObjectPtr<From> ptr, const DerivedType* type) {
 template <typename T>
 template <typename U>
 ObjectPtr<U> ObjectPtr<T>::cast() const {
-	return aspect_cast<U>(ptr_);
+	return ObjectPtr<U>(aspect_cast<U>(ptr_));
 }
 
 template <typename OutputStream, typename T>

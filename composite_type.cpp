@@ -214,7 +214,7 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, IUnivers
 			if (exattr != nullptr) {
 				const CompositeType* ct = dynamic_cast<const CompositeType*>(inout_object->object_type());
 				ASSERT(ct != nullptr); // ExposedAttribute on non-composite object.
-				inout_object = ct->get_aspect_in_object(inout_object.get(), exattr->aspect());
+				inout_object = ObjectPtr<>(ct->get_aspect_in_object(inout_object.get(), exattr->aspect()));
 				inout_attr = exattr->attribute();
 			} else {
 				break;
@@ -239,7 +239,7 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, IUnivers
 		const CompositeType* ct = dynamic_cast<const CompositeType*>(ot);
 		ASSERT(ct != nullptr);
 		Object* o = ct->get_aspect_in_object(receiver.get(), aspect_idx_);
-		return slot_->invoke(o, args);
+		return slot_->invoke(ObjectPtr<>(o), args);
 	}
 	
 	void ExposedSlot::invoke_with_serialized_arguments(ObjectPtr<> receiver, const ArchiveNode &arg_list, IUniverse &universe) const {
@@ -247,7 +247,7 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, IUnivers
 		const CompositeType* ct = dynamic_cast<const CompositeType*>(ot);
 		ASSERT(ct != nullptr);
 		Object* o = ct->get_aspect_in_object(receiver.get(), aspect_idx_);
-		return slot_->invoke_with_serialized_arguments(o, arg_list, universe);
+		return slot_->invoke_with_serialized_arguments(ObjectPtr<>(o), arg_list, universe);
 	}
 	
 	String ExposedSlot::signature_description(IAllocator &alloc) const {
