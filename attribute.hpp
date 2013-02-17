@@ -146,9 +146,6 @@ struct MemberAttribute : AttributeForObjectOfType<ObjectType, MemberType, const 
 	MemberPointer member_;
 };
 
-struct ReadOnlyAttributeError {
-};
-
 template <typename ObjectType,
           typename MemberType,
           typename GetterReturnType,
@@ -174,6 +171,10 @@ struct MethodAttribute : AttributeForObjectOfType<ObjectType, MemberType, Getter
 	SetterPointer setter_;
 };
 
+struct ReadOnlyAttributeError {
+	StringRef what() const { return "Read-only attributes cannot be written."; }
+};
+
 template <typename ObjectType,
 		  typename MemberType,
 		  typename GetterReturnType>
@@ -193,6 +194,25 @@ struct ReadOnlyMethodAttribute : AttributeForObjectOfType<ObjectType, MemberType
 	bool is_read_only() const final { return true; }
 	
 	GetterPointer getter_;
+};
+
+struct OpaqueAttributeError {
+	StringRef what() const { return "Opaque attributes can neither be read nor written."; }
+};
+
+template <typename ObjectType, typename MemberType>
+struct OpaqueAttribute : AttributeForObjectOfType<ObjectType, MemberType> {
+	OpaqueAttribute(IAllocator& alloc, StringRef name, StringRef description) : AttributeForObjectOfType<ObjectType, MemberType>(alloc, name, description) {}
+	
+	MemberType get(const ObjectType& object) const {
+		throw OpaqueAttributeError();
+	}
+	
+	void set(ObjectType& object, MemberType dummy) const {
+		throw OpaqueAttributeError();
+	}
+	
+	bool is_read_only() const final { return true; }
 };
 
 }
