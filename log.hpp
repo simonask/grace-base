@@ -22,6 +22,16 @@ namespace falling {
 		LogLevelDebug,
 	};
 	
+	inline StringRef log_level_to_string(LogLevel level) {
+		switch (level) {
+			case LogLevelNone: return "";
+			case LogLevelError: return "ERROR";
+			case LogLevelWarning: return "WARNING";
+			case LogLevelInformation: return "INFO";
+			case LogLevelDebug: return "DEBUG";
+		}
+	}
+	
 #if defined(DEBUG)
 	static const LogLevel DefaultLogLevel = LogLevelDebug;
 #else
