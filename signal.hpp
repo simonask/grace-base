@@ -27,13 +27,16 @@ namespace falling {
     };
 
     template <typename... Args>
-    struct SignalInvoker : SignalInvokerBase {
+    struct SignalInvoker : ListLinkBase<SignalInvoker<Args...>>, SignalInvokerBase {
         virtual void invoke(Args... args) const = 0;
     };
 
     template <typename... Args>
     class Signal {
     public:
+		Signal(IAllocator& alloc = default_allocator()) : allocator_(alloc) {}
+		~Signal();
+	
         // Should catch raw functions and lambdas:
         template <typename Function>
         void connect(Function function);
@@ -57,11 +60,16 @@ namespace falling {
 
         void invoke(const Args&...) const;
         void operator()(const Args&... args) const { invoke(args...); }
-
-        size_t num_connections() const { return invokers_.size(); }
-        SignalInvoker<Args...>* connection_at(size_t idx) const { return invokers_[idx].get(); }
+		
+		using iterator = typename BareLinkList<SignalInvoker<Args...>>::iterator;
+		using const_iterator = typename BareLinkList<SignalInvoker<Args...>>::const_iterator;
+		iterator begin() { return invokers_.begin(); }
+		iterator end() { return invokers_.end(); }
+		const_iterator begin() const { return invokers_.begin(); }
+		const_iterator end() const { return invokers_.end(); }
     private:
-        Array<UniquePtr<SignalInvoker<Args...>>> invokers_;
+		IAllocator& allocator_;
+		BareLinkList<SignalInvoker<Args...>> invokers_;
     };
 
     template <typename R, typename... Args>
@@ -99,14 +107,19 @@ namespace falling {
 		void invoke(Args... args) const { slot_->invoke_polymorphic(object_, std::forward<Args>(args)...); }
     };
 
-	
+	template <typename... Args>
+	Signal<Args...>::~Signal() {
+		while (!invokers_.empty()) {
+			destroy(invokers_.head(), allocator_);
+		}
+	}
 
     template <typename... Args>
     template <typename Function>
     void Signal<Args...>::connect(Function function) {
 		typedef decltype(function(std::declval<Args>()...)) R;
 		auto f = std::function<R(Args...)>(std::move(function));
-        invokers_.push_back(make_unique<FunctionInvoker<R, Args...>>(default_allocator(), std::move(f)));
+        invokers_.push_back(new(allocator_) FunctionInvoker<R, Args...>(std::move(f)));
     }
 
     template <typename... Args>
@@ -130,13 +143,13 @@ namespace falling {
     template <typename... Args>
     template <typename T, typename R>
     void Signal<Args...>::connect(ObjectPtr<T> receiver, R(T::*member)(Args...)) {
-        invokers_.push_back(make_unique<MemberFunctionInvoker<T,R,Args...>>(default_allocator(), receiver, member));
+        invokers_.push_back(new(allocator_) MemberFunctionInvoker<T,R,Args...>(receiver, member));
     }
 
     template <typename... Args>
     template <typename T, typename R>
     void Signal<Args...>::connect(ObjectPtr<T> receiver, R(T::*member)(Args...) const) {
-        invokers_.push_back(make_unique<MemberFunctionInvoker<const T, R, Args...>>(default_allocator(), receiver, member));
+        invokers_.push_back(new(allocator_) MemberFunctionInvoker<const T, R, Args...>(receiver, member));
     }
 	
 	void nonexistent_slot_warning(ObjectPtr<> receiver, StringRef slot_name);
@@ -154,14 +167,14 @@ namespace falling {
             slot_type_mismatch_warning(receiver, slot_name, slot_base->signature_description(), get_signature_description<Args...>(default_allocator()));
 			return false;
         }
-		invokers_.push_back(make_unique<SlotInvoker<Args...>>(default_allocator(), receiver, slot));
+		invokers_.push_back(new(allocator_) SlotInvoker<Args...>(receiver, slot));
 		return true;
     }
 	
 	template <typename... Args>
 	void Signal<Args...>::invoke(const Args&... args) const {
 		for (auto& it: invokers_) {
-			it->invoke(args...);
+			it.invoke(args...);
 		}
 	}
 }
