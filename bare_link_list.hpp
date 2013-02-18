@@ -16,8 +16,16 @@ namespace falling {
     
     template <typename T>
     struct ListLinkBase {
-    private:
-        friend class BareLinkList<T>;
+	public:
+		~ListLinkBase() {
+			unlink();
+		}
+	private:
+		void unlink() {
+			next->previous = previous;
+			previous->next = next;
+		}
+		friend class BareLinkList<T>;
 		friend struct GetNextNode<ListLinkBase<T>>;
 		friend struct GetPreviousNode<ListLinkBase<T>>;
         T* next = nullptr;
@@ -36,7 +44,11 @@ namespace falling {
 	
 	template <typename T>
 	struct GetValueForNode<ListLinkBase<T>> {
-		static T* get(ListLinkBase<T>* x) { return static_cast<T*>(x); }
+		static_assert(std::is_base_of<ListLinkBase<T>, T>::value, "T is not derived from ListLinkBase<T>.");
+		static T* get(ListLinkBase<T>* x) {
+			T* y = static_cast<T*>(x);
+			return y;
+		}
 	};
 	
 	template <typename T>
@@ -112,6 +124,9 @@ namespace falling {
 		iterator link_tail(T* element);
         iterator link_head(T* element);
         void unlink(T* element);
+		
+		void push_back(T* element) { link_tail(element); }
+		void push_front(T* element) { link_head(element); }
     private:
 		ListLinkBase<T> sentinel; // previous = tail, next = head
     };
@@ -154,8 +169,8 @@ namespace falling {
     
     template <typename T>
     void BareLinkList<T>::unlink(T* element) {
-		element->next->previous = element->previous;
-		element->previous->next = element->next;
+		ASSERT(element != &sentinel);
+		element->unlink();
     }
         
     template <typename T>
