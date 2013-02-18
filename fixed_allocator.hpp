@@ -40,6 +40,7 @@ namespace falling {
 		}
 		
 		void free(void* ptr, size_t nbytes) final {
+			if (ptr == nullptr) return;
 			ASSERT(nbytes <= Max);
 			usage_ -= Max;
 			*(void**)ptr = free_list_;
