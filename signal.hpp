@@ -64,6 +64,8 @@ namespace falling {
 
         // Should catch named slots:
         Maybe<SignalConnectionID> connect(ObjectPtr<> ptr, StringRef slot_name);
+		
+		void disconnect(SignalConnectionID& connid);
 
         void invoke(const Args&...) const;
         void operator()(const Args&... args) const { invoke(args...); }
@@ -167,6 +169,15 @@ namespace falling {
         return link_and_make_id(new(allocator_) MemberFunctionInvoker<const T, R, Args...>(receiver, member));
     }
 	
+	template <typename... Args>
+	void Signal<Args...>::disconnect(SignalConnectionID& connid) {
+		ASSERT(connid.signal == this);
+		auto invoker = dynamic_cast<SignalInvoker<Args...>*>(connid.invoker);
+		destroy(invoker, allocator_);
+		connid.signal = nullptr;
+		connid.invoker = nullptr;
+	}
+	
 	void nonexistent_slot_warning(ObjectPtr<> receiver, StringRef slot_name);
 	void slot_type_mismatch_warning(ObjectPtr<> receiver, StringRef slot_name, String expected_signature_description, String signature_description);
 
@@ -187,8 +198,13 @@ namespace falling {
 	
 	template <typename... Args>
 	void Signal<Args...>::invoke(const Args&... args) const {
-		for (auto& it: invokers_) {
-			it.invoke(args...);
+		for (auto it = invokers_.begin(); it != invokers_.end();) {
+			// Signal handlers may remove themselves from the list,
+			// so save an iterator to the next element before invoking.
+			auto next = it;
+			++next;
+			it->invoke(args...);
+			it = next;
 		}
 	}
 }
