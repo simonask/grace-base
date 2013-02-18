@@ -30,6 +30,13 @@ namespace falling {
     struct SignalInvoker : ListLinkBase<SignalInvoker<Args...>>, SignalInvokerBase {
         virtual void invoke(Args... args) const = 0;
     };
+	
+	struct SignalConnectionID {
+	private:
+		void* signal;
+		SignalInvokerBase* invoker;
+		template <typename... Args> friend class Signal;
+	};
 
     template <typename... Args>
     class Signal {
@@ -39,24 +46,24 @@ namespace falling {
 	
         // Should catch raw functions and lambdas:
         template <typename Function>
-        void connect(Function function);
+        SignalConnectionID connect(Function function);
 
         // Should catch raw member functions:
         template <typename T, typename R>
-		void connect(T* receiver, R(T::*member)(Args...));
+		SignalConnectionID connect(T* receiver, R(T::*member)(Args...));
 		
 		template <typename T, typename R>
-		void connect(const T* receiver, R(T::*member)(Args...) const);
+		SignalConnectionID connect(const T* receiver, R(T::*member)(Args...) const);
 
         // Should catch slots with ObjectPtr:
         template <typename T, typename R>
-        void connect(ObjectPtr<T> ptr, R(T::*member)(Args...));
+        SignalConnectionID connect(ObjectPtr<T> ptr, R(T::*member)(Args...));
 
         template <typename T, typename R>
-        void connect(ObjectPtr<T> ptr, R(T::*member)(Args...) const);
+        SignalConnectionID connect(ObjectPtr<T> ptr, R(T::*member)(Args...) const);
 
         // Should catch named slots:
-        bool connect(ObjectPtr<> ptr, StringRef slot_name);
+        Maybe<SignalConnectionID> connect(ObjectPtr<> ptr, StringRef slot_name);
 
         void invoke(const Args&...) const;
         void operator()(const Args&... args) const { invoke(args...); }
@@ -70,6 +77,14 @@ namespace falling {
     private:
 		IAllocator& allocator_;
 		BareLinkList<SignalInvoker<Args...>> invokers_;
+		
+		SignalConnectionID link_and_make_id(SignalInvoker<Args...>* invoker) {
+			invokers_.link_tail(invoker);
+			SignalConnectionID connid;
+			connid.signal = this;
+			connid.invoker = invoker;
+			return connid;
+		}
     };
 
     template <typename R, typename... Args>
@@ -116,59 +131,58 @@ namespace falling {
 
     template <typename... Args>
     template <typename Function>
-    void Signal<Args...>::connect(Function function) {
+    SignalConnectionID Signal<Args...>::connect(Function function) {
 		typedef decltype(function(std::declval<Args>()...)) R;
 		auto f = std::function<R(Args...)>(std::move(function));
-        invokers_.push_back(new(allocator_) FunctionInvoker<R, Args...>(std::move(f)));
+        return link_and_make_id((new(allocator_) FunctionInvoker<R, Args...>(std::move(f))));
     }
 
     template <typename... Args>
     template <typename T, typename R>
-    void Signal<Args...>::connect(T* receiver, R(T::*member)(Args...)) {
+    SignalConnectionID Signal<Args...>::connect(T* receiver, R(T::*member)(Args...)) {
         // Convert member function call to free function call:
-		connect([=](const Args&... args) {
+		return connect([=](const Args&... args) {
 			(receiver->*member)(std::forward<Args>(args)...);
 		});
     }
 	
 	template <typename... Args>
     template <typename T, typename R>
-    void Signal<Args...>::connect(const T* receiver, R(T::*member)(Args...) const) {
+    SignalConnectionID Signal<Args...>::connect(const T* receiver, R(T::*member)(Args...) const) {
         // Convert member function call to free function call:
-		connect([=](const Args&... args) {
+		return connect([=](const Args&... args) {
 			(receiver->*member)(std::forward<Args>(args)...);
 		});
     }
 
     template <typename... Args>
     template <typename T, typename R>
-    void Signal<Args...>::connect(ObjectPtr<T> receiver, R(T::*member)(Args...)) {
-        invokers_.push_back(new(allocator_) MemberFunctionInvoker<T,R,Args...>(receiver, member));
+    SignalConnectionID Signal<Args...>::connect(ObjectPtr<T> receiver, R(T::*member)(Args...)) {
+        return link_and_make_id(new(allocator_) MemberFunctionInvoker<T,R,Args...>(receiver, member));
     }
 
     template <typename... Args>
     template <typename T, typename R>
-    void Signal<Args...>::connect(ObjectPtr<T> receiver, R(T::*member)(Args...) const) {
-        invokers_.push_back(new(allocator_) MemberFunctionInvoker<const T, R, Args...>(receiver, member));
+    SignalConnectionID Signal<Args...>::connect(ObjectPtr<T> receiver, R(T::*member)(Args...) const) {
+        return link_and_make_id(new(allocator_) MemberFunctionInvoker<const T, R, Args...>(receiver, member));
     }
 	
 	void nonexistent_slot_warning(ObjectPtr<> receiver, StringRef slot_name);
 	void slot_type_mismatch_warning(ObjectPtr<> receiver, StringRef slot_name, String expected_signature_description, String signature_description);
 
     template <typename... Args>
-    bool Signal<Args...>::connect(ObjectPtr<> receiver, StringRef slot_name) {
+    Maybe<SignalConnectionID> Signal<Args...>::connect(ObjectPtr<> receiver, StringRef slot_name) {
         const ISlot* slot_base = receiver->object_type()->find_slot_by_name(slot_name);
         if (slot_base == nullptr) {
             nonexistent_slot_warning(receiver, slot_name);
-            return false;
+            return Nothing;
         }
         auto slot = dynamic_cast<const Slot<Args...>*>(slot_base);
         if (slot == nullptr) {
             slot_type_mismatch_warning(receiver, slot_name, slot_base->signature_description(), get_signature_description<Args...>(default_allocator()));
-			return false;
+			return Nothing;
         }
-		invokers_.push_back(new(allocator_) SlotInvoker<Args...>(receiver, slot));
-		return true;
+		return link_and_make_id(new(allocator_) SlotInvoker<Args...>(receiver, slot));
     }
 	
 	template <typename... Args>
