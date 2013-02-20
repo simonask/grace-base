@@ -39,7 +39,7 @@ namespace falling {
 	
 	class StreamingResource : public Resource {
 	public:
-		virtual InputStream* create_reader(IAllocator& alloc);
+		virtual InputStream* create_reader(IAllocator& alloc) const;
 	};
 	
 	inline void Resource::retain() {

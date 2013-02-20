@@ -18,6 +18,7 @@ namespace falling {
 		ResourcePtr() : ptr_(nullptr) {}
 		ResourcePtr(std::nullptr_t) : ptr_(nullptr) {}
 		explicit ResourcePtr(T* ptr) : ptr_(ptr) { retain(); }
+		explicit ResourcePtr(const T* ptr) : ptr_(const_cast<T*>(ptr)) { retain(); }
 		ResourcePtr(const ResourcePtr<T>& other) : ptr_(other.ptr_) { retain(); }
 		ResourcePtr(ResourcePtr<T>&& other) : ptr_(other.ptr_) { other.ptr_ = nullptr; }
 		ResourcePtr<T>& operator=(const ResourcePtr<T>& other);
@@ -29,8 +30,8 @@ namespace falling {
 		bool operator!=(std::nullptr_t null) const { return ptr_ != nullptr; }
 		explicit operator bool() const { return ptr_ != nullptr; }
 		
-		T* operator->() const { return ptr_; }
-		T& operator*() const { return ptr_; }
+		const T* operator->() const { return ptr_; }
+		const T& operator*() const { return *ptr_; }
 	private:
 		friend class ResourceManager;
 		

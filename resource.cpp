@@ -10,7 +10,7 @@
 #include "io/resource_manager.hpp"
 
 namespace falling {
-	InputStream* StreamingResource::create_reader(IAllocator& alloc) {
+	InputStream* StreamingResource::create_reader(IAllocator& alloc) const {
 		return ResourceManager::create_reader_for_resource_id(alloc, resource_id());
 	}
 }
