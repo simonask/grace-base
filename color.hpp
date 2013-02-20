@@ -90,7 +90,7 @@ namespace falling {
 		static ComponentType denormalize(Color::ComponentType component) { return component * 255; }
 		static Color::ComponentType normalize(ComponentType component) { return float32(component) / 255.f; }
 		static ColorComponents combine_components(byte r, byte g, byte b, byte a) {
-			ColorComponents c = ((uint32)r << 24) | ((uint32)g << 16) | ((uint32)b << 8) | a;
+			ColorComponents c = ((uint32)a << 24) | ((uint32)b << 16) | ((uint32)g << 8) | r; // TODO: Endianness
 			return c;
 		}
 		static ColorComponents denormalize_all(Color components) {
