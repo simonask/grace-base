@@ -90,7 +90,12 @@ namespace falling {
 		static ComponentType denormalize(Color::ComponentType component) { return component * 255; }
 		static Color::ComponentType normalize(ComponentType component) { return float32(component) / 255.f; }
 		static ColorComponents combine_components(byte r, byte g, byte b, byte a) {
-			ColorComponents c = ((uint32)a << 24) | ((uint32)b << 16) | ((uint32)g << 8) | r; // TODO: Endianness
+			ColorComponents c;
+			uint8* p = reinterpret_cast<uint8*>(&c); // since uint8 is a char type, this doesn't actually break aliasing rules.
+			p[0] = r;
+			p[1] = g;
+			p[2] = b;
+			p[3] = a;
 			return c;
 		}
 		static ColorComponents denormalize_all(Color components) {
@@ -102,6 +107,7 @@ namespace falling {
 		}
 		
 		CompactColor() {}
+		CompactColor(const CompactColor& other) = default;
 		CompactColor(Color c) : components_(denormalize_all(c)) {}
 		CompactColor(byte r, byte g, byte b, byte a = 255) : r(r), g(g), b(b), a(a) {}
 		CompactColor(uint32 hex) : components_(hex) {}
