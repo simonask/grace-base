@@ -74,7 +74,7 @@ aspect_cast(ObjectPtr<From> ptr, const DerivedType* type) {
 template <typename T>
 template <typename U>
 ObjectPtr<U> ObjectPtr<T>::cast() const {
-	return ObjectPtr<U>(aspect_cast<U>(ptr_));
+	return ObjectPtr<U>(aspect_cast<U>(*this));
 }
 
 template <typename OutputStream, typename T>
