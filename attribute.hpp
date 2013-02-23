@@ -19,6 +19,7 @@ namespace falling {
 		virtual void serialize_attribute(const Object* object, ArchiveNode&, IUniverse&) const = 0;
 		virtual bool deferred_instantiation() const = 0; // should return true for attributes that depend on the object hierarchy (such as ObjectPtr).
 		virtual bool is_read_only() const = 0;
+		virtual bool is_opaque() const = 0;
 	};
 
 	template <typename T>
@@ -142,6 +143,7 @@ struct MemberAttribute : AttributeForObjectOfType<ObjectType, MemberType, const 
 	}
 	
 	bool is_read_only() const final { return false; }
+	bool is_opaque() const final { return false; }
 	
 	MemberPointer member_;
 };
@@ -166,6 +168,7 @@ struct MethodAttribute : AttributeForObjectOfType<ObjectType, MemberType, Getter
 	}
 	
 	bool is_read_only() const final { return false; }
+	bool is_opaque() const final { return false; }
 	
 	GetterPointer getter_;
 	SetterPointer setter_;
@@ -192,6 +195,7 @@ struct ReadOnlyMethodAttribute : AttributeForObjectOfType<ObjectType, MemberType
 	}
 	
 	bool is_read_only() const final { return true; }
+	bool is_opaque() const final { return false; }
 	
 	GetterPointer getter_;
 };
@@ -213,6 +217,7 @@ struct OpaqueAttribute : AttributeForObjectOfType<ObjectType, MemberType> {
 	}
 	
 	bool is_read_only() const final { return true; }
+	bool is_opaque() const final { return true; }
 };
 
 }
