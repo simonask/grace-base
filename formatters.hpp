@@ -14,6 +14,7 @@
 #include "base/array.hpp"
 #include "base/matrix.hpp"
 #include "base/array_list.hpp"
+#include "base/color.hpp"
 
 #include <functional>
 
@@ -190,6 +191,11 @@ namespace falling {
 		stream << "@[";
 		stream << join(array, ", ");
 		stream << ']';
+		return stream;
+	}
+	
+	inline FormattedStream& operator<<(FormattedStream& stream, CompactColor color) {
+		stream << "rgba(" << color.red() << ", " << color.green() << ", " << color.blue() << ", " << color.alpha() << ")";
 		return stream;
 	}
 }
