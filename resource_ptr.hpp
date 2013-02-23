@@ -32,6 +32,7 @@ namespace falling {
 		
 		const T* operator->() const { return ptr_; }
 		const T& operator*() const { return *ptr_; }
+		const T* get() const { return ptr_; }
 	private:
 		friend class ResourceManager;
 		
