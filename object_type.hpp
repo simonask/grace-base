@@ -133,7 +133,9 @@ void ObjectType<T>::serialize(const T& object, ArchiveNode& node, IUniverse& uni
 	if (s) s->serialize_raw(reinterpret_cast<const byte*>(&object), node, universe);
 	
 	for (auto& property: properties_) {
-		property->serialize_attribute(&object, node[property->name()], universe);
+		if (!property->is_opaque()) {
+			property->serialize_attribute(&object, node[property->name()], universe);
+		}
 	}
 	node["class"] << this->name();
 }

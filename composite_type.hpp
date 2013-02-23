@@ -22,6 +22,7 @@ struct ExposedAttribute : public IAttribute {
 	void serialize_attribute(const Object* object, ArchiveNode&, IUniverse&) const final;
 	bool deferred_instantiation() const final { return attribute_->deferred_instantiation(); }
 	bool is_read_only() const final { return attribute_->is_read_only(); }
+	bool is_opaque() const final { return attribute_->is_opaque(); }
 	
 	// ExposedAttribute interface
 	size_t aspect() const { return aspect_idx_; }
