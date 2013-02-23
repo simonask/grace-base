@@ -120,6 +120,9 @@ namespace falling {
 			return Color(fr, fg, fb, fa);
 		}
 		
+		bool operator==(CompactColor other) const { return components_ == other.components_; }
+		bool operator!=(CompactColor other) const { return components_ != other.components_; }
+		
 		byte red() const { return r; }
 		byte& red() { return r; }
 		byte green() const { return g; }
