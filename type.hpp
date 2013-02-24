@@ -143,7 +143,6 @@ struct SimpleType : Type {
 	size_t alignment() const override { return width_; }
 	size_t num_components() const { return width_ / component_width_; }
 	bool is_signed() const { return is_signed_; }
-	virtual void* cast(const SimpleType* to, void* o) const = 0;
 protected:
 	String name_;
 	size_t width_;
@@ -153,24 +152,29 @@ protected:
 };
 
 struct EnumType : SimpleType {
-	EnumType(String name, size_t width, bool is_signed = true) : SimpleType(name, width, width, false, is_signed), max_(1LL-SSIZE_MAX), min_(SSIZE_MAX) {}
-	void add_entry(String name, ssize_t value, String description) {
-		entries_.emplace_back(std::make_tuple(std::move(name), value, std::move(description)));
-	}
+	EnumType(IAllocator& alloc, StringRef name, size_t width, bool is_signed = true) : SimpleType(alloc, name, width, width, false, is_signed), max_(1LL-SSIZE_MAX), min_(SSIZE_MAX), entries_(alloc) {}
 	bool contains(ssize_t value) const;
+	bool contains(StringRef name) const;
 	ssize_t max() const { return max_; }
 	ssize_t min() const { return min_; }
-	bool name_for_value(ssize_t value, String& out_name) const;
+	bool name_for_value(ssize_t value, StringRef& out_name) const;
 	bool value_for_name(StringRef name, ssize_t& out_value) const;
+	bool allows_arbitrary_value() const { return allow_arbitrary_value_; }
 	
-	void deserialize_raw(byte*, const ArchiveNode&, IUniverse&) const override;
-	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
-	void* cast(const SimpleType* to, void* o) const;
+	struct Entry {
+		StringRef name;
+		StringRef description;
+		ssize_t value;
+	};
 private:
-	Array<std::tuple<String, ssize_t, String>> entries_;
+	template <typename T> friend struct EnumTypeBuilder;
+	Array<Entry> entries_;
 	ssize_t max_;
 	ssize_t min_;
+	bool allow_arbitrary_value_;
 };
+
+#define REFLECT_ENUM_TYPE(T) template <> struct BuildTypeInfo<T> { static const EnumType* build(); };
 
 
 struct IntegerType : SimpleType {

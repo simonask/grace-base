@@ -113,18 +113,18 @@ void FloatType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) 
 bool EnumType::contains(ssize_t value) const {
 	if (value >= min() && value <= max()) {
 		for (auto& tuple: entries_) {
-			if (std::get<1>(tuple) == value)
+			if (tuple.value == value)
 				return true;
 		}
 	}
 	return false;
 }
 
-bool EnumType::name_for_value(ssize_t value, String& name) const {
+bool EnumType::name_for_value(ssize_t value, StringRef& out_name) const {
 	if (value >= min() && value <= max()) {
 		for (auto& tuple: entries_) {
-			if (std::get<1>(tuple) == value) {
-				name = std::get<0>(tuple);
+			if (tuple.value == value) {
+				out_name = tuple.name;
 				return true;
 			}
 		}
@@ -134,66 +134,12 @@ bool EnumType::name_for_value(ssize_t value, String& name) const {
 
 bool EnumType::value_for_name(StringRef name, ssize_t& out_value) const {
 	for (auto& tuple: entries_) {
-		if (std::get<0>(tuple) == name) {
-			out_value = std::get<1>(tuple);
+		if (tuple.name == name) {
+			out_value = tuple.value;
 			return true;
 		}
 	}
 	return false;
-}
-
-void EnumType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const {
-	StringRef name;
-	if (node >> name) {
-		ssize_t value;
-		ASSERT(width_ <= sizeof(ssize_t));
-		if (value_for_name(name, value)) {
-			memcpy(place, &value, width_);
-			// Success!
-		} else {
-			// XXX: Invalid enum entry.
-		}
-	} else {
-		// XXX: Invalid node (not a string)
-	}
-}
-
-void EnumType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const {
-	ssize_t value = 0;
-	ASSERT(width_ <= sizeof(ssize_t));
-	memcpy(&value, place, width_);
-	String name;
-	if (name_for_value(value, name)) {
-		node << name;
-		// Success!
-	} else {
-		// XXX: Invalid enum entry!
-	}
-}
-
-void* EnumType::cast(const SimpleType* to, void* memory) const {
-	if (to == this) return memory;
-	
-	auto integer_type = dynamic_cast<const IntegerType*>(to);
-	if (integer_type != nullptr && integer_type->size() <= width_) {
-		if (integer_type->is_signed()) {
-			ssize_t value = 0;
-			ASSERT(integer_type->size() <= sizeof(ssize_t));
-			memcpy(&value, memory, integer_type->size());
-			if (contains(value)) {
-				return memory;
-			}
-		} else {
-			size_t value = 0;
-			ASSERT(integer_type->size() <= sizeof(size_t));
-			memcpy(&value, memory, integer_type->size());
-			if (contains(value)) {
-				return memory;
-			}
-		}
-	}
-	
-	return nullptr;
 }
 
 void* FloatType::cast(const SimpleType* to, void* memory) const {
