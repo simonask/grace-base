@@ -132,7 +132,7 @@ private:
 };
 
 struct SimpleType : Type {
-	SimpleType(String name, size_t width, size_t component_width, bool is_float, bool is_signed) : name_(std::move(name)), width_(width), component_width_(component_width), is_float_(is_float), is_signed_(is_signed) {}
+	SimpleType(IAllocator& alloc, StringRef name, size_t width, size_t component_width, bool is_float, bool is_signed) : name_(name, alloc), width_(width), component_width_(component_width), is_float_(is_float), is_signed_(is_signed) {}
 	StringRef name() const override { return name_; }
 	void construct(byte* place, IUniverse&) const { std::fill(place, place + size(), 0); }
 	void destruct(byte*, IUniverse&) const {}
@@ -172,8 +172,9 @@ private:
 	ssize_t min_;
 };
 
+
 struct IntegerType : SimpleType {
-	IntegerType(String name, size_t width, bool is_signed = true) : SimpleType(name, width, width, false, is_signed) {}
+	IntegerType(IAllocator& alloc, StringRef name, size_t width, bool is_signed = true) : SimpleType(alloc, name, width, width, false, is_signed) {}
 	void deserialize_raw(byte*, const ArchiveNode&, IUniverse&) const override;
 	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
 	void* cast(const SimpleType* to, void* o) const;
@@ -182,7 +183,7 @@ struct IntegerType : SimpleType {
 };
 
 struct FloatType : SimpleType {
-	FloatType(String name, size_t width) : SimpleType(name, width, width, true, true) {}
+	FloatType(IAllocator& alloc, String name, size_t width) : SimpleType(alloc, name, width, width, true, true) {}
 	void deserialize_raw(byte*, const ArchiveNode& node, IUniverse&) const override;
 	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
 	void* cast(const SimpleType* to, void* o) const;

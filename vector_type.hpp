@@ -15,12 +15,12 @@
 
 namespace falling {
 	struct VectorType : public SimpleType {
-		VectorType(String name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(move(name), width, component_width, is_float, is_signed) {}
+		VectorType(IAllocator& alloc, StringRef name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(alloc, move(name), width, component_width, is_float, is_signed) {}
 	};
 	
 	template <typename T, size_t N>
 	struct VectorTypeImpl : public TypeFor<TVector<T, N>, VectorType> {
-		VectorTypeImpl(String name) : TypeFor<TVector<T,N>, VectorType>(std::move(name), sizeof(T)*N, sizeof(T), IsFloatingPoint<T>::Value, IsSigned<T>::Value) {}
+		VectorTypeImpl(IAllocator& alloc, StringRef name) : TypeFor<TVector<T,N>, VectorType>(alloc, std::move(name), sizeof(T)*N, sizeof(T), IsFloatingPoint<T>::Value, IsSigned<T>::Value) {}
 		
 		virtual void deserialize(TVector<T, N>&, const ArchiveNode&, IUniverse&) const override;
 		virtual void serialize(const TVector<T,N>&, ArchiveNode&, IUniverse&) const override;
@@ -60,7 +60,7 @@ namespace falling {
 				}
 			}
 			ss << "vec" << N;
-			return new_static VectorTypeImpl<T,N>(ss.string(static_allocator()));
+			return new_static VectorTypeImpl<T,N>(static_allocator(), ss.string(static_allocator()));
 		}
 		
 		static const VectorTypeImpl<T,N>* build() {
