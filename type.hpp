@@ -59,14 +59,15 @@ struct TypeFor : TypeType {
 		this->construct_unless_abstract(place);
 	}
 	void destruct(byte* place, IUniverse&) const {
-		reinterpret_cast<ObjectType*>(place)->~ObjectType();
+		ObjectType* p = reinterpret_cast<ObjectType*>(place);
+		p->~ObjectType();
 	}
 	void copy_construct(byte* to, const byte* from) const {
 		const ObjectType* original = reinterpret_cast<const ObjectType*>(from);
 		this->copy_construct_unless_abstract(to, *original);
 	}
 	void move_construct(byte* to, byte* from) const {
-		const ObjectType* original = reinterpret_cast<ObjectType*>(from);
+		ObjectType* original = reinterpret_cast<ObjectType*>(from);
 		this->move_construct_unless_abstract(to, std::move(*original));
 	}
 	size_t size() const { return sizeof(ObjectType); }
