@@ -28,7 +28,7 @@ template <typename T>
 void MaybeType<T>::deserialize(Maybe<T>& m, const ArchiveNode& node, IUniverse& universe) const {
 	if (!node.is_empty()) {
 		T value;
-		inner_type()->deserialize(reinterpret_cast<byte*>(&value), node, universe);
+		inner_type()->deserialize_raw(reinterpret_cast<byte*>(&value), node, universe);
 		m = std::move(value);
 	}
 }
@@ -48,15 +48,15 @@ void MaybeType<T>::serialize(const Maybe<T>& m, ArchiveNode& node, IUniverse& un
 	maybe_if(m, Serialize(inner_type(), node, universe));*/
 	
 	m.map([&](const T& it) {
-		inner_type()->serialize(reinterpret_cast<const byte*>(&it), node, universe);
+		inner_type()->serialize_raw(reinterpret_cast<const byte*>(&it), node, universe);
 	});
 }
 
 template <typename T>
 struct BuildTypeInfo<Maybe<T>> {
 	static const MaybeType<T>* build() {
-		static const MaybeType<T> type;
-		return &type;
+		static const MaybeType<T>* type = new_static MaybeType<T>;
+		return type;
 	}
 };
 
