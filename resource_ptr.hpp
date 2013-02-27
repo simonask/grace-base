@@ -21,6 +21,7 @@ namespace falling {
 		explicit ResourcePtr(const T* ptr) : ptr_(const_cast<T*>(ptr)) { retain(); }
 		ResourcePtr(const ResourcePtr<T>& other) : ptr_(other.ptr_) { retain(); }
 		ResourcePtr(ResourcePtr<T>&& other) : ptr_(other.ptr_) { other.ptr_ = nullptr; }
+		~ResourcePtr() { release(); }
 		ResourcePtr<T>& operator=(const ResourcePtr<T>& other);
 		ResourcePtr<T>& operator=(ResourcePtr<T>&& other);
 		ResourcePtr<T>& operator=(std::nullptr_t);
@@ -30,13 +31,13 @@ namespace falling {
 		bool operator!=(std::nullptr_t null) const { return ptr_ != nullptr; }
 		explicit operator bool() const { return ptr_ != nullptr; }
 		
-		const T* operator->() const { return ptr_; }
-		const T& operator*() const { return *ptr_; }
-		const T* get() const { return ptr_; }
+		const T* operator->() const { return get(); }
+		const T& operator*() const { return *get(); }
+		const T* get() const { return static_cast<const T*>(ptr_); }
 	private:
 		friend class ResourceManager;
 		
-		T* ptr_;
+		Resource* ptr_;
 		
 		void retain();
 		void release();
@@ -44,6 +45,7 @@ namespace falling {
 	
 	template <typename T>
 	inline ResourcePtr<T>& ResourcePtr<T>::operator=(const ResourcePtr<T>& other) {
+		if (this == &other) return *this;
 		release();
 		ptr_ = other.ptr_;
 		retain();
@@ -52,6 +54,7 @@ namespace falling {
 	
 	template <typename T>
 	inline ResourcePtr<T>& ResourcePtr<T>::operator=(ResourcePtr<T>&& other) {
+		if (this == &other) return *this;
 		release();
 		ptr_ = other.ptr_;
 		other.ptr_ = nullptr;
@@ -82,7 +85,7 @@ namespace falling {
 	
 	template <typename T>
 	inline void ResourcePtr<T>::release() {
-		if (ptr_ != nullptr) ptr_->retain();
+		if (ptr_ != nullptr) ptr_->release();
 		ptr_ = nullptr;
 	}
 }
