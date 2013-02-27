@@ -46,10 +46,10 @@ namespace falling {
 		template <typename T>
 		Any(T value, IAllocator& alloc = default_allocator());
 		Any(NothingType, IAllocator& alloc = default_allocator());
-		Any(const Any& other);
 		Any(Any&& other);
-		Any(const Any& other, IAllocator& alloc);
+		Any(const Any& other);
 		Any(Any&& other, IAllocator& alloc);
+		Any(const Any& other, IAllocator& alloc);
 		~Any();
 		
 		template <typename T>
@@ -160,12 +160,16 @@ namespace falling {
 	
 	// TODO: Use delegating constructor when available.
 	inline Any::Any(Any&& other) : allocator_(other.allocator_) {
-		assign(other);
+		stored_type_ = other.stored_type_;
 		if (stored_type_ != nullptr) {
-			allocate_storage();
+			allocate_storage(); // TODO: Take pointer from other.
 			stored_type_->move_construct(ptr(), other.ptr());
 			other.deallocate_storage();
 			other.stored_type_ = nullptr;
+#if defined(DEBUG)
+			debug_info_ = other.debug_info_;
+			other.debug_info_ = nullptr;
+#endif
 		}
 	}
 	
@@ -174,12 +178,16 @@ namespace falling {
 	}
 	
 	inline Any::Any(Any&& other, IAllocator& alloc) : allocator_(alloc) {
-		assign(other);
+		stored_type_ = other.stored_type_;
 		if (stored_type_ != nullptr) {
-			allocate_storage();
+			allocate_storage(); // TODO: Check if alloc is same, and take pointer if so.
 			stored_type_->move_construct(ptr(), other.ptr());
 			other.deallocate_storage();
 			other.stored_type_ = nullptr;
+#if defined(DEBUG)
+			debug_info_ = other.debug_info_;
+			other.debug_info_ = nullptr;
+#endif
 		}
 	}
 	
