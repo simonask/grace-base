@@ -22,11 +22,21 @@ namespace falling {
 		virtual void serialize(const Color& place, ArchiveNode&, IUniverse&) const;
 		
 		StringRef name() const;
-		size_t size() const { return sizeof(Color); }
+	};
+	
+	struct CompactColorType : TypeFor<CompactColor, ColorType> {
+		CompactColorType() {}
+		virtual void deserialize(CompactColor& place, const ArchiveNode&, IUniverse&) const;
+		virtual void serialize(const CompactColor& place, ArchiveNode&, IUniverse&) const;
 	};
 	
 	template <>
 	struct BuildTypeInfo<Color> {
+		static const ColorType* build();
+	};
+	
+	template <>
+	struct BuildTypeInfo<CompactColor> {
 		static const ColorType* build();
 	};
 }

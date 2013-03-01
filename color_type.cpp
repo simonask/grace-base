@@ -39,8 +39,25 @@ namespace falling {
 		return "Color";
 	}
 	
+	void CompactColorType::deserialize(CompactColor &place, const ArchiveNode & node, IUniverse & universe) const {
+		Color c;
+		const ColorType* t = this;
+		t->deserialize(c, node, universe);
+		place = c;
+	}
+	
+	void CompactColorType::serialize(const CompactColor& place, ArchiveNode& node, IUniverse& universe) const {
+		Color c = place;
+		const ColorType* t = this;
+		t->serialize(c, node, universe);
+	}
+	
 	const ColorType* BuildTypeInfo<Color>::build() {
 		static const ColorType type;
+		return &type;
+	}
+	const ColorType* BuildTypeInfo<CompactColor>::build() {
+		static const CompactColorType type;
 		return &type;
 	}
 }
