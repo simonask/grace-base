@@ -2,12 +2,15 @@
 #include "object/object_type.hpp"
 #include "base/basic.hpp"
 #include "base/map.hpp"
+#include "render/vertex_type.hpp"
 
 namespace falling {
 
 struct TypeRegistry::Impl {
 	Array<const ObjectTypeBase*> types;
 	Map<String, size_t> type_map;
+	Array<const VertexType*> vertex_types;
+	Map<String, size_t> vertex_type_map;
 };
 
 TypeRegistry::Impl* TypeRegistry::impl() {
@@ -20,12 +23,26 @@ void TypeRegistry::add(const ObjectTypeBase* type) {
 	impl()->types.push_back(type);
 }
 
+void TypeRegistry::add(const VertexType* type) {
+	impl()->vertex_type_map[type->name()] = impl()->vertex_types.size();
+	impl()->vertex_types.push_back(type);
+}
+
 const ObjectTypeBase* TypeRegistry::get(StringRef name) {
 	size_t idx = find_or(impl()->type_map, name, SIZE_T_MAX);
 	if (idx >= impl()->types.size()) {
 		return nullptr;
 	} else {
 		return impl()->types[idx];
+	}
+}
+
+const VertexType* TypeRegistry::get_vertex_type(StringRef name) {
+	size_t idx = find_or(impl()->vertex_type_map, name, SIZE_T_MAX);
+	if (idx >= impl()->vertex_types.size()) {
+		return nullptr;
+	} else {
+		return impl()->vertex_types[idx];
 	}
 }
 

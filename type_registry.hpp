@@ -9,15 +9,19 @@
 
 namespace falling {
 
+	struct VertexType;
+
 class TypeRegistry {
 public:
 	template <typename T>
 	static void add();
 	static void add(const ObjectTypeBase* type);
+	static void add(const VertexType* type);
 	static ArrayRef<const ObjectTypeBase*> object_types();
 	static void add_missing_types(); // Search registered types for references to non-registered types and register them.
 	
 	static const ObjectTypeBase* get(StringRef name);
+	static const VertexType* get_vertex_type(StringRef name);
 private:
 	TypeRegistry();
 	struct Impl;
