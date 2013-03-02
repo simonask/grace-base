@@ -288,6 +288,16 @@ get_type(const T& value) {
 	return get_type<T>();
 }
 
+struct CheckHasGetType {
+	template <typename T, typename TT = decltype(get_type<T>())>
+	struct Check {};
+};
+
+template <typename T>
+struct CanGetType : public HasMember<T, CheckHasGetType> {};
+
+
+
 template <typename Last = void>
 void append_type_names(FormattedStream& os) {
 	const Type* t = get_type<Last>();
