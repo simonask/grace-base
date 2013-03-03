@@ -318,6 +318,9 @@ namespace falling {
 		Self abs() const;
 		Self sumv() const;
 		ElementType sum() const;
+		Self round() const; // if >0: ceil, if <0: floor
+		Self floor() const;
+		Self ceil() const;
 		
 
 		// Convenience
@@ -510,6 +513,21 @@ namespace falling {
 	template <typename T, size_t N>
 	ALWAYS_INLINE TVector<T,N> TVector<T,N>::abs() const {
 		return simd::abs(this->m);
+	}
+	
+	template <typename T, size_t N>
+	ALWAYS_INLINE TVector<T,N> TVector<T,N>::round() const {
+		return simd::round(this->m);
+	}
+	
+	template <typename T, size_t N>
+	ALWAYS_INLINE TVector<T,N> TVector<T,N>::floor() const {
+		return simd::floor(this->m);
+	}
+	
+	template <typename T, size_t N>
+	ALWAYS_INLINE TVector<T,N> TVector<T,N>::ceil() const {
+		return simd::ceil(this->m);
 	}
 	
 	template <typename T, size_t N>

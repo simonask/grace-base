@@ -529,6 +529,34 @@ namespace falling {
 			uint32 masked = (~SIGNMASK_FLOAT32) & *p;
 			return *reinterpret_cast<float32*>(&masked);
 		}
+		
+		template <typename T, size_t N>
+		typename std::enable_if<std::is_integral<T>::value, typename GetVectorType<T, N>::Type>::type
+		round(typename GetVectorType<T, N>::Type v) {
+			return v;
+		}
+		template <typename T, size_t N>
+		typename std::enable_if<std::is_integral<T>::value, typename GetVectorType<T, N>::Type>::type
+		ceil(typename GetVectorType<T, N>::Type v) {
+			return v;
+		}
+		template <typename T, size_t N>
+		typename std::enable_if<std::is_integral<T>::value, typename GetVectorType<T, N>::Type>::type
+		floor(typename GetVectorType<T, N>::Type v) {
+			return v;
+		}
+		
+		ALWAYS_INLINE fvec2 round(fvec2 v) {
+			return {::roundf(v[0]), ::roundf(v[1])};
+		}
+		
+		ALWAYS_INLINE fvec2 ceil(fvec2 v) {
+			return {::ceilf(v[0]), ::ceilf(v[1])};
+		}
+		
+		ALWAYS_INLINE fvec2 floor(fvec2 v) {
+			return {::floorf(v[0]), ::floorf(v[1])};
+		}
 	}
 }
 
