@@ -232,7 +232,6 @@ typename Array<T>::iterator Array<T>::insert(InputIterator b, InputIterator e, i
 	iterator move_end = end();
 	iterator move_begin = before;
 	iterator move_target_end = end() + add_len;
-	iterator move_target_begin = before + add_len;
 	for (size_t i = 0; i < num_move; ++i) {
 		iterator src = move_end - i - 1;
 		iterator dst = move_target_end - i - 1;
