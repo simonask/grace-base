@@ -11,6 +11,7 @@
 
 #include <initializer_list>
 #include "base/iterators.hpp"
+#include "base/basic.hpp"
 
 namespace falling {
 	struct Empty {};
@@ -66,6 +67,20 @@ namespace falling {
 	bool ArrayRef<T>::operator!=(const ArrayRef<T>& other) const {
 		return !(*this == other);
 	}
+	
+	struct IAttribute;
+	struct ISlot;
+	class String;
+	struct StringRef;
+	struct Type;
+	extern template struct ArrayRef<byte>;
+	extern template struct ArrayRef<char>;
+	extern template struct ArrayRef<float32>;
+	extern template struct ArrayRef<String>;
+	extern template struct ArrayRef<StringRef>;
+	extern template struct ArrayRef<const Type*>;
+	extern template struct ArrayRef<const IAttribute*>;
+	extern template struct ArrayRef<const ISlot* const>;
 }
 
 #endif

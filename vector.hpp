@@ -311,9 +311,9 @@ namespace falling {
 		ALWAYS_INLINE Self operator|(MaskVector msk) const { return this->mask | msk.mask; }
 		ALWAYS_INLINE Self operator^(MaskVector msk) const { return this->mask ^ msk.mask; }
 		ALWAYS_INLINE Self operator~() const { return ~this->mask; }
-		ALWAYS_INLINE Self& operator&=(MaskVector  msk) { this->mask &= msk; return *this; }
-		ALWAYS_INLINE Self& operator|=(MaskVector msk) { this->mask |= msk; return *this; }
-		ALWAYS_INLINE Self& operator^=(MaskVector msk) { this->mask ^= msk; return *this; }
+		ALWAYS_INLINE Self& operator&=(MaskVector  msk) { this->mask &= msk.m; return *this; }
+		ALWAYS_INLINE Self& operator|=(MaskVector msk) { this->mask |= msk.m; return *this; }
+		ALWAYS_INLINE Self& operator^=(MaskVector msk) { this->mask ^= msk.m; return *this; }
 		
 		Self abs() const;
 		Self sumv() const;
@@ -384,7 +384,7 @@ namespace falling {
 	using uvec1 = TVector<uint32, 1>;
 	using u8vec4 = TVector<byte, 4>;
 	
-	/*extern template struct TVector<float32, 4>;
+	extern template struct TVector<float32, 4>;
 	extern template struct TVector<float32, 3>;
 	extern template struct TVector<float32, 2>;
 	extern template struct TVector<float32, 1>;
@@ -395,7 +395,7 @@ namespace falling {
 	extern template struct TVector<uint32, 4>;
 	extern template struct TVector<uint32, 3>;
 	extern template struct TVector<uint32, 2>;
-	extern template struct TVector<uint32, 1>;*/
+	extern template struct TVector<uint32, 1>;
 	
 	
 	// Conversion

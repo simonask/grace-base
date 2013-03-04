@@ -550,12 +550,24 @@ namespace falling {
 			return {::roundf(v[0]), ::roundf(v[1])};
 		}
 		
-		ALWAYS_INLINE fvec2 ceil(fvec2 v) {
-			return {::ceilf(v[0]), ::ceilf(v[1])};
+		ALWAYS_INLINE fvec4 round(fvec4 v) {
+			return {::roundf(v[0]), ::roundf(v[1]), ::roundf(v[2]), ::roundf(v[3])};
 		}
 		
 		ALWAYS_INLINE fvec2 floor(fvec2 v) {
 			return {::floorf(v[0]), ::floorf(v[1])};
+		}
+		
+		ALWAYS_INLINE fvec4 floor(fvec4 v) {
+			return {::floorf(v[0]), ::floorf(v[1]), ::floorf(v[2]), ::floorf(v[3])};
+		}
+		
+		ALWAYS_INLINE fvec2 ceil(fvec2 v) {
+			return {::ceilf(v[0]), ::ceilf(v[1])};
+		}
+		
+		ALWAYS_INLINE fvec4 ceil(fvec4 v) {
+			return {::ceilf(v[0]), ::ceilf(v[1]), ::ceilf(v[2]), ::ceilf(v[3])};
 		}
 	}
 }

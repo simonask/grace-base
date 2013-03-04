@@ -90,6 +90,22 @@ private:
 	void check_index_valid(size_t idx) const;
 };
 
+class String;
+class StringRef;
+class IAttribute;
+class ISlot;
+class Type;
+
+extern template class Array<byte>;
+extern template class Array<float32>;
+extern template class Array<uint32>;
+extern template class Array<StringRef>;
+extern template class Array<String>;
+extern template class Array<IAttribute*>;
+extern template class Array<ISlot*>;
+extern template class Array<const Type*>;
+
+
 template <typename T>
 Array<T>::Array(std::initializer_list<T> list, IAllocator& alloc) : allocator_(alloc) {
 	insert(list.begin(), list.end());
@@ -117,6 +133,7 @@ template <typename T>
 Array<T>& Array<T>::operator=(std::initializer_list<T> list) {
 	clear(list.size() < alloc_size_); // deallocate if we have more memory than we need for the list
 	insert(list.begin(), list.end());
+	return *this;
 }
 
 template <typename T>
