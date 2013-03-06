@@ -241,11 +241,19 @@ namespace falling {
 	
 	template <typename K, typename V, typename C>
 	void Map<K,V,C>::swap(Self& other) {
-		std::swap(keys_, other.keys_);
-		std::swap(values_, other.values_);
-		std::swap(size_, other.size_);
-		std::swap(alloc_size_, other.alloc_size_);
-		std::swap(cmp_, other.cmp_);
+		if (&allocator_ == &other.allocator_) {
+			// Fast swap
+			std::swap(keys_, other.keys_);
+			std::swap(values_, other.values_);
+			std::swap(size_, other.size_);
+			std::swap(alloc_size_, other.alloc_size_);
+			std::swap(cmp_, other.cmp_);
+		} else {
+			// Slower swap
+			Self tmp = move(other);
+			other = move(*this);
+			*this = move(tmp);
+		}
 	}
 	
 	template <typename K, typename V, typename C>
