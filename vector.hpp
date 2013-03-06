@@ -387,15 +387,12 @@ namespace falling {
 	extern template struct TVector<float32, 4>;
 	extern template struct TVector<float32, 3>;
 	extern template struct TVector<float32, 2>;
-	extern template struct TVector<float32, 1>;
 	extern template struct TVector<int32, 4>;
 	extern template struct TVector<int32, 3>;
 	extern template struct TVector<int32, 2>;
-	extern template struct TVector<int32, 1>;
 	extern template struct TVector<uint32, 4>;
 	extern template struct TVector<uint32, 3>;
 	extern template struct TVector<uint32, 2>;
-	extern template struct TVector<uint32, 1>;
 	
 	
 	// Conversion
