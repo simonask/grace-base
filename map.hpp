@@ -41,6 +41,7 @@ namespace falling {
 		size_t capacity() const;
 		void clear(bool free_memory = true);
 		void swap(Self& other);
+		void reserve(size_t new_size); // May do nothing in future versions
 		
 		ArrayRef<const Key> keys() const;
 		ArrayRef<Value> values();
@@ -98,8 +99,6 @@ namespace falling {
 		uint32 size_ = 0;
 		Key* keys_ = nullptr;
 		Value* values_ = nullptr;
-		
-		void reserve(size_t new_size);
 		
 		template <typename ComparableAndConvertibleKey>
 		iterator insert_one(ComparableAndConvertibleKey key, Value v);
