@@ -104,9 +104,6 @@ namespace falling {
 		iterator insert_one(ComparableAndConvertibleKey key, Value v);
 	};
 	
-	template <typename Value>
-	using Dictionary = Map<String, Value>;
-	
 	template <typename Key, typename Value, bool IsConst>
 	struct MapIteratorImpl {
 		using Self = MapIteratorImpl<Key,Value,IsConst>;
