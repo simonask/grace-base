@@ -7,7 +7,8 @@
 #include "base/any.hpp"
 #include "type/type.hpp"
 #include "type/array_type.hpp"
-#include "type/map_type.hpp"
+#include "type/dictionary_type.hpp"
+#include "base/dictionary.hpp"
 
 namespace falling {
 
