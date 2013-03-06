@@ -19,7 +19,7 @@ namespace falling {
 	struct MapType : public Type {
 		virtual const Type* key_type() const = 0;
 		virtual const Type* value_type() const = 0;
-		StringRef name() const final { return name_; }
+		StringRef name() const override { return name_; }
 	protected:
 		MapType() {}
 		void build_map_type_name();
@@ -150,7 +150,7 @@ namespace falling {
 	template <typename V, typename Cmp>
 	void MapTypeImpl<StringRef,V,Cmp>::serialize(const Map<StringRef, V, Cmp> &place, ArchiveNode &node, IUniverse &universe) const {
 		MapReader<Map<StringRef,V,Cmp>> e(place);
-		serialize_map(e, node, universe);
+		this->serialize_map(e, node, universe);
 	}
 }
 

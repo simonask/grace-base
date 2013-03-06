@@ -30,10 +30,10 @@ namespace falling {
 			for (auto pair: map) {
 				vt->deserialize_raw(value_data, *pair.second, universe);
 				if (kt == get_type<String>()) {
-					String k = pair.first;
+					String k(pair.first);
 					w.set_and_move((byte*)&k, value_data);
 				} else if (kt == get_type<StringRef>()) {
-					StringRef k = pair.first;
+					StringRef k(pair.first);
 					w.set_and_move((byte*)&k, value_data);
 				} else {
 					ASSERT(false); // Unsupported key type in non-array deserialization.
