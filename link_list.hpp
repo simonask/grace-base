@@ -27,6 +27,8 @@ namespace falling {
 		friend class LinkList<T>;
 		friend struct GetNextNode<T>;
 		friend struct GetPreviousNode<T>;
+		friend struct GetNextNode<const T>;
+		friend struct GetPreviousNode<const T>;
 	};
 	
 	template <typename T>
@@ -89,6 +91,8 @@ namespace falling {
 		LinkList(LinkList<T>&& other);
 		LinkList<T>& operator=(const LinkList<T>& other);
 		
+		IAllocator& allocator() const { return allocator_; }
+		
 		void push_back(T&& x);
 		void push_back(const T& x);
 		void push_front(T x);
@@ -104,11 +108,13 @@ namespace falling {
 		bool empty() const;
 		
 		using iterator = ForwardLinkListIterator<LinkList<T>, ItemType, false>;
-		using const_iterator = ForwardLinkListIterator<LinkList<T>, ItemType, true>;
+		using const_iterator = ForwardLinkListIterator<LinkList<T>, const ItemType, true>;
 		iterator begin();
 		iterator end();
+		iterator last();
 		const_iterator begin() const;
 		const_iterator end() const;
+		const_iterator last() const;
 		
 		iterator erase(iterator it);
 		void clear();
@@ -161,15 +167,27 @@ namespace falling {
 	}
 	
 	template <typename T>
+	typename LinkList<T>::iterator
+	LinkList<T>::last() {
+		return iterator(GetPreviousNode<ItemType>::get(&sentinel_));
+	}
+	
+	template <typename T>
 	typename LinkList<T>::const_iterator
 	LinkList<T>::begin() const {
-		return const_iterator(GetNextNode<ItemType>::get(&sentinel_));
+		return const_iterator(GetNextNode<const ItemType>::get(&sentinel_));
 	}
 	
 	template <typename T>
 	typename LinkList<T>::const_iterator
 	LinkList<T>::end() const {
 		return const_iterator(&sentinel_);
+	}
+	
+	template <typename T>
+	typename LinkList<T>::const_iterator
+	LinkList<T>::last() const {
+		return const_iterator(GetPreviousNode<const ItemType>::get(&sentinel_));
 	}
 	
 	template <typename T>
@@ -192,6 +210,25 @@ namespace falling {
 	void LinkList<T>::unlink(ItemType* it) {
 		it->next->previous = it->previous;
 		it->previous->next = it->next;
+	}
+	
+	template <typename T>
+	typename LinkList<T>::iterator
+	LinkList<T>::erase(iterator it) {
+		auto n = it;
+		++n;
+		ItemType* p = it.get();
+		ASSERT(p != &sentinel_);
+		unlink(p);
+		destroy(p, allocator_);
+		return n;
+	}
+	
+	template <typename T>
+	void LinkList<T>::clear() {
+		while (begin() != end()) {
+			erase(begin());
+		}
 	}
 	
 	template <typename T>
