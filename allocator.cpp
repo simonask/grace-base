@@ -251,6 +251,10 @@ namespace falling {
 		tracker_.pause();
 	}
 	
+	void SystemAllocator::unpause_allocation_tracking() {
+		tracker_.unpause();
+	}
+	
 	Array<MemoryLeak> SystemAllocator::finish_allocation_tracking(IAllocator& leak_info_alloc) {
 		Array<MemoryLeak> leaks(leak_info_alloc);
 		tracker_.stop();

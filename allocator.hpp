@@ -62,6 +62,7 @@ namespace falling {
 		
 		void start_allocation_tracking();
 		void pause_allocation_tracking();
+		void unpause_allocation_tracking();
 		Array<MemoryLeak> finish_allocation_tracking(IAllocator& leak_info_alloc);
 	private:
 		size_t usage_ = 0;

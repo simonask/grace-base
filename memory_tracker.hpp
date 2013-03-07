@@ -30,6 +30,7 @@ namespace falling {
 		void track_free(void* address);
 		void start();
 		void pause();
+		void unpause();
 		void stop();
 		
 		void get_results(Array<MemoryLeak>& out_results);

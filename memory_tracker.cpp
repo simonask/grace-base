@@ -58,7 +58,7 @@ namespace falling {
 	}
 	
 	void MemoryTracker::track_allocation(void *address, size_t size) {
-		if (impl && impl->is_tracking) {
+		if (impl && impl->is_tracking && !impl->is_paused) {
 			MemoryLeak* bucket = get_bucket_for_address(impl->begin, impl->end, address);
 			for (size_t i = 0; i < LEAKS_PER_BUCKET; ++i) {
 				if (bucket[i].address == nullptr) {
@@ -77,7 +77,7 @@ namespace falling {
 	
 	void MemoryTracker::track_free(void *address) {
 		if (address == nullptr) return;
-		if (impl && impl->is_tracking) {
+		if (impl && impl->is_tracking && !impl->is_paused) {
 			MemoryLeak* bucket = get_bucket_for_address(impl->begin, impl->end, address);
 			for (size_t i = 0; i < LEAKS_PER_BUCKET; ++i) {
 				if (bucket[i].address == address) {
@@ -103,8 +103,12 @@ namespace falling {
 	
 	void MemoryTracker::pause() {
 		if (impl == nullptr) return;
-		impl->is_tracking = false;
 		impl->is_paused = true;
+	}
+	
+	void MemoryTracker::unpause() {
+		if (impl == nullptr) return;
+		impl->is_paused = false;
 	}
 	
 	void MemoryTracker::stop() {
