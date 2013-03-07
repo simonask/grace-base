@@ -29,12 +29,12 @@ namespace falling {
 	static const size_t NUM_BUCKETS = 128; // 256 KiB/bucket == L2 cache size
 	static const size_t BUCKET_SIZE = TRACKING_ARENA_SIZE / NUM_BUCKETS;
 	static const size_t LEAKS_PER_BUCKET = BUCKET_SIZE / sizeof(MemoryLeak);
-	static const size_t BUCKET_MASK_BITS = LEAKS_PER_BUCKET - 1;
+	static const size_t BUCKET_MASK_BITS = (NUM_BUCKETS - 1);
 	
 	static inline MemoryLeak* get_bucket_for_address(MemoryLeak* begin, MemoryLeak* end, void* addr) {
 		uintptr_t p = (uintptr_t)addr;
-		uintptr_t idx = p & BUCKET_MASK_BITS;
-		return begin + idx;
+		uintptr_t idx = (p & (BUCKET_MASK_BITS << 4)) >> 4;
+		return begin + LEAKS_PER_BUCKET * idx;
 	}
 	
 	MemoryTracker::~MemoryTracker() {
