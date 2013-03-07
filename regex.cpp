@@ -7,6 +7,7 @@
 //
 
 #include "base/regex.hpp"
+#include "io/string_stream.hpp"
 #include <regex.h>
 
 namespace falling {
@@ -92,6 +93,7 @@ namespace falling {
 		int o = 0;
 		if (is_case_insensitive())  o |= REG_ICASE;
 		if (is_newline_sensitive()) o |= REG_NEWLINE;
+		o |= REG_EXTENDED;
 		// TODO: Consider using REG_PEND option instead of regncomp
 		int err = ::regncomp((regex_t*)regex_, pattern_.data(), pattern_.size(), o);
 		check_error(err);
@@ -105,6 +107,24 @@ namespace falling {
 		if (err == REG_EMPTY) return false;
 		check_error(err);
 		return true;
+	}
+	
+	Regex::SearchResults Regex::search(StringRef haystack, IAllocator& alloc) const {
+		Array<StringRef> matches(alloc);
+		if (regex_ != nullptr) {
+			regmatch_t match;
+			const char* p = haystack.data();
+			const char* end = p + haystack.size();
+			while (p < end) {
+				int err = ::regnexec((regex_t*)regex_, p, end - p, 1, &match, 0);
+				if (err == REG_NOMATCH) {
+					break;
+				}
+				matches.push_back(StringRef(p + match.rm_so, match.rm_eo - match.rm_so));
+				p = p + match.rm_eo;
+			}
+		}
+		return move(matches);
 	}
 	
 	void Regex::check_error(int err) const {
@@ -128,5 +148,21 @@ namespace falling {
 				default: UNREACHABLE();
 			}
 		}
+	}
+	
+	String replace(StringRef haystack, Regex pattern, StringRef replacement, IAllocator& alloc) {
+		auto results = pattern.search(haystack, alloc);
+		StringStream ss(alloc);
+		const char* p = haystack.data();
+		const char* end = p + haystack.size();
+		for (auto& match: results) {
+			if (match.data() > p) {
+				ss.write((const byte*)p, match.data() - p);
+			}
+			p = match.data() + match.size();
+			ss << replacement;
+		}
+		ss.write((const byte*)p, end - p);
+		return ss.string(alloc);
 	}
 }

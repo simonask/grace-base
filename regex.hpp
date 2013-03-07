@@ -70,6 +70,8 @@ namespace falling {
 		void parse_options(const char*);
 		void check_error(int) const;
 	};
+	
+	String replace(StringRef haystack, Regex pattern, StringRef replacement, IAllocator& alloc = default_allocator());
 		
 	inline IAllocator& Regex::allocator() const {
 		return pattern_.allocator();
