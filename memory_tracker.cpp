@@ -49,21 +49,23 @@ namespace falling {
 			impl = (Impl*)malloc(sizeof(MemoryTracker::Impl));
 			new(impl) Impl;
 			impl->begin = (MemoryLeak*)::mmap(nullptr, TRACKING_ARENA_SIZE, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+			memset(impl->begin, 0, TRACKING_ARENA_SIZE);
 			byte* end = (byte*)impl->begin + TRACKING_ARENA_SIZE;
 			impl->end = (MemoryLeak*)end;
 			impl->is_tracking = false;
+			impl->is_paused = false;
 		}
 	}
 	
 	void MemoryTracker::track_allocation(void *address, size_t size) {
 		if (impl && impl->is_tracking) {
-			impl->num_live_allocations++;
 			MemoryLeak* bucket = get_bucket_for_address(impl->begin, impl->end, address);
 			for (size_t i = 0; i < LEAKS_PER_BUCKET; ++i) {
 				if (bucket[i].address == nullptr) {
 					bucket[i].address = address;
 					bucket[i].size = size;
 					get_backtrace(bucket[i].backtrace, 6, 2);
+					impl->num_live_allocations++;
 					return;
 				} else if (bucket[i].address == address) {
 					ASSERT(false); // Double allocation of the same pointer?!
@@ -74,16 +76,18 @@ namespace falling {
 	}
 	
 	void MemoryTracker::track_free(void *address) {
+		if (address == nullptr) return;
 		if (impl && impl->is_tracking) {
-			impl->num_live_allocations--;
 			MemoryLeak* bucket = get_bucket_for_address(impl->begin, impl->end, address);
 			for (size_t i = 0; i < LEAKS_PER_BUCKET; ++i) {
 				if (bucket[i].address == address) {
+					ASSERT(impl->num_live_allocations != 0);
+					impl->num_live_allocations--;
 					memset(bucket + i, 0, sizeof(MemoryLeak));
 					return;
 				}
 			}
-			//ASSERT(false); // Double free!
+			ASSERT(false); // Double free!
 		}
 	}
 	
@@ -93,7 +97,7 @@ namespace falling {
 		if (impl->is_paused) {
 			impl->is_paused = false;
 		} else {
-			::memset(impl->begin, 0, (impl->end - impl->begin) * sizeof(MemoryLeak));
+			::memset(impl->begin, 0, TRACKING_ARENA_SIZE);
 		}
 	}
 	
