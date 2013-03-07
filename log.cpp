@@ -17,7 +17,7 @@ namespace falling {
 	};
 	
 	LogManager::Impl& LogManager::get() {
-		static Impl* impl = new Impl;
+		static Impl* impl = new_static Impl;
 		return *impl;
 	}
 	
