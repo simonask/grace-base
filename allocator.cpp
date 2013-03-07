@@ -195,14 +195,21 @@ namespace falling {
 	}
 	
 	void* SystemAllocator::allocate(size_t nbytes, size_t alignment) {
+		void* caller_ip;
+		GET_CALLER_IP_VIRTUAL(caller_ip);
 		void* ptr = system_alloc(nbytes, alignment);
 		usage_ += system_alloc_size(ptr);
+		tracker_.track_allocation(ptr, caller_ip);
 		return ptr;
 	}
 	
 	void* SystemAllocator::reallocate(void *ptr, size_t old_size, size_t new_size, size_t alignment) {
+		void* caller_ip;
+		GET_CALLER_IP_VIRTUAL(caller_ip);
 		usage_ -= old_size;
 		void* result = system_realloc(ptr, old_size, new_size, alignment);
+		tracker_.track_free(ptr);
+		tracker_.track_allocation(result, caller_ip);
 		usage_ += new_size;
 		return result;
 	}
@@ -212,6 +219,7 @@ namespace falling {
 			size_t sz = system_alloc_size(ptr);
 			usage_ -= sz;
 			system_free(ptr);
+			tracker_.track_free(ptr);
 		}
 	}
 	
@@ -220,19 +228,39 @@ namespace falling {
 			size_t sz = system_alloc_size(ptr);
 			usage_ -= sz;
 			system_free(ptr, nbytes);
+			tracker_.track_free(ptr);
 		}
 	}
     
     void* SystemAllocator::allocate_large(size_t nbytes, size_t alignment, size_t& out_actual_size) {
         void* ptr = system_alloc_large(nbytes, alignment, out_actual_size);
 		usage_ += out_actual_size;
+		void* caller_ip;
+		GET_CALLER_IP_VIRTUAL(caller_ip);
+		tracker_.track_allocation(ptr, caller_ip);
 		return ptr;
     }
     
     void SystemAllocator::free_large(void *ptr, size_t actual_size) {
 		usage_ -= actual_size;
         system_free_large(ptr, actual_size);
+		tracker_.track_free(ptr);
     }
+	
+	void SystemAllocator::start_allocation_tracking() {
+		tracker_.start();
+	}
+	
+	void SystemAllocator::pause_allocation_tracking() {
+		tracker_.pause();
+	}
+	
+	Array<MemoryLeak> SystemAllocator::finish_allocation_tracking(IAllocator& leak_info_alloc) {
+		Array<MemoryLeak> leaks(leak_info_alloc);
+		tracker_.stop();
+		tracker_.get_results(leaks);
+		return move(leaks);
+	}
 	
 	SystemAllocator::~SystemAllocator() {
 		// TODO: Do leak checks.

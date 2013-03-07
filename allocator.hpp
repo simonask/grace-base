@@ -10,6 +10,7 @@
 #define falling_allocator_hpp
 
 #include "base/basic.hpp"
+#include "memory/memory_tracker.hpp"
 
 namespace falling {
 	class FormattedStream;
@@ -39,6 +40,9 @@ namespace falling {
 		IAllocator(IAllocator&&) = delete;
 		IAllocator& operator=(const IAllocator&) = delete;
 	};
+	
+	struct MemoryTracker;
+	struct MemoryLeak;
 
 	/*
 	 SystemAllocator has same semantics as malloc/free.
@@ -55,8 +59,13 @@ namespace falling {
 		
 		size_t usage() const final { return usage_; }
 		size_t capacity() const final { return SIZE_MAX; }
+		
+		void start_allocation_tracking();
+		void pause_allocation_tracking();
+		Array<MemoryLeak> finish_allocation_tracking(IAllocator& leak_info_alloc);
 	private:
 		size_t usage_ = 0;
+		MemoryTracker tracker_;
 	};
 	
 	SystemAllocator& default_allocator();
