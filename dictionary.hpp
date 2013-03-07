@@ -25,6 +25,7 @@ namespace falling {
 		Dictionary(Self&& other);
 		Dictionary(ArrayRef<StringRef> keys, ArrayRef<Value> values, IAllocator& alloc = default_allocator());
 		Dictionary(std::initializer_list<Pair<StringRef, Value>> list, IAllocator& alloc = default_allocator());
+		~Dictionary() { clear(true); }
 		
 		IAllocator& allocator() const { return map_.allocator(); }
 		size_t size() const { return map_.size(); }
@@ -119,7 +120,7 @@ namespace falling {
 	template <typename V, typename C>
 	void Dictionary<V,C>::clear(bool free_memory) {
 		for (auto& k: keys()) {
-			allocator().free(k.data(), k.size());
+			allocator().free((void*)k.data(), k.size());
 		}
 		map_.clear(free_memory);
 	}
