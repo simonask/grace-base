@@ -125,6 +125,7 @@ namespace falling {
 	size_t find(StringRef, const StringRef& substring);
 	size_t rfind(StringRef, char letter);
 	size_t rfind(StringRef, const StringRef& substring);
+	StringRef strip(StringRef s);
 	String reverse(StringRef str, IAllocator& alloc = default_allocator());
 	String reverse(String&& str, IAllocator& alloc);
 	String reverse(String&& str);

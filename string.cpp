@@ -53,4 +53,19 @@ namespace falling {
 		}
 		return String::NPos;
 	}
+	
+	StringRef strip(StringRef input) {
+		const char* p = input.data();
+		const char* end = input.data() + input.size();
+		while (*p == ' ' && p != end) {
+			++p;
+		}
+		if (p != end) {
+			do {
+				--end;
+			} while (*end == ' ' && end != p);
+			++end;
+		}
+		return StringRef(p, end);
+	}
 }

@@ -189,15 +189,6 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 			return a < b;
 		}
 	};
-	
-#if defined(__x86_64__)
-#define GET_CALLER_IP(VAR) do{ __asm__ __volatile__("mov (%%rsp), %0;\n" : "=r"(VAR) : :); }while(0)
-#define GET_CALLER_IP_VIRTUAL(VAR) do { __asm__ __volatile__(" mov (%%rbp), %0;\n mov 8(%0), %0;\n" : "=r"(VAR) : :); }while(0)
-#elif defined(__i386)
-#define GET_CALLER_IP(VAR) do{ __asm__ __volatile__("mov (%%esp), %0;\n" : "=r"(VAR) : :); }while(0)
-#elif defined(__arm__)
-#error GET_CALLER_IP is not yet implemented on ARM.
-#endif
 
 #if defined(__i386__) || defined(__x86_64__)
 #define TRAP() do{ __asm__ __volatile__("int3\n"); }while(0)
