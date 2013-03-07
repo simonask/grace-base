@@ -62,7 +62,7 @@ namespace falling {
 	};
 	
 	ResourceManager::Impl& ResourceManager::impl() {
-		static ResourceManager::Impl* p = new ResourceManager::Impl;
+		static ResourceManager::Impl* p = new_static ResourceManager::Impl;
 		return *p;
 	}
 	
@@ -185,6 +185,16 @@ namespace falling {
 		if (!any_leaked) {
 			impl().allocator.reset(impl().allocator.begin());
 		}
+	}
+	
+	void ResourceManager::clear() {
+		for (auto pair: impl().resource_cache) {
+			destroy(pair.second, allocator());
+		}
+		impl().resource_cache.clear();
+		impl().resource_loaders.clear();
+		impl().resource_path = "";
+		impl().fiber_manager.fibers_.clear();
 	}
 	
 	IAllocator& ResourceManager::allocator() {

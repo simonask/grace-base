@@ -47,6 +47,7 @@ namespace falling {
 		}
 		
 		static void garbage_collect();
+		static void clear();
 	private:
 		struct Impl;
 		static Impl& impl();
