@@ -22,6 +22,8 @@ public:
 	
 	static const ObjectTypeBase* get(StringRef name);
 	static const VertexType* get_vertex_type(StringRef name);
+	
+	static void clear();
 private:
 	TypeRegistry();
 	struct Impl;

@@ -18,6 +18,14 @@ TypeRegistry::Impl* TypeRegistry::impl() {
 	return i;
 }
 
+void TypeRegistry::clear() {
+	Impl* i = impl();
+	i->types.clear();
+	i->type_map.clear();
+	i->vertex_types.clear();
+	i->vertex_type_map.clear();
+}
+
 void TypeRegistry::add(const ObjectTypeBase* type) {
 	impl()->type_map[type->name()] = impl()->types.size();
 	impl()->types.push_back(type);
