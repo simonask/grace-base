@@ -37,6 +37,7 @@ namespace falling {
 		Regex(StringRef pattern, uint32 options, IAllocator& alloc = default_allocator());
 		Regex(Regex&& other);
 		Regex(const Regex&, IAllocator& alloc = default_allocator());
+		~Regex();
 		Regex& operator=(Regex&& other);
 		Regex& operator=(const Regex&);
 		

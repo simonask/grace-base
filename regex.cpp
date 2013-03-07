@@ -63,6 +63,13 @@ namespace falling {
 		compile_regex();
 	}
 	
+	Regex::~Regex() {
+		if (regex_) {
+			regfree((regex_t*)regex_);
+			allocator().free(regex_, sizeof(regex_t));
+		}
+	}
+	
 	Regex& Regex::operator=(Regex&& other) {
 		if (regex_) {
 			regfree((regex_t*)regex_);
