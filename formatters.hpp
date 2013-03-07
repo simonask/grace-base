@@ -147,6 +147,26 @@ namespace falling {
 		return JoinFormatter<Container>(c, delimiter);
 	}
 	
+	inline String format_data_size(size_t sz) {
+		// TODO: Implement as formatter object.
+		ScratchAllocator alloc;
+		StringStream ss(alloc);
+		if (sz == SIZE_MAX) {
+			ss << "∞";
+		} else if (sz >= 1024*1024) {
+			size_t mbs = sz / (1024*1024);
+			size_t fraction = sz % (1024*1024);
+			ss << mbs << '.' << pad_or_truncate(fraction, 2, '0', false) << "M";
+		} else if (sz >= 1024) {
+			size_t kbs = sz / 1024;
+			size_t fraction = sz % 1024;
+			ss << kbs << '.' << pad_or_truncate(fraction, 2, '0', false) << "K";
+		} else {
+			ss << sz << "B";
+		}
+		return ss.string(default_allocator());
+	}
+	
 	template <typename T>
 	FormattedStream& operator<<(FormattedStream& stream, const Array<T>& array) {
 		stream << '[';
