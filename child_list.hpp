@@ -19,7 +19,7 @@ struct ChildList : Array<ObjectPtr<>> {
 };
 
 struct ChildListType : VariableLengthArrayType<ChildList> {
-	ChildListType() : VariableLengthArrayType("ChildList") {}
+	ChildListType(IAllocator& alloc) : VariableLengthArrayType<ChildList>(alloc, "ChildList") {}
 	virtual ~ChildListType() {}
 	void deserialize(ChildList& place, const ArchiveNode& node, IUniverse&) const;
 	void serialize(const ChildList& place, ArchiveNode& node, IUniverse&) const override;
@@ -28,7 +28,7 @@ struct ChildListType : VariableLengthArrayType<ChildList> {
 template <>
 struct BuildTypeInfo<ChildList> {
 	static const ChildListType* build() {
-		static const ChildListType* type = new ChildListType;
+		static const ChildListType* type = new_static ChildListType(static_allocator());
 		return type;
 	}
 };
