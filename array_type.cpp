@@ -4,10 +4,10 @@
 
 namespace falling {
 	
-String build_variable_length_array_type_name(String base_name, const Type* element_type) {
+String build_variable_length_array_type_name(IAllocator& alloc, StringRef base_name, const Type* element_type) {
 	StringStream ss;
 	ss << element_type->name() << "[]";
-	return ss.str();
+	return ss.string(alloc);
 }
 
 void ArrayType::deserialize_array(IArrayWriter& w, const ArchiveNode& node, IUniverse& universe) const {
