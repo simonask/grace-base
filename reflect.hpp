@@ -20,7 +20,7 @@ struct ObjectTypeBuilder {
 	ObjectTypeBuilder() : type_(nullptr) {}
 	
 	Self& abstract(bool a = true) { type_->is_abstract_ = a; return *this; }
-	Self& name(String n) { type_->name_ = std::move(n); return *this; }
+	Self& name(StringRef n) { type_->name_ = n; return *this; }
 	Self& description(String d) { type_->description_ = std::move(d); return *this; }
 	Self& super(const ObjectTypeBase* t) { type_->super_ = t; return *this; }
 	template <typename SuperClass>
@@ -93,7 +93,7 @@ struct ObjectTypeBuilder {
 	virtual void define__() = 0;
 	
 	ObjectType<T>* build__() {
-		type_ = new_static ObjectType<T>(nullptr, "", "");
+		type_ = new_static ObjectType<T>(static_allocator(), nullptr, "", "");
 		define__();
 		return type_;
 	}

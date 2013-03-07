@@ -30,7 +30,7 @@ struct ObjectTypeBase : StructuredType {
 		return nullptr;
 	}
 	
-	ObjectTypeBase(const ObjectTypeBase* super, String name, String description) : super_(super), name_(std::move(name)), description_(std::move(description)), is_abstract_(false) {}
+	ObjectTypeBase(IAllocator& alloc, const ObjectTypeBase* super, StringRef name, StringRef description) : super_(super), name_(name, alloc), description_(description, alloc), is_abstract_(false) {}
 	
 	const ObjectTypeBase* super_;
 	String name_;
@@ -44,11 +44,11 @@ template <typename T> struct AutoListRegistrarForObject;
 
 template <typename T>
 struct ObjectType : TypeFor<T, ObjectTypeBase> {
-	ObjectType(const ObjectTypeBase* super, String name, String description)
-		: TypeFor<T, ObjectTypeBase>(super, std::move(name), std::move(description))
-		, properties_(static_allocator())
-		, slots_(static_allocator())
-		, lists_(static_allocator())
+	ObjectType(IAllocator& alloc, const ObjectTypeBase* super, StringRef name, StringRef description)
+		: TypeFor<T, ObjectTypeBase>(alloc, super, name, description)
+		, properties_(alloc)
+		, slots_(alloc)
+		, lists_(alloc)
 		{}
 	
 	void construct(byte* place, IUniverse& universe) const {
