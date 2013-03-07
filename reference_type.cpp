@@ -3,10 +3,10 @@
 
 namespace falling {
 
-String ReferenceType::build_reference_type_name(String base_name, const Type* pointee) {
+String ReferenceType::build_reference_type_name(IAllocator& alloc, StringRef base_name, const Type* pointee) {
 	StringStream ss;
 	ss << base_name << '<' << pointee->name() << '>';
-	return ss.str();
+	return ss.string(alloc);
 }
 
 }
