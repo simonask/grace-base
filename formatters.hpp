@@ -147,24 +147,29 @@ namespace falling {
 		return JoinFormatter<Container>(c, delimiter);
 	}
 	
-	inline String format_data_size(size_t sz) {
-		// TODO: Implement as formatter object.
-		ScratchAllocator alloc;
-		StringStream ss(alloc);
-		if (sz == SIZE_MAX) {
-			ss << "∞";
-		} else if (sz >= 1024*1024) {
-			size_t mbs = sz / (1024*1024);
-			size_t fraction = sz % (1024*1024);
-			ss << mbs << '.' << pad_or_truncate(fraction, 2, '0', false) << "M";
-		} else if (sz >= 1024) {
-			size_t kbs = sz / 1024;
-			size_t fraction = sz % 1024;
-			ss << kbs << '.' << pad_or_truncate(fraction, 2, '0', false) << "K";
-		} else {
-			ss << sz << "B";
+	struct DataSizeFormatter : Formatter {
+		size_t bytes;
+		const uint32 digits;
+		DataSizeFormatter(size_t bytes, uint32 digits = 2) : bytes(bytes), digits(digits) {}
+		void write(FormattedStream& stream) const override {
+			if (bytes == SIZE_MAX) {
+				stream << "∞";
+			} else if (bytes >= 1024*1024) {
+				size_t mbs = bytes / (1024*1024);
+				size_t fraction = bytes % (1024*1024);
+				stream << mbs << '.' << pad_or_truncate(fraction, 2, '0', false) << "M";
+			} else if (bytes >= 1024) {
+				size_t kbs = bytes / 1024;
+				size_t fraction = bytes % 1024;
+				stream << kbs << '.' << pad_or_truncate(fraction, 2, '0', false) << "K";
+			} else {
+				stream << bytes << "B";
+			}
 		}
-		return ss.string(default_allocator());
+	};
+	
+	inline DataSizeFormatter format_data_size(size_t sz, uint32 digits = 2) {
+		return DataSizeFormatter(sz, digits);
 	}
 	
 	template <typename T>
