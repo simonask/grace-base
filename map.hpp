@@ -35,6 +35,7 @@ namespace falling {
 		Map(Self&& other);
 		Map(ArrayRef<Key> keys, ArrayRef<Value> values, IAllocator& alloc = default_allocator());
 		Map(std::initializer_list<Pair<Key, Value>> list, IAllocator& alloc = default_allocator());
+		~Map() { clear(true); }
 		
 		IAllocator& allocator() const;
 		size_t size() const;
