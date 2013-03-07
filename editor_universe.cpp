@@ -40,6 +40,7 @@ namespace falling {
 	}
 	
 	EditorUniverse::~EditorUniverse() {
+		clear();
 		destroy(impl_, allocator());
 	}
 	
