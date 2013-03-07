@@ -195,21 +195,18 @@ namespace falling {
 	}
 	
 	void* SystemAllocator::allocate(size_t nbytes, size_t alignment) {
-		void* caller_ip;
-		GET_CALLER_IP_VIRTUAL(caller_ip);
+		if (nbytes == 0) return nullptr;
 		void* ptr = system_alloc(nbytes, alignment);
 		usage_ += system_alloc_size(ptr);
-		tracker_.track_allocation(ptr, caller_ip);
+		tracker_.track_allocation(ptr, nbytes);
 		return ptr;
 	}
 	
 	void* SystemAllocator::reallocate(void *ptr, size_t old_size, size_t new_size, size_t alignment) {
-		void* caller_ip;
-		GET_CALLER_IP_VIRTUAL(caller_ip);
 		usage_ -= old_size;
 		void* result = system_realloc(ptr, old_size, new_size, alignment);
 		tracker_.track_free(ptr);
-		tracker_.track_allocation(result, caller_ip);
+		tracker_.track_allocation(result, new_size);
 		usage_ += new_size;
 		return result;
 	}
@@ -233,11 +230,10 @@ namespace falling {
 	}
     
     void* SystemAllocator::allocate_large(size_t nbytes, size_t alignment, size_t& out_actual_size) {
+		if (nbytes == 0) return nullptr;
         void* ptr = system_alloc_large(nbytes, alignment, out_actual_size);
 		usage_ += out_actual_size;
-		void* caller_ip;
-		GET_CALLER_IP_VIRTUAL(caller_ip);
-		tracker_.track_allocation(ptr, caller_ip);
+		tracker_.track_allocation(ptr, out_actual_size);
 		return ptr;
     }
     
@@ -324,7 +320,7 @@ namespace falling {
 	}
 	
 	static byte linear_allocator_mem[sizeof(LinearAllocator)];
-	static const size_t STANDARD_LINEAR_ALLOCATOR_SIZE = 0x2000000; // 32 MiB
+	static const size_t STANDARD_LINEAR_ALLOCATOR_SIZE = 0x4000000; // 64 MiB
 	
 	LinearAllocator& scratch_linear_allocator() {
 		// TODO: Thread-local

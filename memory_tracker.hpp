@@ -17,9 +17,8 @@ namespace falling {
 	
 	struct MemoryLeak {
 		void* address;
-		void* allocation_rip;
-		
-		bool resolve_symbol(String& out_name) const;
+		size_t size;
+		void* backtrace[6];
 	};
 	
 	template <typename T> class Array;
@@ -27,7 +26,7 @@ namespace falling {
 	struct MemoryTracker {
 	public:
 		~MemoryTracker();
-		void track_allocation(void* address, void* rip);
+		void track_allocation(void* address, size_t size);
 		void track_free(void* address);
 		void start();
 		void pause();

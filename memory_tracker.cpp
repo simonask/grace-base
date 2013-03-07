@@ -11,9 +11,8 @@
 #include "base/string.hpp"
 #include "io/string_stream.hpp"
 #include "base/stack_array.hpp"
+#include "base/arch.hpp"
 #include <sys/mman.h>
-#include <execinfo.h>
-#include <cxxabi.h>
 
 namespace falling {
 	struct MemoryTracker::Impl {
@@ -56,14 +55,15 @@ namespace falling {
 		}
 	}
 	
-	void MemoryTracker::track_allocation(void *address, void *rip) {
+	void MemoryTracker::track_allocation(void *address, size_t size) {
 		if (impl && impl->is_tracking) {
 			impl->num_live_allocations++;
 			MemoryLeak* bucket = get_bucket_for_address(impl->begin, impl->end, address);
 			for (size_t i = 0; i < LEAKS_PER_BUCKET; ++i) {
 				if (bucket[i].address == nullptr) {
 					bucket[i].address = address;
-					bucket[i].allocation_rip = rip;
+					bucket[i].size = size;
+					get_backtrace(bucket[i].backtrace, 6, 2);
 					return;
 				} else if (bucket[i].address == address) {
 					ASSERT(false); // Double allocation of the same pointer?!
@@ -79,8 +79,7 @@ namespace falling {
 			MemoryLeak* bucket = get_bucket_for_address(impl->begin, impl->end, address);
 			for (size_t i = 0; i < LEAKS_PER_BUCKET; ++i) {
 				if (bucket[i].address == address) {
-					bucket[i].address = nullptr;
-					bucket[i].allocation_rip = nullptr;
+					memset(bucket + i, 0, sizeof(MemoryLeak));
 					return;
 				}
 			}
@@ -119,29 +118,5 @@ namespace falling {
 				out_results.push_back(*p);
 			}
 		}
-	}
-	
-	bool MemoryLeak::resolve_symbol(String &out_name) const {
-		char** symbols = backtrace_symbols(&allocation_rip, 1);
-		const char* mangled_start = symbols[0] + 59;
-		StringRef symbol_line = symbols[0];
-		StringRef binary_location = substr(symbol_line, 0, 59);
-		size_t offset_position = rfind(symbol_line, '+') - 1;
-		StringRef offset_string = substr(symbol_line, offset_position);
-		size_t mangled_symbol_name_length = symbol_line.size() - 59 - offset_string.size();
-		StringRef mangled_symbol_name = substr(symbol_line, 59, mangled_symbol_name_length);
-		COPY_STRING_REF_TO_CSTR_BUFFER(mangled_symbol_name_buffer, mangled_symbol_name);
-		
-		size_t len;
-		int status;
-		char* buffer = __cxxabiv1::__cxa_demangle(mangled_symbol_name_buffer.data(), nullptr, &len, &status);
-		if (status == 0) {
-			out_name = concatenate(concatenate(binary_location, buffer, out_name.allocator()), offset_string, out_name.allocator());
-		} else {
-			out_name = symbols[0];
-		}
-		::free(buffer);
-		::free(symbols);
-		return true;
 	}
 }
