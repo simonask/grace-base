@@ -21,7 +21,7 @@ namespace falling {
 		virtual const Type* value_type() const = 0;
 		StringRef name() const override { return name_; }
 	protected:
-		MapType() {}
+		MapType(IAllocator& alloc) : name_(alloc) {}
 		void build_map_type_name();
 		String name_;
 		
@@ -33,7 +33,7 @@ namespace falling {
 	
 	template <typename K, typename V>
 	struct MapTypeWithKeyValueType : public MapType {
-		MapTypeWithKeyValueType() { build_map_type_name(); }
+		MapTypeWithKeyValueType(IAllocator& alloc) : MapType(alloc) { build_map_type_name(); }
 		const Type* key_type() const final { return get_type<K>(); }
 		const Type* value_type() const final { return get_type<V>(); }
 	};
@@ -43,18 +43,21 @@ namespace falling {
 	
 	template <typename V, typename Cmp>
 	struct MapTypeImpl<String, V, Cmp> : TypeFor<Map<String, V, Cmp>, MapTypeWithKeyValueType<String, V>> {
+		MapTypeImpl(IAllocator& alloc) : TypeFor<Map<String, V, Cmp>, MapTypeWithKeyValueType<String, V>>(alloc) {}
 		void deserialize(Map<String,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
 		void serialize(const Map<String,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
 	};
 	
 	template <typename V, typename Cmp>
 	struct MapTypeImpl<StringRef, V, Cmp> : TypeFor<Map<StringRef, V, Cmp>, MapTypeWithKeyValueType<StringRef, V>> {
+		MapTypeImpl(IAllocator& alloc) : TypeFor<Map<StringRef, V, Cmp>, MapTypeWithKeyValueType<StringRef, V>>(alloc) {}
 		void deserialize(Map<StringRef,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
 		void serialize(const Map<StringRef,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
 	};
 	
 	template <typename K, typename V, typename Cmp>
 	struct MapTypeImpl : TypeFor<Map<K, V, Cmp>, MapTypeWithKeyValueType<K, V>> {
+		MapTypeImpl(IAllocator& alloc) : TypeFor<Map<K,V,Cmp>, MapTypeWithKeyValueType<K,V>>(alloc) {}
 		void deserialize(Map<K,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
 		void serialize(const Map<K,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
 	};
@@ -62,7 +65,7 @@ namespace falling {
 	template <typename K, typename V, typename Cmp>
 	struct BuildTypeInfo<Map<K,V,Cmp>> {
 		static const MapTypeImpl<K,V,Cmp>* build() {
-			static const MapTypeImpl<K,V,Cmp>* t = new_static MapTypeImpl<K,V,Cmp>;
+			static const MapTypeImpl<K,V,Cmp>* t = new_static MapTypeImpl<K,V,Cmp>(static_allocator());
 			return t;
 		}
 	};
