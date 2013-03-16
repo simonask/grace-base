@@ -105,7 +105,7 @@ private:
 	bool frozen_;
 	size_t size_;
 	Array<ExposedAttribute*> exposed_attributes_;
-	Array<ExposedSlot*> exposed_slots_; // TODO!
+	Array<ExposedSlot*> exposed_slots_;
 };
 
 inline size_t CompositeType::offset_of_element(size_t idx) const {

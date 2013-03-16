@@ -12,6 +12,9 @@ CompositeType::CompositeType(IAllocator& alloc, StringRef name, const ObjectType
 		for (auto p: exposed_attributes_) {
 			destroy(p, allocator());
 		}
+		for (auto p: exposed_slots_) {
+			destroy(p, allocator());
+		}
 	}
 	
 	IAllocator& CompositeType::allocator() const {
