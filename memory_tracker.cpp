@@ -90,7 +90,6 @@ namespace falling {
 					return;
 				}
 			}
-			ASSERT(false); // Double free!
 		}
 	}
 	
