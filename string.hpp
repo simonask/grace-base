@@ -160,16 +160,32 @@ namespace falling {
 	}
 	
 	inline String& String::operator=(const char* utf8) {
-		// TODO: Handle when utf8 is a pointer to the inside of this.
-		clear();
-		assign(utf8);
+		if (utf8 >= data_ && utf8 < data_ + size_) {
+			// assigning a pointer to the inside of this string!!
+			size_t len = strlen(utf8);
+			char buffer[len];
+			memcpy(buffer, utf8, len);
+			clear();
+			assign(buffer, len);
+		} else {
+			clear();
+			assign(utf8);
+		}
 		return *this;
 	}
 	
 	inline String& String::operator=(StringRef other) {
-		// TODO: Handle when StringRef is to the inside of this.
-		clear();
-		assign(other.data(), other.size());
+		if (other.data() >= data_ && other.data() <= data_ + size_) {
+			// StringRef is a substring of this!
+			size_t len = other.size();
+			char buffer[len];
+			memcpy(buffer, other.data(), len);
+			clear();
+			assign(buffer, len);
+		} else {
+			clear();
+			assign(other.data(), other.size());
+		}
 		return *this;
 	}
 	
