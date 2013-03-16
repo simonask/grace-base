@@ -15,10 +15,12 @@
 namespace falling {
 	class String;
 	
+	static const size_t MEMORY_LEAK_BACKTRACE_STEPS = 14;
+	
 	struct MemoryLeak {
 		void* address;
 		size_t size;
-		void* backtrace[6];
+		void* backtrace[MEMORY_LEAK_BACKTRACE_STEPS];
 	};
 	
 	template <typename T> class Array;

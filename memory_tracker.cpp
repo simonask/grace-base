@@ -62,13 +62,16 @@ namespace falling {
 			MemoryLeak* bucket = get_bucket_for_address(impl->begin, impl->end, address);
 			for (size_t i = 0; i < LEAKS_PER_BUCKET; ++i) {
 				if (bucket[i].address == nullptr) {
+					impl->num_live_allocations++;
 					bucket[i].address = address;
 					bucket[i].size = size;
-					get_backtrace(bucket[i].backtrace, 6, 2);
-					impl->num_live_allocations++;
+					get_backtrace(bucket[i].backtrace, MEMORY_LEAK_BACKTRACE_STEPS, 2);
 					return;
 				} else if (bucket[i].address == address) {
-					ASSERT(false); // Double allocation of the same pointer?!
+					bucket[i].address = address;
+					bucket[i].size = size;
+					get_backtrace(bucket[i].backtrace, MEMORY_LEAK_BACKTRACE_STEPS, 2);
+					return;
 				}
 			}
 			ASSERT(false); // Bucket is full! Something is wrong.
