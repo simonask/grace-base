@@ -29,7 +29,7 @@ public:
 	Array(std::initializer_list<T> list, IAllocator& alloc = default_allocator());
 	Array(const Array<T>& other, IAllocator& alloc = default_allocator());
 	Array(Array<T>&& other);
-	explicit Array(ArrayRef<T> array, IAllocator& alloc = default_allocator()); // TODO!
+	explicit Array(ArrayRef<T> array, IAllocator& alloc = default_allocator());
 	~Array();
 	Array<T>& operator=(std::initializer_list<T> list);
 	Array<T>& operator=(const Array<T>& other);
@@ -113,6 +113,12 @@ Array<T>::Array(std::initializer_list<T> list, IAllocator& alloc) : allocator_(a
 
 template <typename T>
 Array<T>::Array(const Array<T>& other, IAllocator& alloc) : allocator_(alloc) {
+	reserve(other.size());
+	insert(other.begin(), other.end());
+}
+
+template <typename T>
+Array<T>::Array(ArrayRef<T> other, IAllocator& alloc) : allocator_(alloc) {
 	reserve(other.size());
 	insert(other.begin(), other.end());
 }
