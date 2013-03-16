@@ -108,7 +108,7 @@ namespace falling {
 	}
 	
 	bool InputFileStream::is_readable() const {
-		return !eof();
+		return is_open() && !eof();
 	}
 	
 	size_t InputFileStream::read(byte* buffer, size_t n) {
