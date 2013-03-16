@@ -16,7 +16,7 @@
 
 #define DETECT_OVERRUN 0
 #define DETECT_REUSE_AFTER_FREE 0
-#if defined(malloc_size)
+#if defined(__APPLE__) || defined(malloc_size)
 #define MALLOC_SIZE ::malloc_size
 #elif defined(_msize)
 #define MALLOC_SIZE ::_msize
@@ -203,11 +203,11 @@ namespace falling {
 	}
 	
 	void* SystemAllocator::reallocate(void *ptr, size_t old_size, size_t new_size, size_t alignment) {
-		usage_ -= old_size;
+		usage_ -= system_alloc_size(ptr);
 		void* result = system_realloc(ptr, old_size, new_size, alignment);
 		tracker_.track_free(ptr);
 		tracker_.track_allocation(result, new_size);
-		usage_ += new_size;
+		usage_ += system_alloc_size(result);
 		return result;
 	}
 		
