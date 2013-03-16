@@ -167,6 +167,8 @@ struct EnumType : SimpleType {
 		StringRef description;
 		ssize_t value;
 	};
+	
+	ArrayRef<Entry> entries() const { return entries_; }
 private:
 	template <typename T> friend struct EnumTypeBuilder;
 	Array<Entry> entries_;

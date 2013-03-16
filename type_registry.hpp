@@ -10,6 +10,7 @@
 namespace falling {
 
 	struct VertexType;
+	struct EnumType;
 
 class TypeRegistry {
 public:
@@ -17,7 +18,9 @@ public:
 	static void add();
 	static void add(const ObjectTypeBase* type);
 	static void add(const VertexType* type);
+	static void add(const EnumType* type);
 	static ArrayRef<const ObjectTypeBase*> object_types();
+	static ArrayRef<const EnumType*> enum_types();
 	static void add_missing_types(); // Search registered types for references to non-registered types and register them.
 	
 	static const ObjectTypeBase* get(StringRef name);
