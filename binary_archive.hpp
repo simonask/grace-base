@@ -26,7 +26,7 @@ namespace falling {
 	
 	struct BinaryArchive : Archive {
 		explicit BinaryArchive(IAllocator& alloc = default_allocator());
-		~BinaryArchive() { clear(); }
+		~BinaryArchive() { }
 		ArchiveNode& root() override { return root_; }
 		const ArchiveNode& root() const override { return root_; }
 		void write(OutputStream& os) const override;
