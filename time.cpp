@@ -48,7 +48,7 @@ namespace falling {
 	SystemTime system_now() {
 		struct timeval tv;
 		gettimeofday(&tv, nullptr);
-		auto d = SystemTime::seconds(tv.tv_sec) + SystemTime::microseconds(tv.tv_usec);
+		auto d = SystemTime::seconds((int64)tv.tv_sec) + SystemTime::microseconds(tv.tv_usec);
 		return SystemTime() + d;
 	}
 }

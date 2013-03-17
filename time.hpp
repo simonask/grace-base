@@ -81,6 +81,7 @@ namespace falling {
 		static TimeDelta<T> hours(int64 h) { return minutes(h * 60); }
 		static TimeDelta<T> minutes(int64 m) { return seconds(m * 60); }
 		static TimeDelta<T> seconds(int64 s) { return milliseconds(s * 1000); }
+		static TimeDelta<T> seconds(float32 f) { return microseconds((int64)((float64)f * 1000000.0)); }
 		static TimeDelta<T> milliseconds(int64 ms) { return microseconds(ms * 1000); }
 		static TimeDelta<T> microseconds(int64 us) { return TimeDelta<T>(us); }
 		static Time<T> forever() { return Time(UINT64_MAX); }
