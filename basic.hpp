@@ -206,6 +206,9 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 #else
 #define HAS_LAMBDAS 0
 #endif
+
+#define DECLARE_CONFIG_SCOPE(SCOPE) void define_config_scope_ ## SCOPE ##__()
+#define REGISTER_CONFIG_SCOPE(SCOPE) define_config_scope_ ## SCOPE ##__()
 	
 }
 
