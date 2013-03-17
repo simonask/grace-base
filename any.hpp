@@ -91,6 +91,8 @@ namespace falling {
 		
 		const byte* ptr() const;
 		byte* ptr();
+		
+		static Any take_memory(IAllocator&, const Type* type, void* memory);
 	private:
 		typedef typename std::aligned_storage<Size, Alignment>::type Storage;
 		Storage memory_;

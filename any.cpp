@@ -51,6 +51,21 @@ namespace falling {
 		}
 	}
 	
+	Any Any::take_memory(IAllocator& alloc, const Type* type, void *memory) {
+		if (memory == nullptr) return Nothing;
+		Any result(alloc);
+		result.stored_type_ = type;
+		if (type->size() > Size) {
+			byte** ptrptr = reinterpret_cast<byte**>(&result.memory_);
+			*ptrptr = (byte*)memory;
+		} else {
+			byte* ptr = reinterpret_cast<byte*>(&result.memory_);
+			type->copy_construct(ptr, (const byte*)memory);
+			type->destruct((byte*)memory, *(IUniverse*)nullptr);
+		}
+		return result;
+	}
+	
 	const AnyType* BuildTypeInfo<Any>::build() {
 		static const AnyType* t = new_static AnyType;
 		return t;
