@@ -16,6 +16,7 @@ namespace falling {
 	struct SerializeReferenceBase;
 	struct DeserializeSignalBase;
 	struct IAttribute;
+	struct IEventLoop;
 
 	struct IUniverse {
 		// Runtime API
@@ -37,6 +38,10 @@ namespace falling {
 		virtual bool clear_and_instantiate(const ArchiveNode& scene_root, String& out_error) = 0;
 		virtual bool serialize_root(ArchiveNode& root, String& out_error) = 0;
 		virtual void defer_attribute_deserialization(ObjectPtr<> object, const IAttribute* attr, const ArchiveNode* serialized) = 0;
+		
+		// Event loop integration API
+		virtual void set_event_loop(IEventLoop* event_loop) = 0;
+		virtual IEventLoop* event_loop() const = 0;
 	};
 }
 

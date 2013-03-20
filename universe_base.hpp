@@ -55,12 +55,15 @@ namespace falling {
 			return get_auto_list<typename AutoListType::ValueType, AutoListType::LinkOffset>();
 		}
 		
+		void set_event_loop(IEventLoop* el) final { event_loop_ = el; }
+		IEventLoop* event_loop() const final { return event_loop_; }
 	protected:
 		UniverseBase(IAllocator& alloc) : allocator_(alloc), auto_lists(alloc), deferred_(alloc) {}
 	private:
 		IAllocator& allocator_;
 		Map<const StructuredType*, Map<size_t, VirtualAutoListBase*>> auto_lists;
 		Array<DeferredAttributeDeserialization> deferred_;
+		IEventLoop* event_loop_ = nullptr;
 	};
 	
 	void error_category_already_initialized_with_different_type(StringRef name);
