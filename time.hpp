@@ -41,6 +41,8 @@ namespace falling {
 		bool operator>=(TimeDelta<T> other) const { return microseconds_ >= other.microseconds_; }
 
 		int64 microseconds() const { return microseconds_; }
+		
+		static TimeDelta<T> forever() { return TimeDelta<T>(INT64_MAX); }
 	private:
 		TimeDelta(int64 microseconds) : microseconds_(microseconds) {}
 		int64 microseconds_;
