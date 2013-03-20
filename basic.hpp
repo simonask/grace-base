@@ -150,6 +150,18 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 	return default_value;
 }
 
+template <typename Container, typename ComparableValue>
+auto linear_search(Container& container, const ComparableValue& value)
+-> decltype(container.begin())
+{
+	for (auto it = container.begin(); it != container.end(); ++it) {
+		if (*it == value) {
+			return it;
+		}
+	}
+	return container.end();
+}
+
 
 	template <size_t...> struct Indices {};
 	template <size_t N, size_t... S> struct MakeIndices : MakeIndices<N-1, N-1, S...> {};
