@@ -201,6 +201,16 @@ auto linear_search(Container& container, const ComparableValue& value)
 			return a < b;
 		}
 	};
+	
+#define ENUM_IS_FLAGS(T) \
+	inline typename std::underlying_type<T>::type \
+	operator|(T a, T b) { return static_cast<typename std::underlying_type<T>::type>(+a | +b); } \
+	inline typename std::underlying_type<T>::type \
+	operator|(typename std::underlying_type<T>::type a, T b) \
+	{ return a | +b; } \
+	inline typename std::underlying_type<T>::type \
+	operator|(T a, typename std::underlying_type<T>::type b) \
+	{ return b | +a; }
 
 #if defined(__i386__) || defined(__x86_64__)
 #define TRAP() do{ __asm__ __volatile__("int3\n"); }while(0)
