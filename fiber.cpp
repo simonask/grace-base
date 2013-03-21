@@ -59,11 +59,11 @@ namespace falling {
 		ASSERT(false); // Fiber had this manager as owner, but wasn't in the list of fibers.
 	}
 	
-	void FiberManager::launch(std::function<void ()> function) {
+	void FiberManager::launch(Function<void ()> function) {
 		defer(std::move(function), now_);
 	}
 	
-	void FiberManager::defer(std::function<void ()> function, GameTime until) {
+	void FiberManager::defer(Function<void ()> function, GameTime until) {
 		auto f = make_unique<Fiber>(default_allocator(), *this, std::move(function), until);
 		FiberInfo info;
 		info.fiber = move(f);
@@ -79,16 +79,16 @@ namespace falling {
 	
 	struct Fiber::Impl {
 		IFiberManager& owner;
-		std::function<void()> function;
+		Function<void()> function;
 		FiberState state;
 		Array<byte> saved_stack;
 		byte* stack_top;
 		jmp_buf portal;
 		
-		Impl(IFiberManager& manager, std::function<void()> function) : owner(manager), function(std::move(function)), stack_top(nullptr) {}
+		Impl(IFiberManager& manager, Function<void()> function) : owner(manager), function(std::move(function)), stack_top(nullptr) {}
 	};
 	
-	Fiber::Fiber(IFiberManager& manager, std::function<void()> function, GameTime start_at) {
+	Fiber::Fiber(IFiberManager& manager, Function<void()> function, GameTime start_at) {
 		impl_ = new Impl(manager, std::move(function));
 		impl().state = FiberState::Unstarted;
 	}

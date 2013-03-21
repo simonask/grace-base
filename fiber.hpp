@@ -9,7 +9,7 @@
 #ifndef __falling__fiber__
 #define __falling__fiber__
 
-#include <functional>
+#include "base/function.hpp"
 #include "base/array.hpp"
 #include "base/time.hpp"
 #include "memory/unique_ptr.hpp"
@@ -45,7 +45,7 @@ namespace falling {
 		Impl* impl_;
 		Impl& impl() { return *impl_; }
 		const Impl& impl() const { return *impl_; }
-		explicit Fiber(IFiberManager& m, std::function<void()> f, GameTime start_at);
+		explicit Fiber(IFiberManager& m, Function<void()> f, GameTime start_at);
 	private:
 		void yield(void* dummy);
 		void resume_into_state(FiberState new_state);
@@ -58,8 +58,8 @@ namespace falling {
 		virtual GameTime now() const = 0;
 		virtual void update(GameTime current_time_sync) = 0;
 		virtual void set_alarm_clock(Fiber* fiber, GameTime at) = 0;
-		virtual void launch(std::function<void()> f) = 0;
-		virtual void defer(std::function<void()> f, GameTime until) = 0;
+		virtual void launch(Function<void()> f) = 0;
+		virtual void defer(Function<void()> f, GameTime until) = 0;
 		virtual Fiber* current_fiber() const = 0;
 		
 		static IFiberManager* current() { return current_manager_; }
@@ -76,8 +76,8 @@ namespace falling {
 		GameTime now() const override { return now_; }
 		void update(GameTime current_time_sync) override;
 		void set_alarm_clock(Fiber* fiber, GameTime at) override;
-		void launch(std::function<void()> f) override;
-		void defer(std::function<void()> f, GameTime until) override;
+		void launch(Function<void()> f) override;
+		void defer(Function<void()> f, GameTime until) override;
 		Fiber* current_fiber() const override { return current_; }
 	private:
 		Fiber* current_;

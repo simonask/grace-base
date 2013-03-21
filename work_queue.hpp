@@ -19,7 +19,7 @@ namespace falling {
 	template <typename Payload>
 	class WorkQueue {
 	public:
-		explicit WorkQueue(std::function<void(Payload&)> worker);
+		explicit WorkQueue(Function<void(Payload&)> worker);
 		WorkQueue(WorkQueue&&) = default;
 		~WorkQueue();
 		
@@ -54,7 +54,7 @@ namespace falling {
 	};
 	
 	template <typename Payload>
-	WorkQueue<Payload>::WorkQueue(std::function<void(Payload&)> worker) {
+	WorkQueue<Payload>::WorkQueue(Function<void(Payload&)> worker) {
 		worker_ = std::thread([=]() {
 			std::unique_lock<std::mutex> m(this->lock_);
 			while (true) {
