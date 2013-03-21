@@ -132,7 +132,9 @@ namespace falling {
 			} else {
 				if (old_size < new_size) {
 					void* new_ptr = system_alloc(new_size, alignment);
-					memcpy(new_ptr, ptr, old_size);
+					if (new_ptr && ptr) {
+						memcpy(new_ptr, ptr, old_size);
+					}
 					system_free(ptr);
 					return new_ptr;
 				} else {
@@ -204,8 +206,8 @@ namespace falling {
 	
 	void* SystemAllocator::reallocate(void *ptr, size_t old_size, size_t new_size, size_t alignment) {
 		usage_ -= system_alloc_size(ptr);
-		void* result = system_realloc(ptr, old_size, new_size, alignment);
 		tracker_.track_free(ptr);
+		void* result = system_realloc(ptr, old_size, new_size, alignment);
 		tracker_.track_allocation(result, new_size);
 		usage_ += system_alloc_size(result);
 		return result;
@@ -215,8 +217,8 @@ namespace falling {
 		if (ptr != nullptr) {
 			size_t sz = system_alloc_size(ptr);
 			usage_ -= sz;
-			system_free(ptr);
 			tracker_.track_free(ptr);
+			system_free(ptr);
 		}
 	}
 	
@@ -224,8 +226,8 @@ namespace falling {
 		if (ptr != nullptr) {
 			size_t sz = system_alloc_size(ptr);
 			usage_ -= sz;
-			system_free(ptr, nbytes);
 			tracker_.track_free(ptr);
+			system_free(ptr, nbytes);
 		}
 	}
     
