@@ -267,24 +267,34 @@ auto build_type_info()
 }
 
 template <typename T>
+DLL_PUBLIC
 typename std::enable_if<HasReflection<T>::Value, const typename T::TypeInfoType*>::type
 get_type() {
-	return T::build_type_info__();
+	auto p = T::build_type_info__();
+	ASSERT(p != nullptr);
+	return p;
 }
 	
 template <typename T>
+DLL_PUBLIC
 typename std::enable_if<!HasReflection<T>::Value, decltype(BuildTypeInfo<T>::build())>::type
 get_type() {
-	return BuildTypeInfo<T>::build();
+	auto p = BuildTypeInfo<T>::build();
+	ASSERT(p != nullptr);
+	return p;
 }
 	
 template <typename T>
+DLL_PUBLIC
 typename std::enable_if<HasReflection<T>::Value, const DerivedType*>::type
 get_type(const T& object) {
-	return object.object_type();
+	auto p = object.object_type();
+	ASSERT(p != nullptr);
+	return p;
 }
 	
 template <typename T>
+DLL_PUBLIC
 typename std::enable_if<!HasReflection<T>::Value, const Type*>::type
 get_type(const T& value) {
 	return get_type<T>();
