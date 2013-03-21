@@ -15,8 +15,7 @@
 #include "base/matrix.hpp"
 #include "base/array_list.hpp"
 #include "base/color.hpp"
-
-#include <functional>
+#include "base/function.hpp"
 
 namespace falling {
 	template <typename T>
@@ -60,13 +59,13 @@ namespace falling {
 	};
 	
 	struct ClosureFormatter : Formatter {
-		std::function<void(FormattedStream&)> closure;
+		Function<void(FormattedStream&)> closure;
 		void write(FormattedStream& stream) const {
 			closure(stream);
 		};
 	};
 	
-	inline ClosureFormatter closure_formatter(std::function<void(FormattedStream&)> closure) {
+	inline ClosureFormatter closure_formatter(Function<void(FormattedStream&)> closure) {
 		ClosureFormatter formatter;
 		formatter.closure = closure;
 		return formatter;

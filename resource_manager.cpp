@@ -40,10 +40,10 @@ namespace falling {
 			IFiberManager::set_current_manager(nullptr);
 		}
 		virtual void set_alarm_clock(Fiber* fiber, GameTime at) {};
-		virtual void launch(std::function<void()> f) {
+		virtual void launch(Function<void()> f) {
 			fibers_.push_back(make_unique<Fiber>(default_allocator(), *this, std::move(f), now()));
 		}
-		virtual void defer(std::function<void()> f, GameTime until) { launch(f); }
+		virtual void defer(Function<void()> f, GameTime until) { launch(f); }
 		virtual Fiber* current_fiber() const { return current_; }
 		
 		Array<UniquePtr<Fiber>> fibers_;
