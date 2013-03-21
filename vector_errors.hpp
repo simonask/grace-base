@@ -13,7 +13,7 @@
 #include "base/string.hpp"
 
 namespace falling {
-	struct VectorNormalizeZeroLengthException {
+	struct DLL_PUBLIC VectorNormalizeZeroLengthException {
 		String what() const { return "Tried to normalize a zero-length vector."; }
 	};
 }

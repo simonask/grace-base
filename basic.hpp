@@ -226,7 +226,18 @@ auto linear_search(Container& container, const ComparableValue& value)
 
 #define UNREACHABLE() __builtin_unreachable()
 
+//#if defined(DEBUG)
 #define ASSERT(X) do{ if (!(X)) { fprintf(stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); TRAP(); UNREACHABLE(); } } while(0)
+//#else
+//#define ASSERT(X) do{ if (!(X)) { TRAP(); UNREACHABLE(); } } while(0)
+//#endif
+
+#if defined(__GNUC__)
+#define DLL_PUBLIC __attribute__((visibility("default")))
+#define DLL_LOCAL __attribute__((visibility("hidden")))
+#else
+#error Compiler unsupported.
+#endif
 
 
 #if defined(__has_feature) && __has_feature(cxx_lambdas)
