@@ -66,10 +66,10 @@ namespace falling {
 		}
 		
 		void clear() {
-			if (!is_empty() && get_payload_type() == VirtualInvokerTag) {
+			if (get_payload_type() == VirtualInvokerTag) {
 				destroy(get_virtual_invoker(), allocator_);
-				payload_ = 0;
 			}
+			payload_ = 0;
 		}
 		
 		bool is_empty() const { return payload_ == 0; }
@@ -132,7 +132,13 @@ namespace falling {
 		
 		void assign(const Function<R(Args...)>& other) {
 			clear();
-			set_virtual_invoker(other.caller_->duplicate(allocator_));
+			if (!other.is_empty()) {
+				if (other.is_function_pointer()) {
+					payload_ = other.payload_;
+				} else {
+					set_virtual_invoker(other.get_virtual_invoker()->duplicate(allocator_));
+				}
+			}
 		}
 		void assign(Function<R(Args...)>&& other) {
 			clear();
@@ -171,6 +177,14 @@ namespace falling {
 	
 	template <typename T, typename R, typename... Args>
 	Function<R(Args...)> bind_method(T* self, R(T::*method)(Args...)) {
+		auto f = [=](Args... args) {
+			(self->*method)(std::forward<Args>(args)...);
+		};
+		return Function<R(Args...)>(move(f));
+	}
+	
+	template <typename T, typename R, typename... Args>
+	Function<R(Args...)> bind_method(const T* self, R(T::*method)(Args...) const) {
 		auto f = [=](Args... args) {
 			(self->*method)(std::forward<Args>(args)...);
 		};
