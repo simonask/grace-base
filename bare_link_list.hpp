@@ -17,7 +17,7 @@ namespace falling {
     template <typename T>
     struct ListLinkBase {
 	public:
-		~ListLinkBase() {
+		virtual ~ListLinkBase() {
 			unlink();
 		}
 	private:
