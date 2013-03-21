@@ -25,7 +25,6 @@ namespace falling {
 		// XXX: Most probably platform dependent.
 		
 		char** symbols = backtrace_symbols(&ip, 1);
-		const char* mangled_start = symbols[0] + 59;
 		StringRef symbol_line = symbols[0];
 		StringRef binary_location = substr(symbol_line, 4, 36);
 		out_module_name = strip(binary_location);
