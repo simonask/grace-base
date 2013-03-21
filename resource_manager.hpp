@@ -23,7 +23,7 @@ namespace falling {
 	};
 	
 	template <typename ResourceType>
-	__attribute__((noinline)) ResourceLoaderID get_loader_id_for_type() {
+	__attribute__((noinline)) DLL_PUBLIC ResourceLoaderID get_loader_id_for_type() {
 		static ResourceLoaderIDHolder<ResourceType>* holder = new_static ResourceLoaderIDHolder<ResourceType>;
 		return reinterpret_cast<ResourceLoaderID>(holder);
 	}
