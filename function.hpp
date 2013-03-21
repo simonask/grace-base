@@ -12,16 +12,23 @@
 #include "base/basic.hpp"
 #include "base/maybe.hpp"
 #include "memory/allocator.hpp"
+#include "base/string.hpp"
+
 #include <type_traits>
 
 namespace falling {
 	template <typename Signature>
 	class Function;
 	
+	struct EmptyFunctionCallError {
+		StringRef what() const { return "Called empty function object."; }
+	};
+	
 	template <typename R, typename... Args>
 	class Function<R(Args...)> {
 	public:
 		using FunctionPointerType = R(*)(Args...);
+		using Self = Function<R(Args...)>;
 		
 		explicit Function(IAllocator& alloc = default_allocator()) : allocator_(alloc) {}
 		Function(FunctionPointerType ptr, IAllocator& alloc = default_allocator()) : allocator_(alloc) { assign(ptr); }
@@ -39,52 +46,38 @@ namespace falling {
 		template <typename T>
 		Function<R(Args...)>& operator=(T function_object) { assign(move(function_object)); return *this; }
 		
-		template <typename Result = R>
-		typename std::enable_if<std::is_default_constructible<Result>::value, Result>::type
-		operator()(Args... args) const {
-			if (!this->is_empty()) {
-				return invoke(std::forward<Args>(args)...);
-			}
-			return R();
-		}
-		
-		template <typename Result = R>
-		typename std::enable_if<!std::is_same<void, Result>::value && !std::is_default_constructible<Result>::value, Maybe<Result>>::type
-		operator()(Args... args) const {
-			if (!is_empty()) {
-				return invoke(std::forward<Args>(args)...);
-			}
-			return Nothing;
-		}
-		
-		template <typename Result = R>
-		typename std::enable_if<std::is_same<void, Result>::value, void>::type
-		operator()(Args... args) const {
-			if (!is_empty()) {
-				invoke(std::forward<Args>(args)...);
+		R operator()(Args... args) const {
+			switch (type_) {
+				case InvokerType::Empty: return empty_invoker(std::forward<Args>(args)...);
+				case InvokerType::FunctionPointer: return function_pointer_invoker(std::forward<Args>(args)...);
+				case InvokerType::VirtualInvokerHeap: return virtual_invoker(std::forward<Args>(args)...);
 			}
 		}
 		
 		void clear() {
-			if (get_payload_type() == VirtualInvokerTag) {
-				destroy(get_virtual_invoker(), allocator_);
+			if (is_virtual_invoker()) {
+				destroy(payload.vptr, allocator_);
 			}
-			payload_ = 0;
+			payload.fptr = nullptr;
+			type_ = InvokerType::Empty;
 		}
 		
-		bool is_empty() const { return payload_ == 0; }
+		bool is_empty() const {
+			return type_ == InvokerType::Empty;
+		}
 		explicit operator bool() const { return !is_empty(); }
 		bool is_function_pointer() const {
-			return get_payload_type() == FunctionPointerTag;
+			return type_ == InvokerType::FunctionPointer;
 		}
 		bool is_virtual_invoker() const {
-			return get_payload_type() == VirtualInvokerTag;
+			return type_ == InvokerType::VirtualInvokerHeap;
 		}
 	private:
-		enum PointerTags {
-			FunctionPointerTag       = 0x0,
-			VirtualInvokerTag        = 0x1,
-			PointerTagMask           = 0x1
+		enum class InvokerType : uint8 {
+			Empty,
+			FunctionPointer,
+			VirtualInvokerHeap,
+			// TODO: Add type with "small function optimization"
 		};
 	
 		struct ICaller {
@@ -93,7 +86,7 @@ namespace falling {
 			virtual ICaller* duplicate(IAllocator& alloc) const = 0;
 		};
 		template <typename T>
-		struct ALIGNED(8) Caller : ICaller  {
+		struct Caller : ICaller  {
 			Caller(T value) : value(move(value)) {}
 			T value;
 			R invoke(Args... args) final {
@@ -104,50 +97,60 @@ namespace falling {
 			}
 		};
 		
-		uintptr_t payload_ = 0;
+		// A member function pointer to one of our own methods, that will be called without any conditionals upon invocation.
+		using InvokerFunction = R(*)(const Self*, Args...);
+		union {
+			FunctionPointerType fptr;
+			ICaller* vptr;
+		} payload = {nullptr};
 		IAllocator& allocator_;
+		InvokerType type_;
+
 		
-		PointerTags get_payload_type() const {
-			return (PointerTags)(payload_ & PointerTagMask);
+		R empty_invoker(Args... args) const {
+			throw EmptyFunctionCallError();
 		}
-		uintptr_t get_payload() const {
-			return payload_ & ~PointerTagMask;
+		R function_pointer_invoker(Args... args) const {
+			return payload.fptr(std::forward<Args>(args)...);
 		}
+		R virtual_invoker(Args... args) const {
+			return payload.vptr->invoke(std::forward<Args>(args)...);
+		}
+		
 		void set_virtual_invoker(ICaller* caller) {
-			payload_ = (uintptr_t)caller | VirtualInvokerTag;
+			payload.vptr = caller;
+			type_ = InvokerType::VirtualInvokerHeap;
 		}
 		void set_function_pointer(FunctionPointerType function_pointer) {
-			payload_ = (uintptr_t)function_pointer | FunctionPointerTag;
-		}
-		
-		ICaller* get_virtual_invoker() const {
-			ASSERT(get_payload_type() == VirtualInvokerTag);
-			return (ICaller*)get_payload();
-		}
-		
-		FunctionPointerType get_function_pointer() const {
-			ASSERT(get_payload_type() == FunctionPointerTag);
-			return (R(*)(Args...))get_payload();
+			payload.fptr = function_pointer;
+			type_ = InvokerType::FunctionPointer;
 		}
 		
 		void assign(const Function<R(Args...)>& other) {
+			if (&other == this) return;
 			clear();
-			if (!other.is_empty()) {
-				if (other.is_function_pointer()) {
-					payload_ = other.payload_;
-				} else {
-					set_virtual_invoker(other.get_virtual_invoker()->duplicate(allocator_));
-				}
+			type_ = other.type_;
+			if (is_virtual_invoker()) {
+				payload.vptr = other.payload.vptr->duplicate(allocator_);
+			} else {
+				payload.fptr = other.payload.fptr;
 			}
 		}
 		void assign(Function<R(Args...)>&& other) {
+			if (&other == this) return;
 			clear();
-			if (other.is_function_pointer() || &allocator_ == &other.allocator_) {
-				payload_ = other.payload_;
-				other.payload_ = 0;
+			type_ = other.type_;
+			if (is_virtual_invoker()) {
+				if (&allocator_ == &other.allocator_) {
+					payload.vptr = other.payload.vptr;
+					other.payload.vptr = nullptr;
+				} else {
+					payload.vptr = other.payload.vptr->duplicate(allocator_);
+					other.clear();
+				}
 			} else {
-				set_virtual_invoker(other.get_virtual_invoker()->duplicate(allocator_));
-				other.clear();
+				payload.fptr = other.payload.fptr;
+				other.payload.fptr = nullptr;
 			}
 		}
 		void assign(FunctionPointerType ptr) {
@@ -159,19 +162,6 @@ namespace falling {
 		void assign(T value) {
 			clear();
 			set_virtual_invoker(new(allocator_, alignof(Caller<T>)) Caller<T>{move(value)});
-		}
-		
-		R invoke(Args... args) const {
-			uintptr_t payload = get_payload();
-			switch (get_payload_type()) {
-				case FunctionPointerTag: {
-					return ((FunctionPointerType)payload)(std::forward<Args>(args)...);
-				}
-				case VirtualInvokerTag: {
-					return ((ICaller*)payload)->invoke(std::forward<Args>(args)...);
-				}
-				default: ASSERT(false); 
-			}
 		}
 	};
 	
