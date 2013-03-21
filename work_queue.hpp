@@ -11,6 +11,7 @@
 
 #include "base/priority_queue.hpp"
 #include "base/time.hpp"
+#include "base/function.hpp"
 #include <thread>
 #include <condition_variable>
 #include <chrono>
