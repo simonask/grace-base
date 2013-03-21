@@ -14,8 +14,7 @@
 #include "base/time.hpp"
 #include "base/string.hpp"
 #include "event/event_handle.hpp"
-
-#include <functional>
+#include "base/function.hpp"
 
 namespace falling {
 	using FileSystemDescriptor = int;
@@ -71,12 +70,12 @@ namespace falling {
 	using CallbackID = uintptr_t;
 
 	struct IEventLoop {
-		using FileSystemCallback = std::function<void(FileSystemDescriptor fd, FileSystemEvent event)>;
-		using InputEventCallback = std::function<bool(const InputEvent&)>; // return: handled?
+		using FileSystemCallback = Function<void(FileSystemDescriptor fd, FileSystemEvent event)>;
+		using InputEventCallback = Function<bool(const InputEvent&)>; // return: handled?
 	
 		// Call-later API
-		virtual IEventHandle* schedule(IAllocator&, std::function<void()>, SystemTimeDelta delay) = 0;
-		virtual IEventHandle* call_repeatedly(IAllocator&, std::function<void()>, SystemTimeDelta interval) = 0;
+		virtual IEventHandle* schedule(IAllocator&, Function<void()>, SystemTimeDelta delay) = 0;
+		virtual IEventHandle* call_repeatedly(IAllocator&, Function<void()>, SystemTimeDelta interval) = 0;
 		
 		// Input Event API
 		virtual IEventHandle* listen_for_input_event(IAllocator&, uint32 input_event_mask, InputEventCallback callback) = 0;
@@ -93,8 +92,8 @@ namespace falling {
 	struct IEventedSocket;
 	
 	struct IEventLoopWithSockets : public IEventLoop {
-		using ConnectionCallback = std::function<void(IEventedSocket*)>;
-		using ConnectionErrorCallback = std::function<void(StringRef, bool fatal)>;
+		using ConnectionCallback = Function<void(IEventedSocket*)>;
+		using ConnectionErrorCallback = Function<void(StringRef, bool fatal)>;
 		virtual ~IEventLoopWithSockets() {}
 		virtual IEventHandle* connect(IAllocator&, StringRef host, uint32 port, ConnectionCallback on_connect, ConnectionErrorCallback on_error) = 0;
 		virtual IEventHandle* listen(IAllocator&, uint32 port, ConnectionCallback on_accept, ConnectionErrorCallback on_error) = 0;

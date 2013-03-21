@@ -28,10 +28,10 @@ namespace falling {
 	 That is, received data must be buffered by the backend, but 
 	*/
 	struct IEventedSocket : IEventHandle, InputStream, OutputStream {
-		using DataCallback = std::function<void(IEventedSocket&, SocketEvent event)>;
-		using ConnectionErrorCallback = std::function<void(StringRef, bool fatal)>;
-		using ConnectionEstablishedCallback = std::function<void()>;
-		using ConnectionClosedCallback = std::function<void()>;
+		using DataCallback = Function<void(IEventedSocket&, SocketEvent event)>;
+		using ConnectionErrorCallback = Function<void(StringRef, bool fatal)>;
+		using ConnectionEstablishedCallback = Function<void()>;
+		using ConnectionClosedCallback = Function<void()>;
 		
 		virtual void on_data(uint8 event_mask, DataCallback callback) = 0;
 		virtual void on_error(ConnectionErrorCallback callback) = 0;
