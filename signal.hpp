@@ -16,8 +16,7 @@
 #include "object/object.hpp"
 #include "object/object_type.hpp"
 #include "memory/unique_ptr.hpp"
-
-#include <functional>
+#include "base/function.hpp"
 #include <type_traits>
 
 namespace falling {
@@ -45,8 +44,10 @@ namespace falling {
 		~Signal();
 	
         // Should catch raw functions and lambdas:
-        template <typename Function>
-        SignalConnectionID connect(Function function);
+		template <typename T>
+		SignalConnectionID connect(T value);
+        template <typename R>
+        SignalConnectionID connect(Function<R(Args...)> function);
 
         // Should catch raw member functions:
         template <typename T, typename R>
@@ -91,8 +92,8 @@ namespace falling {
 
     template <typename R, typename... Args>
     struct FunctionInvoker : public SignalInvoker<Args...> {
-        std::function<R(Args...)> function;
-        FunctionInvoker(std::function<R(Args...)> function) : function(std::move(function)) {}
+        Function<R(Args...)> function;
+        FunctionInvoker(Function<R(Args...)> function) : function(std::move(function)) {}
         ObjectPtr<> receiver() const { return nullptr; }
         const ISlot* slot() const { return nullptr; }
         void invoke(Args... args) const { function(std::forward<Args>(args)...); }
@@ -130,31 +131,33 @@ namespace falling {
 			destroy(invokers_.head(), allocator_);
 		}
 	}
+	
+	template <typename... Args>
+	template <typename T>
+	SignalConnectionID Signal<Args...>::connect(T function_object) {
+		using R = typename std::result_of<T(Args...)>::type;
+		return connect(Function<R(Args...)>(move(function_object)));
+	};
 
     template <typename... Args>
-    template <typename Function>
-    SignalConnectionID Signal<Args...>::connect(Function function) {
-		typedef decltype(function(std::declval<Args>()...)) R;
-		auto f = std::function<R(Args...)>(std::move(function));
-        return link_and_make_id((new(allocator_) FunctionInvoker<R, Args...>(std::move(f))));
+    template <typename R>
+    SignalConnectionID Signal<Args...>::connect(Function<R(Args...)> function) {
+		auto f = Function<R(Args...)>(move(function), allocator_);
+        return link_and_make_id((new(allocator_, alignof(FunctionInvoker<R, Args...>)) FunctionInvoker<R, Args...>(move(f))));
     }
 
     template <typename... Args>
     template <typename T, typename R>
     SignalConnectionID Signal<Args...>::connect(T* receiver, R(T::*member)(Args...)) {
         // Convert member function call to free function call:
-		return connect([=](const Args&... args) {
-			(receiver->*member)(std::forward<Args>(args)...);
-		});
+		return connect(bind_method(receiver, member));
     }
 	
 	template <typename... Args>
     template <typename T, typename R>
     SignalConnectionID Signal<Args...>::connect(const T* receiver, R(T::*member)(Args...) const) {
         // Convert member function call to free function call:
-		return connect([=](const Args&... args) {
-			(receiver->*member)(std::forward<Args>(args)...);
-		});
+		return connect(bind_method(receiver, member));
     }
 
     template <typename... Args>
