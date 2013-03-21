@@ -74,6 +74,12 @@ return MEMBER.METHOD_NAME(std::forward<ForwardArgs_>(args)...); \
 
 #define UNSAFE_OFFSET_OF(T, MEMBER) (size_t)(&((T*)nullptr)->MEMBER)
 
+#if defined(__GNUC__)
+#define ALIGNED(N) __attribute__((aligned(N)))
+#else
+#error Compiler unsupported.
+#endif
+
 template <typename T>
 struct RemoveConstRef {
 	typedef typename std::remove_const<typename std::remove_reference<T>::type>::type Type;
