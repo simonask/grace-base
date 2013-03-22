@@ -83,10 +83,6 @@ namespace falling {
 		
 		// Async File I/O API
 		virtual IEventHandle* watch_descriptor(IAllocator&, FileSystemDescriptor fd, uint8 event_mask, FileSystemCallback callback, SystemTimeDelta timeout = SystemTimeDelta::forever()) = 0;
-		
-		// Necessary for integration with external event loops (such as platform toolkits)
-		virtual SystemTimeDelta time_until_next_event() = 0; // SystemTimeDelta::forever() if there are no events
-		virtual void run_once() = 0;
 	};
 	
 	struct IEventedSocket;
