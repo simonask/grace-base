@@ -108,18 +108,6 @@ namespace falling {
 			};
 		};
 	};
-	template <typename T, size_t N> struct VectorData {
-		typedef simd::GetVectorType<T, N> GetVectorType;
-		typedef typename GetVectorType::Type Type;
-		typedef typename GetVectorType::MaskElementType MaskElementType;
-		typedef typename simd::GetVectorType<MaskElementType, N>::Type MaskType;
-		
-		union {
-			Type m;
-			MaskType mask;
-			T v[N];
-		};
-	};
 	
 	template <typename ElementType, size_t N>
 	struct TVector : VectorData<ElementType, N> {
