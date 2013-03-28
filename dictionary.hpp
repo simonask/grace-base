@@ -10,7 +10,6 @@
 #define falling_dictionary_hpp
 
 #include "base/map.hpp"
-#include "base/string_pool.hpp"
 
 namespace falling {
 	template <typename Value, typename Cmp = Less>
