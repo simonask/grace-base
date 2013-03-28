@@ -18,6 +18,12 @@ namespace falling {
 		static_assert(Max >= sizeof(void**), "FixedAllocator must allocate objects of sizeof(void*) or larger.");
 		
 		explicit FixedAllocator(IAllocator& base) : base_(base) {}
+		FixedAllocator(FixedAllocator&& other) : base_(other.base_) {
+			free_list_ = other.free_list_;
+			other.free_list_ = nullptr;
+			usage_ = other.usage_;
+			other.usage_ = 0;
+		}
 		~FixedAllocator() {
 			while (free_list_) {
 				void* tmp = *free_list_;
