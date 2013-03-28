@@ -104,7 +104,7 @@ namespace falling {
 			ICaller* vptr;
 		} payload = {nullptr};
 		IAllocator& allocator_;
-		InvokerType type_;
+		InvokerType type_ = InvokerType::Empty;
 
 		
 		R empty_invoker(Args... args) const {
