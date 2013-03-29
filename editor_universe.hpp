@@ -35,6 +35,7 @@ namespace falling {
 		
 		// Serialization API
 		void run_initializers() final;
+		bool serialize_scene(ArchiveNode& out_scene, String& out_error) final;
 	private:
 		struct Impl;
 		Impl* impl_ = nullptr;

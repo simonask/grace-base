@@ -18,27 +18,39 @@ namespace falling {
 		attribute->deserialize_attribute(object.get(), *node, universe);
 	}
 
-	bool UniverseBase::clear_and_instantiate(const ArchiveNode &scene_root, String &out_error) {
+	bool UniverseBase::clear_and_instantiate(const ArchiveNode &scene_definition, String &out_error) {
 		clear();
-		ObjectPtr<> ptr = deserialize_object(scene_root, *this);
-		if (!ptr) {
-			out_error = "There was an error deserializing the root object.";
+		
+		if (!scene_definition.is_map()) {
+			out_error = "Invalid scene definition.";
 			return false;
 		}
+		
+		int format_version;
+		if (scene_definition["format"] >> format_version) {
+			// TODO: Check scene version
+		}
+		
+		scene_definition.array_each([&](const ArchiveNode& object_definition) {
+			deserialize_object(object_definition, *this);
+		});
 		
 		for (auto& deferred: deferred_) {
 			deferred.perform(*this);
 		}
 		deferred_.clear();
 		
-		set_root(ptr);
 		run_initializers();
 		return true;
 	}
 	
-	bool UniverseBase::serialize_root(ArchiveNode &root_node, falling::String &out_error) {
-		falling::serialize(*root(), root_node, *this);
-		return true; // XXX
+	bool BasicUniverse::serialize_scene(ArchiveNode &root_node, falling::String &out_error) {
+		root_node["format"] << 1;
+		auto& objects = root_node["objects"];
+		for (auto ptr: object_map_.values()) {
+			falling::serialize(*ptr, objects.array_push(), *this);
+		}
+		return true; // XXX: Report errors
 	}
 	
 	void UniverseBase::defer_attribute_deserialization(ObjectPtr<> obj, const IAttribute *attr, const ArchiveNode *serialized) {

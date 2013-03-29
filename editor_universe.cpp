@@ -201,6 +201,11 @@ namespace falling {
 		}
 	}
 	
+	bool EditorUniverse::serialize_scene(ArchiveNode &out_scene, String &out_error) {
+		Error() << "EditorUniverse cannot serialize scenes -- save the scene from the editor instead.";
+		return false;
+	}
+	
 	void EditorUniverse::Impl::unregister_object(ObjectPtr<> obj) {
 		auto rit = reverse_object_map_.find(obj);
 		if (rit != reverse_object_map_.end()) {

@@ -25,8 +25,7 @@ namespace falling {
 		virtual ~UniverseBase() {}
 		
 		// IUniverse interface (partial)
-		bool clear_and_instantiate(const ArchiveNode& scene_root, String& out_error) final;
-		bool serialize_root(ArchiveNode& root, String& out_error) final;
+		bool clear_and_instantiate(const ArchiveNode& scene_definition, String& out_error) final;
 		void defer_attribute_deserialization(ObjectPtr<> obj, const IAttribute* attr, const ArchiveNode* serialized) final;
 		IAllocator& allocator() const final { return allocator_; }
 		
@@ -114,6 +113,7 @@ namespace falling {
 			ASSERT(r != nullptr && this == r->universe());
 			root_ = r;
 		}
+		bool serialize_scene(ArchiveNode& root, String& out_error) final;
 		void run_initializers() final;
 		void clear() final;
 		
