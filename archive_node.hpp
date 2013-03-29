@@ -65,6 +65,7 @@ struct ArchiveNode {
 	void operator<<(const String& in_str);
 	void operator<<(StringRef in_str);
 	void operator<<(const char* in_str) { (*this) << StringRef(in_str); }
+	void operator<<(const Any& any);
 	
 	template <typename T>
 	void operator<<(const Array<T>& array);
@@ -254,6 +255,14 @@ struct BuildTypeInfo<ArchiveNode*> {
 		value_ = StringType(in_str, allocator());
 	}
 	
+	inline void ArchiveNode::operator<<(const Any& in_any) {
+		if (in_any.is_empty()) {
+			clear();
+		} else {
+			in_any.type()->serialize_raw(in_any.ptr(), *this, *(IUniverse*)nullptr);
+		}
+	}
+	
 	template <typename T>
 	void ArchiveNode::operator<<(const Array<T>& array) {
 		ArrayType arr(allocator());
@@ -287,6 +296,15 @@ struct BuildTypeInfo<ArchiveNode*> {
 		value_.when<MapType>([&](const MapType& map) {
 			for (auto pair: map) {
 				f(pair.first, pair.second);
+			}
+		});
+	}
+	
+	template <typename F>
+	void ArchiveNode::array_each(F f) const {
+		value_.when<ArrayType>([&](const ArrayType& array) {
+			for (auto& element: array) {
+				f(*element);
 			}
 		});
 	}

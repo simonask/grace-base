@@ -90,6 +90,71 @@ namespace {
 			});
 		}
 	}
+	
+	void load_and_merge_templates_r(BinaryArchive& archive, ArchiveNode& target, const ArchiveNode& def) {
+		ResourceID template_rid;
+		if ((def["template"] >> template_rid)) {
+			ResourcePtr<ObjectTemplate> templ = load_resource<ObjectTemplate>(template_rid);
+			if (templ != nullptr) {
+				load_and_merge_templates_r(archive, target, templ->archive.root());
+			}
+		}
+		copy_archive_node(target, def);
+	}
+}
+
+void merge_object_templates(BinaryArchive& merged, const ArchiveNode& object_definition) {
+	load_and_merge_templates_r(merged, merged.root(), object_definition);
+}
+
+const StructuredType* get_or_create_object_type(const ArchiveNode& object_definition, UniverseBase* universe) {
+	const ObjectTypeBase* base;
+	StringRef cls_name;
+	if (object_definition["class"] >> cls_name) {
+		base = TypeRegistry::get(cls_name);
+		if (base == nullptr) {
+			return nullptr;
+		}
+	} else {
+		base = get_type<Object>();
+	}
+	
+	auto& aspects = object_definition["aspects"];
+	if (aspects.is_array() && aspects.array_size() > 0) {
+		CompositeType* ct = universe->create_composite_type(base);
+		StringRef aspect_type_name;
+		aspects.array_each([&](const ArchiveNode& aspect) {
+			if (aspect["class"] >> cls_name) {
+				auto aspect_type = TypeRegistry::get(cls_name);
+				if (aspect_type != nullptr) {
+					ct->add_aspect(aspect_type);
+					size_t n = ct->num_aspects();
+					
+					Array<StringRef> exposed_slot_names;
+					auto& exposed_slots = aspect["__slots"];
+					if (aspect["__slots"] >> exposed_slot_names) {
+						for (auto slot_name: exposed_slot_names) {
+							ct->expose_slot(n, slot_name);
+						}
+					}
+					
+					Array<StringRef> exposed_attribute_names;
+					if (aspect["__attributes"] >> exposed_attribute_names) {
+						for (auto attr_name: exposed_attribute_names) {
+							ct->expose_attribute(n, attr_name);
+						}
+					}
+				} else {
+					Warning() << "Object type '" << aspect_type_name << "' not registered -- cannot initialize aspect.";
+				}
+			} else {
+				Warning() << "Invalid aspect in object definition (no class name).";
+			}
+		});
+		ct->freeze();
+		return ct;
+	}
+	return base;
 }
 
 ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
