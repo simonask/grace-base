@@ -15,6 +15,9 @@
 #include "type/attribute.hpp"
 #include "serialization/binary_archive.hpp"
 #include "serialization/serialize.hpp"
+#include "serialization/deserialize_object.hpp"
+#include "type/type_registry.hpp"
+#include "base/log.hpp"
 
 namespace falling {
 	struct EditorUniverse::Impl {
@@ -167,32 +170,59 @@ namespace falling {
 		return actually_got_the_requested_name;
 	}
 	
-	bool EditorUniverse::retype_object(const StructuredType *type, StringRef object_id) {
-		ObjectPtr<> obj = get_object(object_id);
-		if (obj && obj->object_type() != type) {
-			auto old_type = obj->object_type();
+	bool EditorUniverse::recreate_object_and_initialize(const ArchiveNode& object_definition_in, StringRef old_object_id) {
+		ScratchAllocator scratch;
+		BinaryArchive merged(scratch);
+		merge_object_templates(merged, object_definition_in);
+		auto& object_definition = merged.root();
 		
-			ScratchAllocator scratch;
-			BinaryArchive archive(scratch);
-			falling::serialize(*obj, archive.root(), *this);
-			
+		const StructuredType* new_type = get_or_create_object_type(object_definition, this);
+		if (new_type == nullptr) {
+			Error() << "Could not recreate object; no object type.";
+			return false;
+		}
+		
+		StringRef new_id;
+		if (!(object_definition["id"] >> new_id)) {
+			new_id = old_object_id;
+		}
+		
+		ObjectPtr<> obj = get_object(old_object_id);
+		const StructuredType* old_type = obj->object_type();
+		
+		ObjectPtr<> new_obj;
+		bool rewire = false;
+		if (new_type != old_type) {
 			impl_->unregister_object(obj);
-			ObjectPtr<> new_obj = create_object(type, object_id);
-			
-			// TODO: Reassign properties?
-			
+			new_obj = create_object(new_type, new_id);
+			rewire = true;
+		} else {
+			new_obj = obj;
+			if (new_id != old_object_id) {
+				rename_object(new_obj, new_id);
+			}
+		}
+		
+		new_type->deserialize_raw((byte*)new_obj.get(), object_definition, *this);
+		
+		for (auto& p: deferred_) {
+			p.perform(*this);
+		}
+		deferred_.clear();
+		
+		if (rewire) {
 			impl_->for_each_object_reference(obj, [&](ObjectPtr<>* root) {
 				if (*root == obj) {
 					*root = new_obj;
 				}
 			});
-			
-			obj->object_type()->destruct((byte*)obj.get(), *this);
+			old_type->destruct((byte*)obj.get(), *this);
 			allocator().free(obj.get(), old_type->size());
-			
-			return true;
 		}
-		return false;
+		
+		new_obj->initialize();
+		
+		return true;
 	}
 	
 	void EditorUniverse::run_initializers() {

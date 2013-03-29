@@ -12,10 +12,26 @@
 #include "serialization/serialize.hpp"
 #include "base/parse.hpp"
 #include "io/formatters.hpp"
+#include "object/composite_type.hpp"
 
 namespace falling {
 	void DeferredAttributeDeserialization::perform(IUniverse& universe) const {
 		attribute->deserialize_attribute(object.get(), *node, universe);
+	}
+	
+	UniverseBase::~UniverseBase() {
+		for (auto p: composite_types_) {
+			destroy(p, allocator());
+		}
+	}
+	
+	CompositeType* UniverseBase::create_composite_type(const ObjectTypeBase* base, StringRef name) {
+		if (name == "") {
+			name = base->name();
+		}
+		CompositeType* p = new(allocator()) CompositeType(allocator(), name, base);
+		composite_types_.push_back(p);
+		return p;
 	}
 
 	bool UniverseBase::clear_and_instantiate(const ArchiveNode &scene_definition, String &out_error) {
@@ -57,9 +73,8 @@ namespace falling {
 		deferred_.push_back(DeferredAttributeDeserialization{obj, attr, serialized});
 	}
 	
-	bool BasicUniverse::retype_object(const StructuredType *new_type, StringRef object_id) {
-		ASSERT(false); // NIY
-		UNREACHABLE();
+	bool BasicUniverse::recreate_object_and_initialize(const ArchiveNode &node, StringRef object_id) {
+		ASSERT(false); // Cannot recreate object in non-editor universe
 	}
 	void error_category_already_initialized_with_different_type(StringRef name) {
 		Error() << "Object category has already been initialized with a different type: " << name;
@@ -153,5 +168,4 @@ namespace falling {
 		reverse_object_map_.clear();
 		memory_map_.clear();
 	}
-
 }

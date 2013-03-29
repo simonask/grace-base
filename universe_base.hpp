@@ -13,6 +13,8 @@
 #include "memory/unique_ptr.hpp"
 
 namespace falling {
+	struct CompositeType;
+
 	struct DeferredAttributeDeserialization {
 		ObjectPtr<> object;
 		const IAttribute* attribute;
@@ -22,7 +24,7 @@ namespace falling {
 	};
 
 	struct UniverseBase : public IUniverse {
-		virtual ~UniverseBase() {}
+		virtual ~UniverseBase();
 		
 		// IUniverse interface (partial)
 		bool clear_and_instantiate(const ArchiveNode& scene_definition, String& out_error) final;
@@ -30,6 +32,8 @@ namespace falling {
 		IAllocator& allocator() const final { return allocator_; }
 		
 		// UniverseBase interface
+		CompositeType* create_composite_type(const ObjectTypeBase* base, StringRef name = "");
+		
 		template <typename T>
 		ObjectPtr<T> create(String id) {
 			ObjectPtr<> o = this->create_object(get_type<T>(), std::move(id));
@@ -57,11 +61,12 @@ namespace falling {
 		void set_event_loop(IEventLoop* el) final { event_loop_ = el; }
 		IEventLoop* event_loop() const final { return event_loop_; }
 	protected:
-		UniverseBase(IAllocator& alloc) : allocator_(alloc), auto_lists(alloc), deferred_(alloc) {}
+		UniverseBase(IAllocator& alloc) : allocator_(alloc), auto_lists(alloc), deferred_(alloc), composite_types_(alloc) {}
+		Array<DeferredAttributeDeserialization> deferred_;
+		Array<CompositeType*> composite_types_;
 	private:
 		IAllocator& allocator_;
 		Map<const StructuredType*, Map<size_t, VirtualAutoListBase*>> auto_lists;
-		Array<DeferredAttributeDeserialization> deferred_;
 		IEventLoop* event_loop_ = nullptr;
 	};
 	
@@ -107,7 +112,7 @@ namespace falling {
 		}
 		StringRef get_id(ObjectPtr<const Object> object) const final;
 		bool rename_object(ObjectPtr<> object, StringRef) final;
-		bool retype_object(const StructuredType* new_type, StringRef object_id) final;
+		bool recreate_object_and_initialize(const ArchiveNode& node, StringRef object_id) final;
 		ObjectPtr<> root() const final { return root_; }
 		void set_root(ObjectPtr<> r) final {
 			ASSERT(r != nullptr && this == r->universe());

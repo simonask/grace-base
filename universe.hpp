@@ -31,7 +31,7 @@ namespace falling {
 		
 		// Editor/dev-time API
 		virtual bool rename_object(ObjectPtr<>, StringRef new_id) = 0;
-		virtual bool retype_object(const StructuredType* type, StringRef object_id) = 0;
+		virtual bool recreate_object_and_initialize(const ArchiveNode& node, StringRef object_id) = 0;
 		
 		// Serialization API
 		virtual void run_initializers() = 0;
