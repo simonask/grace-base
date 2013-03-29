@@ -47,7 +47,7 @@ namespace falling {
 			// TODO: Check scene version
 		}
 		
-		scene_definition.array_each([&](const ArchiveNode& object_definition) {
+		scene_definition["objects"].array_each([&](const ArchiveNode& object_definition) {
 			deserialize_object(object_definition, *this);
 		});
 		
