@@ -35,6 +35,8 @@ struct Object {
 	Object* find_topmost_object();
 	const Object* find_topmost_object() const;
 	
+	bool is_aspect_in_composite() const { return offset_ != 0; }
+	
 	IUniverse* universe() const { return universe_; }
 	void set_universe__(IUniverse* universe) { universe_ = universe; }
 	uint32 universe_data__() const { return universe_data_; }
