@@ -100,10 +100,12 @@ namespace falling {
 	void EditorUniverse::clear() {
 		impl_->root_ = nullptr;
 		for (auto ptr: impl_->object_map_.values()) {
-			auto type = ptr->object_type();
-			auto raw_ptr = ptr.get();
-			type->destruct((byte*)raw_ptr, *this);
-			allocator().free(raw_ptr, type->size());
+			if (!ptr->is_aspect_in_composite()) {
+				auto type = ptr->object_type();
+				auto raw_ptr = ptr.get();
+				type->destruct((byte*)raw_ptr, *this);
+				allocator().free(raw_ptr, type->size());
+			}
 		}
 		impl_->object_map_.clear();
 		impl_->reverse_object_map_.clear();
