@@ -257,10 +257,10 @@ namespace falling {
 }
 
 inline void* operator new(size_t nbytes) {
-	return falling::default_allocator().allocate(nbytes, 0);
+	return falling::default_allocator().allocate(nbytes, 16);
 }
 inline void* operator new[](size_t nbytes) {
-	return falling::default_allocator().allocate(nbytes, 0);
+	return falling::default_allocator().allocate(nbytes, 16);
 }
 
 inline void operator delete(void* ptr) throw() {
@@ -271,7 +271,7 @@ inline void operator delete[](void* ptr) throw() {
 }
 
 inline void* operator new(size_t nbytes, falling::IAllocator& alloc, size_t alignment = 0) {
-	return alloc.allocate(nbytes, alignment ? alignment : 1);
+	return alloc.allocate(nbytes, alignment ? alignment : 16);
 }
 
 
