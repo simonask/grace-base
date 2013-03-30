@@ -4,41 +4,14 @@
 
 #include "type/structured_type.hpp"
 #include <memory>
-
 #include <new>
 #include "type/attribute.hpp"
 #include "object/slot.hpp"
 #include "object/universe.hpp"
 #include "object/universe_base.hpp"
-#include "base/link_list.hpp"
+#include "object/object_type_base.hpp"
 
 namespace falling {
-
-struct ObjectTypeBase : StructuredType {
-	StringRef name() const override { return name_; }
-	StringRef description() const { return description_; }
-	const StructuredType* super() const final;
-	
-	template <typename T, typename R, typename... Args>
-	const SlotForTypeWithSignature<T,R,Args...>* find_slot_for_method(typename GetMemberFunctionPointerType<T, R, Args...>::Type method) const {
-		for (auto s: slots()) {
-			auto slot = dynamic_cast<const SlotForTypeWithSignature<T,R,Args...>*>(s);
-			if (slot != nullptr && slot->method() == method) {
-				return slot;
-			}
-		}
-		return nullptr;
-	}
-	
-	ObjectTypeBase(IAllocator& alloc, const ObjectTypeBase* super, StringRef name, StringRef description) : super_(super), name_(name, alloc), description_(description, alloc), is_abstract_(false) {}
-	
-	const ObjectTypeBase* super_;
-	String name_;
-	String description_;
-	bool is_abstract_;
-	
-	void set_abstract(bool b) { this->is_abstract_ = b; }
-	bool is_abstract() const { return this->is_abstract_; }};
 
 template <typename T> struct AutoListRegistrarForObject;
 
@@ -87,21 +60,6 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 template <typename T>
 struct AutoListRegistrarForObject {
 	virtual void link_object_in_universe(T& object, IUniverse& universe) const = 0;
-};
-
-template <typename T, typename ObjectType, size_t MemberOffset>
-struct AutoListRegistrarImpl : AutoListRegistrarForObject<T> {
-	typedef AutoListLink<ObjectType> ObjectType::* LinkMemberType;
-	LinkMemberType link_;
-	
-	AutoListRegistrarImpl(LinkMemberType link) : link_(link) {}
-	
-	void link_object_in_universe(T& object, IUniverse& universe) const {
-		UniverseBase* universe_base = dynamic_cast<UniverseBase*>(&universe);
-		auto& list = universe_base->get_auto_list<ObjectType, MemberOffset>();
-		AutoListLink<ObjectType>* link = &(object.*link_);
-		list.link_head(link);
-	}
 };
 
 

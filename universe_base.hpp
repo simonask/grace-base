@@ -11,6 +11,7 @@
 
 #include "object/universe.hpp"
 #include "memory/unique_ptr.hpp"
+#include "object/aspect_cast.hpp"
 
 namespace falling {
 	struct CompositeType;
@@ -37,7 +38,7 @@ namespace falling {
 		template <typename T>
 		ObjectPtr<T> create(String id) {
 			ObjectPtr<> o = this->create_object(get_type<T>(), std::move(id));
-			ObjectPtr<T> ptr = o.cast<T>();
+			ObjectPtr<T> ptr = aspect_cast<T>(o);
 			ASSERT(ptr != nullptr); // create_object did not create an instance of T.
 			return ptr;
 		}
@@ -45,7 +46,7 @@ namespace falling {
 		template <typename T>
 		ObjectPtr<T> create_root(String id) {
 			ObjectPtr<> o = this->create_object_and_set_as_root(get_type<T>(), std::move(id));
-			ObjectPtr<T> ptr = o.cast<T>();
+			ObjectPtr<T> ptr = aspect_cast<T>(o);
 			ASSERT(ptr != nullptr);
 			return ptr;
 		}

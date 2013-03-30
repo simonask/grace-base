@@ -32,7 +32,7 @@ void CompositeType::add_aspect(const StructuredType* aspect) {
 	size_ += aspect->size();
 }
 	
-Object* CompositeType::find_aspect_of_type(Object* composite_object, const DerivedType* aspect_type, const DerivedType* skip_in_search) const {
+Object* CompositeType::find_aspect_of_type(Object* composite_object, const StructuredType* aspect_type, const StructuredType* skip_in_search) const {
 	ASSERT(composite_object->object_type() == this);
 	
 	// Breadth:

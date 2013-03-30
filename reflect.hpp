@@ -12,6 +12,20 @@
 namespace falling {
 
 template <typename T> struct AutoListLink;
+	template <typename T, typename ObjectType, size_t MemberOffset>
+	struct AutoListRegistrarImpl : AutoListRegistrarForObject<T> {
+		typedef AutoListLink<ObjectType> ObjectType::* LinkMemberType;
+		LinkMemberType link_;
+		
+		AutoListRegistrarImpl(LinkMemberType link) : link_(link) {}
+		
+		void link_object_in_universe(T& object, IUniverse& universe) const {
+			UniverseBase* universe_base = dynamic_cast<UniverseBase*>(&universe);
+			auto& list = universe_base->get_auto_list<ObjectType, MemberOffset>();
+			AutoListLink<ObjectType>* link = &(object.*link_);
+			list.link_head(link);
+		}
+	};
 
 template <typename T>
 struct ObjectTypeBuilder {

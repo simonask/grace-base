@@ -10,6 +10,7 @@
 #define __falling__editor_universe__
 
 #include "object/universe_base.hpp"
+#include "object/object_ptr_root.hpp"
 
 namespace falling {
 	class EditorUniverse : public UniverseBase {

@@ -44,9 +44,6 @@ struct ObjectPtr {
 	bool operator!=(const ObjectPtr<T>& other) const { return ptr_ != other.ptr_; }
 	explicit operator bool() const { return ptr_ != nullptr; }
 	
-	template <typename U>
-	ObjectPtr<U> cast() const;
-	
 	T* get() const { return ptr_; }
 	T* operator->() const { return ptr_; }
 	T& operator*() const { return *ptr_; }
@@ -59,67 +56,10 @@ private:
 	T* ptr_;
 };
 
-template <typename To, typename From>
-ObjectPtr<To>
-aspect_cast(ObjectPtr<From> ptr) {
-	return ObjectPtr<To>(aspect_cast<To>(ptr.get()));
-}
-
-template <typename From>
-ObjectPtr<>
-aspect_cast(ObjectPtr<From> ptr, const DerivedType* type) {
-	return ObjectPtr<>(aspect_cast(ptr.get(), type));
-}
-
-template <typename T>
-template <typename U>
-ObjectPtr<U> ObjectPtr<T>::cast() const {
-	return ObjectPtr<U>(aspect_cast<U>(*this));
-}
-
 template <typename OutputStream, typename T>
 OutputStream& operator<<(OutputStream& os, const ObjectPtr<T>& ptr) {
 	os << '(' << ptr.type()->name() << "*)" << (void*)ptr.get();
 	return os;
-}
-
-
-
-struct ObjectPtrRootBase {
-	virtual void set(ObjectPtr<> root) const = 0;
-	virtual ObjectPtr<> get() const = 0;
-	virtual void* ptr() const = 0;
-};
-template <typename T>
-struct ObjectPtrRoot : ObjectPtrRootBase {
-	ObjectPtr<T>* root;
-	ObjectPtrRoot(ObjectPtr<T>* root) : root(root) {}
-	void set(ObjectPtr<> r) const final {
-		*root = aspect_cast<T>(r);
-	}
-	ObjectPtr<> get() const final {
-		return *root;
-	}
-	void* ptr() const final {
-		return root;
-	}
-};
-
-
-void register_object_root_impl(ObjectPtrRootBase* root_descriptor, IUniverse& universe);
-void unregister_object_root_impl(void* root, IUniverse& universe);
-	
-template <typename T>
-void register_object_root(ObjectPtr<T>* root, IUniverse& universe) {
-#if !defined(DISABLE_EDITOR_FEATURES)
-	register_object_root_impl(new(default_allocator()) ObjectPtrRoot<T>(root), universe);
-#endif
-}
-template <typename T>
-void unregister_object_root(ObjectPtr<T>* root, IUniverse& universe) {
-#if !defined(DISABLE_EDITOR_FEATURES)
-	unregister_object_root_impl(root, universe);
-#endif
 }
 
 }
