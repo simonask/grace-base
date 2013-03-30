@@ -6,6 +6,7 @@
 #include "type/attribute.hpp"
 #include "object/universe.hpp"
 #include "serialization/archive_node.hpp"
+#include "object/aspect_cast.hpp"
 
 namespace falling {
 

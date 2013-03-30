@@ -215,24 +215,6 @@ struct StringRefType : TypeFor<StringRef> {
 struct DerivedType : Type {
 };
 
-// static downcast
-template <typename To, typename From>
-typename std::enable_if<std::is_convertible<From*, To*>::value, To*>::type
-aspect_cast(From* ptr) {
-	return ptr;
-}
-
-// dynamic upcast
-template <typename To, typename From>
-typename std::enable_if<
-	!std::is_same<To, From>::value
-	&& (!HasReflection<To>::Value || !HasReflection<From>::Value)
-	&& std::is_convertible<typename std::remove_const<To>::type*, typename std::remove_const<From>::type*>::value
-	, To*>::type
-aspect_cast(From* ptr) {
-	return dynamic_cast<To*>(ptr);
-}
-
 template <typename T> struct BuildTypeInfo {};
 
 #define DECLARE_TYPE(T) template<> struct BuildTypeInfo<T> { static const SimpleType* build(); };
