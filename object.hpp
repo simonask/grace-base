@@ -22,6 +22,8 @@ template <typename T> struct ObjectType;
 
 template <typename T> const Type* build_type_info(); // Only used for non-reflected types.
 
+class Renderer;
+
 struct Object {
 	REFLECT;
 	
@@ -29,6 +31,7 @@ struct Object {
 	virtual ~Object() {}
 	
 	virtual void initialize() {} // Called after all other objects have been instantiated and deserialized.
+	virtual void debug_render(Renderer&) {}
 	
 	Object* find_parent();
 	const Object* find_parent() const;
