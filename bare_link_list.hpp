@@ -63,8 +63,7 @@ namespace falling {
     struct BareLinkList {
     public:
         BareLinkList() {
-			sentinel.next = (T*)&sentinel;
-			sentinel.previous = (T*)&sentinel;
+			force_clear();
 		}
 		BareLinkList(BareLinkList<T>&& other) {
 			T* head = other.sentinel.next;
@@ -127,6 +126,11 @@ namespace falling {
 		
 		void push_back(T* element) { link_tail(element); }
 		void push_front(T* element) { link_head(element); }
+		
+		void force_clear() {
+			sentinel.next = (T*)&sentinel;
+			sentinel.previous = (T*)&sentinel;
+		}
     private:
 		ListLinkBase<T> sentinel; // previous = tail, next = head
     };
