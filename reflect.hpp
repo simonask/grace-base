@@ -38,7 +38,10 @@ struct ObjectTypeBuilder {
 	Self& description(String d) { type_->description_ = std::move(d); return *this; }
 	Self& super(const ObjectTypeBase* t) { type_->super_ = t; return *this; }
 	template <typename SuperClass>
-	Self& super() { return super(get_type<SuperClass>()); }
+	Self& super() {
+		static_assert(std::is_base_of<SuperClass, T>::value, "Class does not derive from SuperClass.");
+		return super(get_type<SuperClass>());
+	}
 	
 	void check_attribute_name_(StringRef name) {
 		const char* reserved_names[] = {"aspects", "__editor_data"};
