@@ -23,7 +23,7 @@ typedef float float32;
 typedef double float64;
 typedef uint8 byte;
 
-static struct NothingType {} Nothing;
+static const struct NothingType { NothingType() {} } Nothing;
 using NullPtr = std::nullptr_t;
 
 using std::move;
