@@ -12,6 +12,7 @@
 
 namespace falling {
 	BenchmarkResults benchmark(StringRef description, uint32 iterations, Function<void()> function) {
+		if (iterations == 0) iterations = 1;
 		BenchmarkResults results;
 		results.description = description;
 		results.iterations = 0;
