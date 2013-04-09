@@ -114,9 +114,9 @@ namespace falling {
 			int n = 1;
 			String base_name;
 			if (new_id.size() >= 2) {
-				Maybe<int> parsed = parse<int>(substr(new_id, new_id.size()-2, 2));
+				Maybe<int> parsed = parse<int>(substr(new_id, -2));
 				maybe_if(parsed, [&](int parsed_number) {
-					base_name = substr(new_id, 0, new_id.size()-2);
+					base_name = substr(new_id, 0, -2);
 				}).otherwise([&]() {
 					base_name = std::move(new_id);
 				});
