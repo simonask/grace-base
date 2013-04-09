@@ -23,13 +23,33 @@ namespace falling {
 		return String::take_ownership(alloc, buffer, a.size() + b.size());
 	}
 	
-	StringRef substr(StringRef str, size_t pos, size_t len) {
-		size_t begin = pos;
-		if (begin > str.size()) begin = str.size();
-		if (len > str.size() - begin) {
-			len = str.size() - begin;
+	StringRef substr(StringRef str, ssize_t pos, ssize_t len) {
+		size_t begin;
+		if (pos >= 0) {
+			begin = pos;
+		} else {
+			// pos < 0
+			if (-pos > str.size()) {
+				begin = 0;
+			} else {
+				begin = str.size() + pos;
+			}
 		}
-		size_t end = begin + len;
+		if (begin > str.size()) begin = str.size();
+		size_t end;
+		if (len >= 0) {
+			if (len > str.size() - begin) {
+				len = str.size() - begin;
+			}
+			end = begin + len;
+		} else {
+			// len < 0
+			if (-len > str.size() - begin) {
+				end = begin;
+			} else {
+				end = str.size() + len;
+			}
+		}
 		return StringRef(str.data() + begin, str.data() + end);
 	}
 	

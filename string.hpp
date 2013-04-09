@@ -57,7 +57,7 @@ namespace falling {
 	
 	class String {
 	public:
-		static const size_t NPos = SIZE_MAX;
+		static const ssize_t NPos = SSIZE_MAX;
 	
 		explicit String(IAllocator& alloc = default_allocator()) : allocator_(alloc) {}
 		String(const char* utf8, IAllocator& alloc = default_allocator());
@@ -120,7 +120,16 @@ namespace falling {
 	};
 	
 	ssize_t compare(StringRef a, StringRef b);
-	StringRef substr(StringRef, size_t pos, size_t len = String::NPos);
+	
+	/*
+		Substring.
+		
+		pos: the offset from the beginning of the string. If negative, the offset will count back from the end of
+		     the string.
+		len: length of the requested string. If longer than the input, the result will be cut off. If negative,
+			 the result will go from pos to length-N, i.e. providing -n will skip the last n characters of the result.
+	*/
+	StringRef substr(StringRef, ssize_t pos, ssize_t len = String::NPos);
 	size_t find(StringRef, char letter);
 	size_t find(StringRef, const StringRef& substring);
 	size_t rfind(StringRef, char letter);
