@@ -23,6 +23,10 @@ typedef float float32;
 typedef double float64;
 typedef uint8 byte;
 
+#if !defined(SSIZE_MAX)
+#define SSIZE_MAX INTPTR_MAX
+#endif
+
 static const struct NothingType { NothingType() {} } Nothing;
 using NullPtr = std::nullptr_t;
 
