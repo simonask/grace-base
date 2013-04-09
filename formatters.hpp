@@ -77,10 +77,9 @@ namespace falling {
 			StringStream ss;
 			ss << value;
 			auto s = ss.str();
-			size_t ellipsis_length = ellipsis.size();
 			if (s.size() > width) {
 				if (ellipsis.size() && width > ellipsis.size()) {
-					stream << s.substr(0, width - ellipsis.size()) << ellipsis;
+					stream << s.substr(0, -ellipsis.size()) << ellipsis;
 				} else {
 					stream << s.substr(0, width);
 				}
