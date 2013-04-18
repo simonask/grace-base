@@ -15,12 +15,13 @@ namespace falling {
 	enum Timeline : byte {
 		System,
 		Game,
+		Process,
 	};
 	
 	template <Timeline T>
 	struct TimeDelta {
 	public:
-		TimeDelta() : microseconds_(0) {}
+		TimeDelta() : nanoseconds_(0) {}
 		TimeDelta(const TimeDelta<T>&) = default;
 		TimeDelta<T>& operator=(const TimeDelta<T>&) = default;
 		
@@ -33,19 +34,20 @@ namespace falling {
 		TimeDelta<T> operator*(float64 n) const;
 		TimeDelta<T>& operator*=(float64 n);
 
-		bool operator==(TimeDelta<T> other) const { return microseconds_ == other.microseconds_; }
-		bool operator!=(TimeDelta<T> other) const { return microseconds_ != other.microseconds_; }
-		bool operator<(TimeDelta<T> other) const { return microseconds_ < other.microseconds_; }
-		bool operator<=(TimeDelta<T> other) const { return microseconds_ <= other.microseconds_; }
-		bool operator>(TimeDelta<T> other) const { return microseconds_ > other.microseconds_; }
-		bool operator>=(TimeDelta<T> other) const { return microseconds_ >= other.microseconds_; }
+		bool operator==(TimeDelta<T> other) const { return nanoseconds_ == other.nanoseconds_; }
+		bool operator!=(TimeDelta<T> other) const { return nanoseconds_ != other.nanoseconds_; }
+		bool operator<(TimeDelta<T> other) const { return nanoseconds_ < other.nanoseconds_; }
+		bool operator<=(TimeDelta<T> other) const { return nanoseconds_ <= other.nanoseconds_; }
+		bool operator>(TimeDelta<T> other) const { return nanoseconds_ > other.nanoseconds_; }
+		bool operator>=(TimeDelta<T> other) const { return nanoseconds_ >= other.nanoseconds_; }
 
-		int64 microseconds() const { return microseconds_; }
+		int64 nanoseconds() const { return nanoseconds_; }
+		int64 microseconds() const { return nanoseconds_ / 1000; }
 		
 		static TimeDelta<T> forever() { return TimeDelta<T>(INT64_MAX); }
 	private:
-		TimeDelta(int64 microseconds) : microseconds_(microseconds) {}
-		int64 microseconds_;
+		TimeDelta(int64 nanoseconds) : nanoseconds_(nanoseconds) {}
+		int64 nanoseconds_;
 		template <Timeline> friend struct Time;
 	};
 	
@@ -57,7 +59,8 @@ namespace falling {
 		Time<T>& operator=(const Time<T>& other) = default;
 		Time<T>& operator=(Time<T>&& other) = default;
 		
-		uint64 microseconds_since_epoch() const { return microseconds_since_epoch_; }
+		uint64 nanoseconds_since_epoch() const { return nanoseconds_since_epoch_; }
+		uint64 microseconds_since_epoch() const { return nanoseconds_since_epoch() / 1000; }
 		uint64 milliseconds_since_epoch() const { return microseconds_since_epoch() / 1000; }
 		uint64 seconds_since_epoch() const { return milliseconds_since_epoch() / 1000; }
 		uint64 minutes_since_epoch() const { return seconds_since_epoch() / 60; }
@@ -69,12 +72,12 @@ namespace falling {
 		Time<T> operator-(TimeDelta<T>) const;
 		TimeDelta<T> operator-(Time<T>) const;
 		Time<T>& operator-=(TimeDelta<T>);
-		bool operator==(Time<T> other) const { return microseconds_since_epoch_ == other.microseconds_since_epoch_; }
-		bool operator!=(Time<T> other) const { return microseconds_since_epoch_ != other.microseconds_since_epoch_; }
-		bool operator<(Time<T> other) const { return microseconds_since_epoch_ < other.microseconds_since_epoch_; }
-		bool operator<=(Time<T> other) const { return microseconds_since_epoch_ <= other.microseconds_since_epoch_; }
-		bool operator>(Time<T> other) const { return microseconds_since_epoch_ > other.microseconds_since_epoch_; }
-		bool operator>=(Time<T> other) const { return microseconds_since_epoch_ >= other.microseconds_since_epoch_; }
+		bool operator==(Time<T> other) const { return nanoseconds_since_epoch_ == other.nanoseconds_since_epoch_; }
+		bool operator!=(Time<T> other) const { return nanoseconds_since_epoch_ != other.nanoseconds_since_epoch_; }
+		bool operator<(Time<T> other) const { return nanoseconds_since_epoch_ < other.nanoseconds_since_epoch_; }
+		bool operator<=(Time<T> other) const { return nanoseconds_since_epoch_ <= other.nanoseconds_since_epoch_; }
+		bool operator>(Time<T> other) const { return nanoseconds_since_epoch_ > other.nanoseconds_since_epoch_; }
+		bool operator>=(Time<T> other) const { return nanoseconds_since_epoch_ >= other.nanoseconds_since_epoch_; }
 		
 		void extract_components(int64& hours, int64& minutes, int64& seconds, int64& ms, int64& us) const;
 		void extract_components(int64& minutes, int64& seconds, int64& ms, int64& us) const;
@@ -85,93 +88,101 @@ namespace falling {
 		static TimeDelta<T> seconds(int64 s) { return milliseconds(s * 1000); }
 		static TimeDelta<T> seconds(float32 f) { return microseconds((int64)((float64)f * 1000000.0)); }
 		static TimeDelta<T> milliseconds(int64 ms) { return microseconds(ms * 1000); }
-		static TimeDelta<T> microseconds(int64 us) { return TimeDelta<T>(us); }
+		static TimeDelta<T> microseconds(int64 us) { return nanoseconds(us * 1000); }
+		static TimeDelta<T> nanoseconds(int64 ns) { return TimeDelta<T>(ns); }
 		static Time<T> forever() { return Time(UINT64_MAX); }
 	
-		explicit Time(uint64 us_since_epoch = 0) : microseconds_since_epoch_(us_since_epoch) {}
+		explicit Time(uint64 ns_since_epoch = 0) : nanoseconds_since_epoch_(ns_since_epoch) {}
 
 		private:
-		uint64 microseconds_since_epoch_;
+		uint64 nanoseconds_since_epoch_;
 	};
 
 	extern template struct Time<Timeline::System>;
 	extern template struct Time<Timeline::Game>;
+	extern template struct Time<Timeline::Process>;
+	extern template struct TimeDelta<Timeline::System>;
+	extern template struct TimeDelta<Timeline::Game>;
+	extern template struct TimeDelta<Timeline::Process>;
 
 	using SystemTime = Time<Timeline::System>;
 	using SystemTimeDelta = TimeDelta<Timeline::System>;
 	using GameTime = Time<Timeline::Game>;
 	using GameTimeDelta = TimeDelta<Timeline::Game>;
+	using ProcessTime = Time<Timeline::Process>;
+	using ProcessTimeDelta = TimeDelta<Timeline::Process>;
 
 	SystemTime system_now();
+	ProcessTime process_now();
 	
 	template <Timeline T>
 	inline TimeDelta<T> TimeDelta<T>::operator+(TimeDelta<T> delta) const {
-		return microseconds_ + delta.microseconds_;
+		return nanoseconds_ + delta.nanoseconds_;
 	}
 
 	template <Timeline T>
 	inline TimeDelta<T>& TimeDelta<T>::operator+=(TimeDelta<T> delta) {
-		microseconds_ += delta.microseconds_;
+		nanoseconds_ += delta.nanoseconds_;
 		return *this;
 	}
 
 	template <Timeline T>
 	inline TimeDelta<T> TimeDelta<T>::operator-(TimeDelta<T> delta) const {
-		return microseconds_ - delta.microseconds_;
+		return nanoseconds_ - delta.nanoseconds_;
 	}
 
 	template <Timeline T>
 	inline TimeDelta<T>& TimeDelta<T>::operator-=(TimeDelta<T> delta) {
-		microseconds_ -= delta.microseconds_;
+		nanoseconds_ -= delta.nanoseconds_;
 		return *this;
 	}
 
 	template <Timeline T>
 	inline TimeDelta<T> TimeDelta<T>::operator*(int64 n) const {
-		return microseconds_ * n;
+		return nanoseconds_ * n;
 	}
 
 	template <Timeline T>
 	inline TimeDelta<T>& TimeDelta<T>::operator*=(int64 n) {
-		microseconds_ *= n;
+		nanoseconds_ *= n;
 		return *this;
 	}
 
 	template <Timeline T>
 	inline TimeDelta<T> TimeDelta<T>::operator*(float64 n) const {
-		return (uint64)((float64)microseconds_ * n);
+		return (uint64)((float64)nanoseconds_ * n);
 	}
 
 	template <Timeline T>
 	inline TimeDelta<T>& TimeDelta<T>::operator*=(float64 n) {
-		microseconds_ = (uint64)((float64)microseconds_ * n);
+		nanoseconds_ = (uint64)((float64)nanoseconds_ * n);
 		return *this;
 	}
 
 	template <Timeline T>
 	inline Time<T> Time<T>::operator+(TimeDelta<T> delta) const {
-		return Time<T>(microseconds_since_epoch_ + delta.microseconds_);
+		return Time<T>(nanoseconds_since_epoch() + delta.nanoseconds_);
 	}
 
 	template <Timeline T>
 	inline Time<T>& Time<T>::operator+=(TimeDelta<T> delta) {
-		microseconds_since_epoch_ += delta.microseconds_;
+		nanoseconds_since_epoch_ += delta.nanoseconds_;
 		return *this;
 	}
 
 	template <Timeline T>
 	inline Time<T> Time<T>::operator-(TimeDelta<T> delta) const {
-		return Time<T>(microseconds_since_epoch_ - delta.microseconds_);
+		return Time<T>(nanoseconds_since_epoch_ - delta.nanoseconds_);
 	}
 
 	template <Timeline T>
 	inline TimeDelta<T> Time<T>::operator-(Time<T> other) const {
-		return (int64)microseconds_since_epoch_ - (int64)other.microseconds_since_epoch_;
+		return (int64)nanoseconds_since_epoch_ - (int64)other.nanoseconds_since_epoch_;
 	}
 
 	template <Timeline T>
 	inline Time<T>& Time<T>::operator-=(TimeDelta<T> delta) {
-		microseconds_since_epoch_ -= delta.microseconds_;
+		nanoseconds_since_epoch_ -= delta.nanoseconds_;
 		return *this;
 	}
 
@@ -202,8 +213,8 @@ namespace falling {
 	
 	template <Timeline T>
 	void Time<T>::extract_components(int64 &seconds, int64 &ms, int64 &us) const {
-		ms = microseconds_since_epoch_ / 1000;
-		us = microseconds_since_epoch_ % 1000;
+		ms = microseconds_since_epoch() / 1000;
+		us = microseconds_since_epoch() % 1000;
 		seconds = ms / 1000;
 		ms %= 1000;
 	}
