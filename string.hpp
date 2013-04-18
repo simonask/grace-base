@@ -98,7 +98,7 @@ namespace falling {
 		char front() const { return (*this)[0]; }
 		char back() const { return (*this)[size()-1]; }
 		
-		StringRef substr(size_t pos, size_t len = NPos) const;
+		StringRef substr(ssize_t pos, ssize_t len = NPos) const;
 		
 		using const_iterator = LinearMemoryIterator<char, true>;
 		using iterator = const_iterator;
@@ -320,18 +320,8 @@ namespace falling {
 		return size_;
 	}
 	
-	inline StringRef String::substr(size_t b, size_t len) const {
-		if (b > size_) {
-			throw IndexOutOfBoundsException();
-		}
-		if (len == NPos) {
-			len = size_ - b;
-		}
-		size_t end_pos = b + len;
-		if (end_pos > size_) {
-			throw IndexOutOfBoundsException();
-		}
-		return StringRef(data_ + b, data_ + end_pos);
+	inline StringRef String::substr(ssize_t b, ssize_t len) const {
+		return falling::substr(*this, b, len);
 	}
 	
 	inline void String::assign(const char* utf8) {
