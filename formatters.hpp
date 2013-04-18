@@ -16,6 +16,7 @@
 #include "base/array_list.hpp"
 #include "base/color.hpp"
 #include "base/function.hpp"
+#include "base/time.hpp"
 
 namespace falling {
 	template <typename T>
@@ -168,6 +169,36 @@ namespace falling {
 	
 	inline DataSizeFormatter format_data_size(size_t sz, uint32 digits = 2) {
 		return DataSizeFormatter(sz, digits);
+	}
+	
+	template <Timeline T>
+	struct TimeDeltaFormatter : Formatter {
+		TimeDelta<T> delta;
+		TimeDeltaFormatter(TimeDelta<T> delta) : delta(delta) {}
+		void write(FormattedStream& os) const override {
+			uint64 ns = delta.nanoseconds();
+			if (ns > 1000000000) {
+				uint64 seconds = ns / 1000000000;
+				uint64 rem = (ns % 1000000000) / 1000;
+				uint64 rem_ms = rem / 1000000;
+				os << seconds << "." << pad_or_truncate(rem_ms, 3, '0', true) << " s";
+			} else if (ns > 1000000) {
+				uint64 milliseconds = ns / 1000000;
+				uint64 rem = (ns % 1000000) / 1000;
+				os << milliseconds << '.' << pad_or_truncate(rem, 3, '0', true) << " ms";
+			} else if (ns > 1000) {
+				uint64 microseconds = ns / 1000;
+				uint64 rem = ns % 1000;
+				os << microseconds << '.' << pad_or_truncate(rem, 3, '0', true) << " µs";
+			} else {
+				os << ns << " ns";
+			}
+		}
+	};
+	
+	template <Timeline T>
+	TimeDeltaFormatter<T> format_time_delta(TimeDelta<T> delta) {
+		return TimeDeltaFormatter<T>(delta);
 	}
 	
 	template <typename T>
