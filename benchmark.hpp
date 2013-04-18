@@ -22,12 +22,12 @@ namespace falling {
 		uint32 iterations;
 		uint32 best_iteration;
 		uint32 worst_iteration;
-		SystemTimeDelta best_time;
-		SystemTimeDelta worst_time;
-		SystemTimeDelta avg_time;
-		SystemTimeDelta med_time; // best + (worst-best) / 2
+		ProcessTimeDelta best_time;
+		ProcessTimeDelta worst_time;
+		ProcessTimeDelta avg_time;
+		ProcessTimeDelta med_time; // best + (worst-best) / 2
 		
-		void add_time(SystemTimeDelta, uint32 i);
+		void add_time(ProcessTimeDelta, uint32 i);
 	};
 	
 	struct FormattedStream;
@@ -48,7 +48,7 @@ namespace falling {
 	
 	struct BenchmarkScopeResults : ListLinkBase<BenchmarkScopeResults> {
 		StringRef name;
-		SystemTimeDelta time;
+		ProcessTimeDelta time;
 		BenchmarkScopeResults* parent;
 		BareLinkList<BenchmarkScopeResults> children;
 		
@@ -66,7 +66,7 @@ namespace falling {
 		const Dictionary<BenchmarkResults>& accumulated_results() { return accum; }
 		void clear(); // Clears accumulated results!
 		void enter_scope(StringRef name);
-		void leave_scope(SystemTimeDelta elapsed);
+		void leave_scope(ProcessTimeDelta elapsed);
 	private:
 		BenchmarkManager() : frame_alloc(sizeof(BenchmarkScopeResults) * 256) {}
 		BenchmarkScopeResults* current = nullptr;
@@ -81,15 +81,15 @@ namespace falling {
 		StringRef name;
 		bool is_toplevel;
 		BenchmarkScope(StringRef name, bool is_toplevel = false) : name(name), is_toplevel(is_toplevel) {
-			start_time_ = system_now();
+			start_time_ = process_now();
 			BenchmarkManager::get().enter_scope(name);
 		}
 		~BenchmarkScope() {
-			SystemTimeDelta elapsed = system_now() - start_time_;
+			ProcessTimeDelta elapsed = process_now() - start_time_;
 			BenchmarkManager::get().leave_scope(elapsed);
 		}
 	private:
-		SystemTime start_time_;
+		ProcessTime start_time_;
 	};
 	
 #define BENCHMARK_SCOPE(NAME) BenchmarkScope _benchmark_scope_## NAME ## _ ## __LINE__(#NAME, true)

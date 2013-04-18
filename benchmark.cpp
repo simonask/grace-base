@@ -16,27 +16,27 @@ namespace falling {
 		BenchmarkResults results;
 		results.description = description;
 		results.iterations = 0;
-		results.worst_time = SystemTime::microseconds(0);
-		results.best_time = SystemTimeDelta::forever();
-		SystemTimeDelta total_time;
+		results.worst_time = ProcessTime::microseconds(0);
+		results.best_time = ProcessTimeDelta::forever();
+		ProcessTimeDelta total_time;
 		for (uint32 i = 0; i < iterations; ++i) {
-			SystemTime before;
-			SystemTime after;
+			ProcessTime before;
+			ProcessTime after;
 			try {
-				before = system_now();
+				before = process_now();
 				function();
-				after = system_now();
+				after = process_now();
 			}
 			catch (...) {
 				Error() << "Unhandled exception in benchmark, stopping!";
 				break;
 			}
-			SystemTimeDelta elapsed = after - before;
+			ProcessTimeDelta elapsed = after - before;
 			total_time += elapsed;
 			results.add_time(elapsed, i);
 		}
-		results.avg_time = SystemTime::microseconds(total_time.microseconds() / results.iterations);
-		results.med_time = results.best_time + SystemTime::microseconds((results.worst_time - results.best_time).microseconds() / 2);
+		results.avg_time = ProcessTime::microseconds(total_time.microseconds() / results.iterations);
+		results.med_time = results.best_time + ProcessTime::microseconds((results.worst_time - results.best_time).microseconds() / 2);
 		return move(results);
 	}
 	
@@ -51,10 +51,6 @@ namespace falling {
 			results.results.push_back(move(r));
 		}
 		
-		std::sort(results.results.begin(), results.results.end(), [&](const BenchmarkResults& a, const BenchmarkResults& b) {
-			return a.best_time < b.best_time;
-		});
-		
 		return move(results);
 	}
 	
@@ -67,26 +63,26 @@ namespace falling {
 			BenchmarkResults& r = results.results[i];
 			r.description = i >= descriptions.size() ? "<unknown>" : descriptions[i];
 			r.iterations = 0;
-			r.worst_time = SystemTime::microseconds(0);
-			r.best_time = SystemTimeDelta::forever();
+			r.worst_time = ProcessTime::microseconds(0);
+			r.best_time = ProcessTimeDelta::forever();
 		}
 		
 		for (uint32 i = 0; i < iterations; ++i) {
 			for (size_t j = 0; j < functions.size(); ++j) {
 				auto& f = functions[j];
 				BenchmarkResults& r = results.results[j];
-				SystemTime before;
-				SystemTime after;
+				ProcessTime before;
+				ProcessTime after;
 				try {
-					before = system_now();
+					before = process_now();
 					f();
-					after = system_now();
+					after = process_now();
 				}
 				catch (...) {
 					Error() << "Unhandled exception in benchmark, stopping!";
 					goto stop;
 				}
-				SystemTimeDelta elapsed = after - before;
+				ProcessTimeDelta elapsed = after - before;
 				// using avg_time as total time for now
 				r.avg_time += elapsed;
 				r.add_time(elapsed, i);
@@ -95,18 +91,14 @@ namespace falling {
 		
 		stop:
 		for (auto& r: results.results) {
-			r.avg_time = SystemTime::microseconds(r.avg_time.microseconds() / r.iterations);
-			r.med_time = r.best_time + SystemTime::microseconds((r.worst_time - r.best_time).microseconds() / 2);
+			r.avg_time = ProcessTime::microseconds(r.avg_time.microseconds() / r.iterations);
+			r.med_time = r.best_time + ProcessTime::microseconds((r.worst_time - r.best_time).microseconds() / 2);
 		}
-		
-		std::sort(results.results.begin(), results.results.end(), [&](const BenchmarkResults& a, const BenchmarkResults& b) {
-			return a.best_time < b.best_time;
-		});
 		
 		return move(results);
 	}
 	
-	void BenchmarkResults::add_time(SystemTimeDelta elapsed, uint32 iteration_no) {
+	void BenchmarkResults::add_time(ProcessTimeDelta elapsed, uint32 iteration_no) {
 		++iterations;
 		if (elapsed < best_time) {
 			best_time = elapsed;
@@ -118,34 +110,14 @@ namespace falling {
 		}
 	}
 	
-	FormattedStream& format_time_delta(FormattedStream& os, SystemTimeDelta delta) {
-		uint64 us = delta.microseconds();
-		if (us > 1000000) {
-			uint64 seconds = us / 1000000;
-			uint64 rem = us % 1000000;
-			uint64 rem_ms = rem / 1000;
-			os << seconds << "." << pad_or_truncate(rem_ms, 3, '0', true) << " s";
-		} else if (us > 1000) {
-			uint64 milliseconds = us / 1000;
-			uint64 rem = us % 1000;
-			os << milliseconds << '.' << pad_or_truncate(rem, 3, '0', true) << " ms";
-		} else {
-			os << us << " μs";
-		}
-		return os;
-	}
-	
 	void print_benchmark_results(FormattedStream& os, const BenchmarkResults& bm, bool include_heading = true) {
 		if (include_heading) {
 			os << "=== BENCHMARK: " << bm.description << '\n';
 		}
-		os << "  " << pad_or_truncate("Iterations: ", 32, ' ', true) << bm.iterations << '\n';
-		os << "  " << pad_or_truncate("Best time: ", 32, ' ', true);
-		format_time_delta(os, bm.best_time) << '\n';
-		os << "  " << pad_or_truncate("Worst time: ", 32, ' ', true);
-		format_time_delta(os, bm.worst_time) << '\n';
-		os << "  " << pad_or_truncate("Avg. time: ", 32, ' ', true);
-		format_time_delta(os, bm.avg_time) << '\n';
+		os << "  " << pad_or_truncate("Iterations: ", 13, ' ', true) << bm.iterations << '\n';
+		os << "  " << pad_or_truncate("Best time: ", 13, ' ', true) << format_time_delta(bm.best_time) << '\n';
+		os << "  " << pad_or_truncate("Worst time: ", 13, ' ', true) << format_time_delta(bm.worst_time) << '\n';
+		os << "  " << pad_or_truncate("Avg. time: ", 13, ' ', true) << format_time_delta(bm.avg_time) << '\n';
 	}
 	
 	FormattedStream& operator<<(FormattedStream& os, const BenchmarkResults& bm) {
@@ -210,7 +182,7 @@ namespace falling {
 		current = results;
 	}
 	
-	void BenchmarkManager::leave_scope(SystemTimeDelta elapsed) {
+	void BenchmarkManager::leave_scope(ProcessTimeDelta elapsed) {
 		ASSERT(current);
 		current->time = elapsed;
 		current = current->parent;
