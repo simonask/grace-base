@@ -8,6 +8,7 @@
 #include "memory/static_allocator.hpp"
 #include "base/string.hpp"
 #include "io/string_stream.hpp"
+#include "base/type_info.hpp"
 #include <algorithm>
 #include <limits.h>
 
@@ -38,6 +39,8 @@ protected:
 
 template <typename ObjectType, typename TypeType = Type>
 struct TypeFor : TypeType {
+	static constexpr const TypeInfo& Info = GetTypeInfo<ObjectType>::Value;
+
 	// Forwarding constructor.
 	template <typename... Args>
 	TypeFor(Args&&... args) : TypeType(std::forward<Args>(args)...) {}
@@ -56,63 +59,37 @@ struct TypeFor : TypeType {
 	}
 	
 	void construct(byte* place, IUniverse&) const {
-		this->construct_unless_abstract(place);
+		if (Info.is_constructible()) {
+			Info.construct(place);
+		} else {
+			ASSERT(false); // Cannot construct!
+		}
 	}
 	void destruct(byte* place, IUniverse&) const {
-		ObjectType* p = reinterpret_cast<ObjectType*>(place);
-		p->~ObjectType();
+		Info.destruct(place);
 	}
 	void copy_construct(byte* to, const byte* from) const {
-		const ObjectType* original = reinterpret_cast<const ObjectType*>(from);
-		this->copy_construct_unless_abstract(to, *original);
+		if (Info.is_copy_constructible()) {
+			Info.copy_construct(to, from);
+		} else {
+			ASSERT(false);  // Cannot copy-construct!
+		}
 	}
 	void move_construct(byte* to, byte* from) const {
-		ObjectType* original = reinterpret_cast<ObjectType*>(from);
-		this->move_construct_unless_abstract(to, std::move(*original));
+		if (Info.is_move_constructible()) {
+			Info.move_construct(to, from);
+		} else {
+			ASSERT(false); // Cannot move-construct!
+		}
 	}
-	size_t size() const { return sizeof(ObjectType); }
-	size_t alignment() const { return alignof(ObjectType); }
-	bool is_copy_constructible() const { return IsCopyConstructibleNonRef<ObjectType>::Value; }
-	bool is_move_constructible() const { return IsMoveConstructibleNonRef<ObjectType>::Value; }
-	
-private:
-	template <typename T = ObjectType, typename... Args>
-	typename std::enable_if<std::is_abstract<T>::value, void>::type
-	construct_unless_abstract(byte* place, Args&&...) const {
-		// Abstract, do nothing.
-		ASSERT(false); // Should never be called!
-	}
-	
-	template <typename T = ObjectType, typename... Args>
-	typename std::enable_if<!std::is_abstract<T>::value, void>::type
-	construct_unless_abstract(byte* place, Args&&... args) const {
-		::new(place) ObjectType(std::forward<Args>(args)...);
-	}
-	
-	template <typename T = ObjectType>
-	typename std::enable_if<std::is_abstract<T>::value || !IsCopyConstructibleNonRef<T>::Value, void>::type
-	copy_construct_unless_abstract(byte* place, const T& original) const {
-		ASSERT(false); // Type is abstract or not copy-constructible.
-	}
-	
-	template <typename T = ObjectType>
-	typename std::enable_if<!std::is_abstract<T>::value && IsCopyConstructibleNonRef<T>::Value, void>::type
-	copy_construct_unless_abstract(byte* place, const T& original) const {
-		::new(place) ObjectType(original);
-	}
-	
-	template <typename T = ObjectType>
-	typename std::enable_if<std::is_abstract<T>::value || !IsMoveConstructibleNonRef<T>::Value, void>::type
-	move_construct_unless_abstract(byte* place, T&& original) const {
-		ASSERT(false); // Type is abstract or not move-constructible.
-	}
-	
-	template <typename T = ObjectType>
-	typename std::enable_if<!std::is_abstract<T>::value && IsMoveConstructibleNonRef<T>::Value, void>::type
-	move_construct_unless_abstract(byte* place, T&& original) const {
-		::new(place) ObjectType(std::move(original));
-	}
+	size_t size() const { return Info.size; }
+	size_t alignment() const { return Info.alignment; }
+	bool is_copy_constructible() const { return Info.is_copy_constructible(); }
+	bool is_move_constructible() const { return Info.is_move_constructible(); }
 };
+
+template <typename ObjectType, typename TypeType>
+constexpr const TypeInfo& TypeFor<ObjectType,TypeType>::Info;
 
 struct VoidType : Type {
 	static const VoidType* get();
