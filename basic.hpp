@@ -134,7 +134,7 @@ struct IsMoveAssignableNonRef {
 	};
 
 template <typename T>
-void destruct(void* ptr) {
+void destruct(byte* ptr) {
 	reinterpret_cast<T*>(ptr)->~T();
 }
 	
