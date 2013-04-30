@@ -10,6 +10,7 @@
 #define falling_type_info_hpp
 
 #include "base/basic.hpp"
+#include <type_traits>
 
 namespace falling {
 	struct TypeInfo {
@@ -20,6 +21,7 @@ namespace falling {
 		using MoveAssignFuncPtr      = void(*)(byte*, byte*);
 		using MoveConstructFuncPtr   = void(*)(byte*, byte*);
 		
+		const std::type_info& internal_info;
 		const size_t size;
 		const size_t alignment;
 		
@@ -39,14 +41,14 @@ namespace falling {
 		bool is_move_or_copy_assignable() const    { return is_move_assignable() || is_copy_assignable(); }
 		bool is_abstract() const { return !is_constructible() && !is_move_or_copy_constructible(); }
 		
-		void move_or_copy_construct(byte* self, byte* other) {
+		void move_or_copy_construct(byte* self, byte* other) const {
 			if (move_construct) {
 				move_construct(self, other);
 			} else if (copy_construct) {
 				copy_construct(self, other);
 			}
 		}
-		void move_or_copy_assign(byte* self, byte* other) {
+		void move_or_copy_assign(byte* self, byte* other) const {
 			if (move_assign) {
 				move_assign(self, other);
 			} else if (copy_assign) {
@@ -103,6 +105,7 @@ namespace falling {
 	template <typename T>
 	struct DLL_PUBLIC GetTypeInfo {
 		static constexpr const TypeInfo Value = {
+			.internal_info  = typeid(T),
 			.size           = sizeof(T),
 			.alignment      = alignof(T),
 			.construct      = GET_FUNCTION_IF_SUPPORTED(T, construct),
