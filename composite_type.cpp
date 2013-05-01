@@ -4,7 +4,7 @@
 
 namespace falling {
 
-CompositeType::CompositeType(IAllocator& alloc, StringRef name, const ObjectTypeBase* base_type) : base_type_(base_type), name_(std::move(name), alloc), aspects_(alloc), exposed_attributes_(alloc), exposed_slots_(alloc), frozen_(false) {
+CompositeType::CompositeType(IAllocator& alloc, StringRef name, const ObjectTypeBase* base_type) : StructuredType(GetTypeInfo<Object>::Value), base_type_(base_type), name_(std::move(name), alloc), aspects_(alloc), exposed_attributes_(alloc), exposed_slots_(alloc), frozen_(false) {
 	size_ = this->base_type()->size();
 }
 	

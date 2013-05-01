@@ -13,7 +13,7 @@ namespace falling {
 	
 struct ExposedAttribute : public IAttribute {
 	// IAttribute interface
-	const Type* type() const final { return attribute_->type(); }
+	const IType* type() const final { return attribute_->type(); }
 	StringRef name() const final { return attribute_->name(); }
 	StringRef description() const final { return attribute_->description(); }
 	Any get_any(const Object* object) const final;

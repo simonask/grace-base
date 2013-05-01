@@ -32,7 +32,7 @@ namespace falling {
 			return nullptr;
 		}
 		
-		ObjectTypeBase(IAllocator& alloc, const ObjectTypeBase* super, StringRef name, StringRef description) : super_(super), name_(name, alloc), description_(description, alloc), is_abstract_(false) {}
+		ObjectTypeBase(const TypeInfo& ti, IAllocator& alloc, const ObjectTypeBase* super, StringRef name, StringRef description) : StructuredType(ti), super_(super), name_(name, alloc), description_(description, alloc), is_abstract_(false) {}
 		
 		const ObjectTypeBase* super_;
 		String name_;

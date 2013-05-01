@@ -9,6 +9,7 @@
 #include "object/property_animator.hpp"
 #include "object/reflect.hpp"
 #include "base/anim_utils.hpp"
+#include "type/any_type.hpp"
 
 namespace falling {
 	BEGIN_TYPE_INFO(PropertyAnimator)
@@ -137,7 +138,7 @@ namespace falling {
 		
 		// My kingdom for unintrusive dynamic dispatch...
 		UniquePtr<TypedAnimatorImplBase> result;
-		const Type* attr_type = attr->type();
+		const IType* attr_type = attr->type();
 		if (false) {}
 #define HANDLE_ATTRIBUTE_TYPE(T) \
 		else if (attr_type == get_type<T>()) { \
