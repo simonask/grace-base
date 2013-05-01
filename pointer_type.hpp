@@ -13,7 +13,7 @@
 #include <typeinfo>
 
 namespace falling {
-	class PointerType : public Type {
+	class PointerType : public IType {
 	public:
 		PointerType(IAllocator& alloc, const Type* pointee_type, bool is_const);
 		PointerType(IAllocator& alloc, StringRef name, bool is_const);
@@ -34,6 +34,10 @@ namespace falling {
 		void copy_construct(byte* to, const byte* from) const;
 		void move_construct(byte* to, byte* from) const;
 		void destruct(byte* place, IUniverse&) const;
+		bool is_abstract() const final { return false; }
+		bool is_copy_constructible() const final { return true; }
+		bool is_move_constructible() const final { return true; }
+		bool deferred_instantiation() const final { return false; }
 	private:
 		String name_;
 		const Type* pointee_type_;

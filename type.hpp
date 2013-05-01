@@ -18,7 +18,7 @@ namespace falling {
 struct ArchiveNode;
 struct IUniverse;
 
-struct Type {
+struct IType {
 	virtual void deserialize_raw(byte* place, const ArchiveNode&, IUniverse&) const = 0;
 	virtual void serialize_raw(const byte* place, ArchiveNode&, IUniverse&) const = 0;
 	virtual void construct(byte* place, IUniverse&) const = 0;
@@ -29,26 +29,39 @@ struct Type {
 	virtual StringRef name() const = 0;
 	virtual size_t size() const = 0;
 	virtual size_t alignment() const = 0;
-	virtual bool is_abstract() const { return false; }
-	virtual bool is_copy_constructible() const { return true; }
-	virtual bool is_move_constructible() const { return true; }
-	virtual bool deferred_instantiation() const { return false; }
+	virtual bool is_abstract() const = 0;
+	virtual bool is_copy_constructible() const = 0;
+	virtual bool is_move_constructible() const = 0;
+	virtual bool deferred_instantiation() const = 0;
+};
+
+struct Type : public IType {
+public:
+	size_t size() const override { return type_info_.size; }
+	size_t alignment() const override { return type_info_.alignment; }
+	void construct(byte* place, IUniverse&) const override { type_info_.construct(place); }
+	void destruct(byte* place, IUniverse&) const override { type_info_.destruct(place); }
+	void copy_construct(byte* to, const byte* from) const override { type_info_.copy_construct(to, from); }
+	void move_construct(byte* to, byte* from) const override { type_info_.move_construct(to, from); }
+	bool is_abstract() const override { return type_info_.is_abstract(); }
+	bool is_copy_constructible() const override { return type_info_.is_copy_constructible(); }
+	bool is_move_constructible() const override { return type_info_.is_move_constructible(); }
+	bool deferred_instantiation() const override { return false; }
 protected:
-	Type() {}
+	const TypeInfo& type_info_;
+	Type(const TypeInfo& type_info) : type_info_(type_info) {}
 };
 
 template <typename ObjectType, typename TypeType = Type>
 struct TypeFor : TypeType {
 	static constexpr const TypeInfo& Info = GetTypeInfo<ObjectType>::Value;
 
-	// Forwarding constructor.
 	template <typename... Args>
-	TypeFor(Args&&... args) : TypeType(std::forward<Args>(args)...) {}
+	TypeFor(Args&&... args) : TypeType(Info, std::forward<Args>(args)...) {}
 	
 	// Override interface.
 	virtual void deserialize(ObjectType& place, const ArchiveNode&, IUniverse&) const = 0;
 	virtual void serialize(const ObjectType& place, ArchiveNode&, IUniverse&) const = 0;
-
 
 	// Do not override.
 	void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse& universe) const {
@@ -57,35 +70,6 @@ struct TypeFor : TypeType {
 	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse& universe) const {
 		this->serialize(*reinterpret_cast<const ObjectType*>(place), node, universe);
 	}
-	
-	void construct(byte* place, IUniverse&) const {
-		if (Info.is_constructible()) {
-			Info.construct(place);
-		} else {
-			ASSERT(false); // Cannot construct!
-		}
-	}
-	void destruct(byte* place, IUniverse&) const {
-		Info.destruct(place);
-	}
-	void copy_construct(byte* to, const byte* from) const {
-		if (Info.is_copy_constructible()) {
-			Info.copy_construct(to, from);
-		} else {
-			ASSERT(false);  // Cannot copy-construct!
-		}
-	}
-	void move_construct(byte* to, byte* from) const {
-		if (Info.is_move_constructible()) {
-			Info.move_construct(to, from);
-		} else {
-			ASSERT(false); // Cannot move-construct!
-		}
-	}
-	size_t size() const { return Info.size; }
-	size_t alignment() const { return Info.alignment; }
-	bool is_copy_constructible() const { return Info.is_copy_constructible(); }
-	bool is_move_constructible() const { return Info.is_move_constructible(); }
 };
 
 template <typename ObjectType, typename TypeType>
@@ -106,11 +90,11 @@ struct VoidType : Type {
 	size_t alignment() const override { return 0; }
 	bool is_abstract() const override { return true; }
 private:
-	VoidType() {}
+	VoidType() : Type(GetTypeInfo<void>::Value) {}
 };
 
 struct SimpleType : Type {
-	SimpleType(IAllocator& alloc, StringRef name, size_t width, size_t component_width, bool is_float, bool is_signed) : name_(name, alloc), width_(width), component_width_(component_width), is_float_(is_float), is_signed_(is_signed) {}
+	SimpleType(IAllocator& alloc, const TypeInfo& type_info, StringRef name, size_t width, size_t component_width, bool is_float, bool is_signed) : Type(type_info), name_(name, alloc), width_(width), component_width_(component_width), is_float_(is_float), is_signed_(is_signed) {}
 	StringRef name() const override { return name_; }
 	void construct(byte* place, IUniverse&) const { std::fill(place, place + size(), 0); }
 	void destruct(byte*, IUniverse&) const {}
@@ -130,7 +114,7 @@ protected:
 };
 
 struct EnumType : SimpleType {
-	EnumType(IAllocator& alloc, StringRef name, size_t width, bool is_signed = true) : SimpleType(alloc, name, width, width, false, is_signed), max_(1LL-SSIZE_MAX), min_(SSIZE_MAX), entries_(alloc) {}
+	EnumType(const TypeInfo& type_info, IAllocator& alloc, StringRef name, size_t width, bool is_signed = true) : SimpleType(alloc, type_info, name, width, width, false, is_signed), max_(1LL-SSIZE_MAX), min_(SSIZE_MAX), entries_(alloc) {}
 	bool contains(ssize_t value) const;
 	bool contains(StringRef name) const;
 	ssize_t max() const { return max_; }
@@ -158,7 +142,7 @@ private:
 
 
 struct IntegerType : SimpleType {
-	IntegerType(IAllocator& alloc, StringRef name, size_t width, bool is_signed = true) : SimpleType(alloc, name, width, width, false, is_signed) {}
+	IntegerType(IAllocator& alloc, const TypeInfo& type_info, StringRef name, size_t width, bool is_signed = true) : SimpleType(alloc, type_info, name, width, width, false, is_signed) {}
 	void deserialize_raw(byte*, const ArchiveNode&, IUniverse&) const override;
 	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
 	void* cast(const SimpleType* to, void* o) const;
@@ -167,7 +151,7 @@ struct IntegerType : SimpleType {
 };
 
 struct FloatType : SimpleType {
-	FloatType(IAllocator& alloc, String name, size_t width) : SimpleType(alloc, name, width, width, true, true) {}
+	FloatType(IAllocator& alloc, const TypeInfo& type_info, String name, size_t width) : SimpleType(alloc, type_info, name, width, width, true, true) {}
 	void deserialize_raw(byte*, const ArchiveNode& node, IUniverse&) const override;
 	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
 	void* cast(const SimpleType* to, void* o) const;
@@ -190,6 +174,7 @@ struct StringRefType : TypeFor<StringRef> {
 };
 
 struct DerivedType : Type {
+	DerivedType(const TypeInfo& ti) : Type(ti) {}
 };
 
 template <typename T> struct BuildTypeInfo {};

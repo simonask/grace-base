@@ -11,7 +11,7 @@
 namespace falling {
 
 struct ReferenceType : Type {
-	ReferenceType() {}
+	ReferenceType(const TypeInfo& ti) : Type(ti) {}
 	
 	virtual const Type* pointee_type() const = 0;
 	

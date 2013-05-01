@@ -15,7 +15,7 @@
 
 namespace falling {
 	struct VectorType : public SimpleType {
-		VectorType(IAllocator& alloc, StringRef name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(alloc, move(name), width, component_width, is_float, is_signed) {}
+		VectorType(const TypeInfo& ti, IAllocator& alloc, StringRef name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(alloc, ti, move(name), width, component_width, is_float, is_signed) {}
 	};
 	
 	template <typename T, size_t N>

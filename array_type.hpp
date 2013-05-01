@@ -15,7 +15,7 @@ public:
 	virtual const Type* element_type() const = 0;
 	const Type* type_of_element(size_t idx) const { return element_type(); }
 protected:
-	ArrayType() {}
+	ArrayType(const TypeInfo& ti) : DerivedType(ti) {}
 	
 	void deserialize_array(IArrayWriter&, const ArchiveNode&, IUniverse&) const;
 	void serialize_array(IArrayReader&, ArchiveNode&, IUniverse&) const;

@@ -9,7 +9,7 @@
 
 namespace falling {
 	struct IAttribute {
-		virtual const Type* type() const = 0;
+		virtual const IType* type() const = 0;
 		virtual StringRef name() const = 0;
 		virtual StringRef description() const = 0;
 		virtual Any get_any(Object* object) const = 0;
@@ -28,12 +28,12 @@ namespace falling {
 		virtual bool get_polymorphic(const Object* object, T& out_value) const = 0;
 		virtual bool set_polymorphic(Object* object, const T& in_value) const = 0;
 		
-		const Type* type() const final { return get_type<T>(); }
+		const IType* type() const final { return get_type<T>(); }
 		bool deferred_instantiation() const final { return type()->deferred_instantiation(); }
 	};
 	
 	namespace detail {
-		void warn_set_any_wrong_type(StringRef property_name, const Type* expected, const Type* got);
+		void warn_set_any_wrong_type(StringRef property_name, const IType* expected, const IType* got);
 	}
 
 	template <typename ObjectType, typename MemberType, typename GetterType = MemberType>

@@ -21,7 +21,7 @@ namespace falling {
 		virtual const Type* value_type() const = 0;
 		StringRef name() const override { return name_; }
 	protected:
-		MapType(IAllocator& alloc) : name_(alloc) {}
+		MapType(const TypeInfo& ti, IAllocator& alloc) : Type(ti), name_(alloc) {}
 		void build_map_type_name();
 		String name_;
 		
@@ -33,7 +33,7 @@ namespace falling {
 	
 	template <typename K, typename V>
 	struct MapTypeWithKeyValueType : public MapType {
-		MapTypeWithKeyValueType(IAllocator& alloc) : MapType(alloc) { build_map_type_name(); }
+		MapTypeWithKeyValueType(const TypeInfo& ti, IAllocator& alloc) : MapType(ti, alloc) { build_map_type_name(); }
 		const Type* key_type() const final { return get_type<K>(); }
 		const Type* value_type() const final { return get_type<V>(); }
 	};
@@ -50,7 +50,7 @@ namespace falling {
 	
 	template <typename V, typename Cmp>
 	struct MapTypeImpl<StringRef, V, Cmp> : TypeFor<Map<StringRef, V, Cmp>, MapTypeWithKeyValueType<StringRef, V>> {
-		MapTypeImpl(IAllocator& alloc) : TypeFor<Map<StringRef, V, Cmp>, MapTypeWithKeyValueType<StringRef, V>>(alloc) {}
+		MapTypeImpl(const TypeInfo& ti, IAllocator& alloc) : TypeFor<Map<StringRef, V, Cmp>, MapTypeWithKeyValueType<StringRef, V>>(alloc) {}
 		void deserialize(Map<StringRef,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
 		void serialize(const Map<StringRef,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
 	};

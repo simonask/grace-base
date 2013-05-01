@@ -24,10 +24,11 @@ namespace falling {
 		StringRef name() const;
 	};
 	
-	struct CompactColorType : TypeFor<CompactColor, ColorType> {
+	struct CompactColorType : TypeFor<CompactColor> {
 		CompactColorType() {}
 		virtual void deserialize(CompactColor& place, const ArchiveNode&, IUniverse&) const;
 		virtual void serialize(const CompactColor& place, ArchiveNode&, IUniverse&) const;
+		StringRef name() const;
 	};
 	
 	template <>
@@ -37,7 +38,7 @@ namespace falling {
 	
 	template <>
 	struct BuildTypeInfo<CompactColor> {
-		static const ColorType* build();
+		static const CompactColorType* build();
 	};
 }
 

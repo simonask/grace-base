@@ -16,6 +16,7 @@ namespace falling {
 	struct IAttribute;
 	
 	struct StructuredType : DerivedType {
+		StructuredType(const TypeInfo& ti) : DerivedType(ti) {}
 		virtual ArrayRef<const ISlot* const> slots() const = 0;
 		virtual ArrayRef<const IAttribute*> attributes() const = 0;
 		virtual const StructuredType* super() const = 0;

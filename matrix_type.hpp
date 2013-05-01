@@ -15,7 +15,7 @@
 
 namespace falling {
 	struct MatrixType : public SimpleType {
-		MatrixType(IAllocator& alloc, StringRef name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(alloc, std::move(name), width, component_width, is_float, is_signed) {}
+		MatrixType(const TypeInfo& ti, IAllocator& alloc, StringRef name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(alloc, ti, std::move(name), width, component_width, is_float, is_signed) {}
 		virtual size_t num_columns() const = 0;
 		virtual size_t num_rows() const = 0;
 		virtual void* cast(const SimpleType* to, void* o) const { ASSERT(false); return nullptr; /* NIY */ }
