@@ -19,7 +19,7 @@ public:
 	
 	template <typename... Args>
 	T* allocate(Args&&... args) {
-		T* ptr = new(allocator_) T(std::forward<Args>(args)...);
+		T* ptr = new(allocator_, alignof(T)) T(std::forward<Args>(args)...);
 		elements_.push_back(ptr);
 		return ptr;
 	}
