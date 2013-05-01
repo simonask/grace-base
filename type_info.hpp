@@ -117,6 +117,21 @@ namespace falling {
 		};
 	};
 	
+	template <>
+	struct DLL_PUBLIC GetTypeInfo<void> {
+		static constexpr const TypeInfo Value = {
+			.internal_info = typeid(void),
+			.size = 0,
+			.alignment = 0,
+			.construct = nullptr,
+			.destruct = nullptr,
+			.copy_construct = nullptr,
+			.copy_assign = nullptr,
+			.move_construct = nullptr,
+			.move_assign = nullptr,
+		};
+	};
+	
 	template <typename T>
 	constexpr const TypeInfo GetTypeInfo<T>::Value;
 }
