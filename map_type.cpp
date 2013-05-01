@@ -26,7 +26,7 @@ namespace falling {
 		byte* value_data = value_data_storage;
 		
 		vt->construct(value_data, universe);
-		dict.value().when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
+		dict.when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
 			for (auto pair: map) {
 				vt->deserialize_raw(value_data, *pair.second, universe);
 				if (kt == get_type<String>()) {
@@ -77,9 +77,9 @@ namespace falling {
 		
 		kt->construct(key_data, universe);
 		vt->construct(value_data, universe);
-		node.value().when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& array) {
+		node.when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& array) {
 			for (auto child: array) {
-				child->value().when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& pair) {
+				child->when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& pair) {
 					if (pair.size() < 2) return;
 					const ArchiveNode* key_node = pair[0];
 					const ArchiveNode* value_node = pair[1];

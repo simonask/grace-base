@@ -15,7 +15,7 @@ void ArrayType::deserialize_array(IArrayWriter& w, const ArchiveNode& node, IUni
 	byte data_storage[t->size()];
 	byte* element_data = data_storage;
 	t->construct(element_data, universe);
-	node.value().when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& nodes) {
+	node.when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& nodes) {
 		w.reserve(nodes.size());
 		for (auto child: nodes) {
 			t->deserialize_raw(element_data, *child, universe);
