@@ -43,7 +43,7 @@ namespace falling {
 		static const size_t Value = std::is_same<T, Current>::value ? I : IndexOfTypeImpl<T, I+1, Rest...>::Value;
 	};
 	template <typename T, size_t I> struct IndexOfTypeImpl<T, I> {
-		static const size_t Value = SIZE_T_MAX;
+		static const size_t Value = SIZE_MAX;
 	};
 	template <typename T, typename... Types> struct IndexOfType {
 		static const size_t Value = IndexOfTypeImpl<T, 0, Types...>::Value;
@@ -72,7 +72,9 @@ namespace falling {
 			return type_index_ == IndexOfType<T, Types...>::Value;
 		}
 		
-		bool is_same_type_as(const Self& other) const;
+		bool is_same_type_as(const Self& other) const {
+			return type_index_ == other.type_index_;
+		}
 		
 		bool is_nothing() const {
 			return is_a<NothingType>();
@@ -92,9 +94,10 @@ namespace falling {
 			
 			template <typename T, typename F>
 			WhenControlFlow<IsConst>& when(F f) {
+				using ValueType = typename std::conditional<IsConst, const T, T>::type;
 				if (either_.template is_a<T>()) {
 					handled_ = true;
-					f(*reinterpret_cast<T*>(&either_.memory_));
+					f(*reinterpret_cast<ValueType*>(&either_.memory_));
 				}
 				return *this;
 			}
@@ -116,11 +119,19 @@ namespace falling {
 			return WhenControlFlow<true>(*this).template when<T>(move(f));
 		}
 		
+		template <typename Visitor>
+		void visit(Visitor& visitor);
+		template <typename Visitor>
+		void visit(Visitor& visitor) const;
+		
 		void swap(Self& other);
 		
 		const TypeInfo& type_info() const {
 			return *type_infos_[type_index_];
 		}
+		
+		byte* memory() { return reinterpret_cast<byte*>(&memory_); }
+		const byte* memory() const { return reinterpret_cast<const byte*>(&memory_); }
 	private:
 		template <bool> friend struct WhenControlFlow;
 		using Storage = typename AlignedUnion<Types...>::Type;
@@ -210,7 +221,7 @@ namespace falling {
 		if (is_same_type_as(other)) {
 			type_info().copy_assign((byte*)&memory_, (const byte*)&other.memory_);
 		} else {
-			type_info().destruct((byte*)memory_);
+			type_info().destruct((byte*)&memory_);
 			type_index_ = other.type_index_;
 			type_info().copy_construct((byte*)&memory_, (const byte*)&other.memory_);
 		}
@@ -220,7 +231,7 @@ namespace falling {
 	template <typename T>
 	void Either<Types...>::assign_move(T&& value) {
 		static const size_t I = IndexOfType<T, Types...>::Value;
-		if (is_a<T>()) {
+		if (this->is_a<T>()) {
 			type_info().move_or_copy_assign((byte*)&memory_, (byte*)&value);
 		} else {
 			type_info().destruct((byte*)&memory_);
@@ -240,6 +251,41 @@ namespace falling {
 			type_index_ = I;
 			type_info().copy_construct((byte*)&memory_, (const byte*)&value);
 		}
+	}
+	
+	namespace detail {
+		template <typename EitherClass, typename... RemainingTypes> struct VisitorCaller;
+		template <typename EitherClass> struct VisitorCaller<EitherClass> {
+			VisitorCaller(EitherClass& either) {}
+			template <typename Visitor>
+			void visit(Visitor&) {}
+		};
+		template <typename EitherClass, typename T, typename... Rest> struct VisitorCaller<EitherClass, T, Rest...> {
+			EitherClass& either_;
+			using ValueType = typename std::conditional<std::is_const<EitherClass>::value, const T, T>::type;
+			VisitorCaller(EitherClass& either) : either_(either) {}
+			
+			template <typename Visitor>
+			void visit(Visitor& visitor) {
+				if (either_.template is_a<ValueType>()) {
+					visitor(*reinterpret_cast<ValueType*>(either_.memory()));
+				} else {
+					VisitorCaller<EitherClass, Rest...>(either_).visit(visitor);
+				}
+			}
+		};
+	}
+	
+	template <typename... Types>
+	template <typename Visitor>
+	void Either<Types...>::visit(Visitor& visitor) {
+		detail::VisitorCaller<Self, Types...>(*this).visit(visitor);
+	}
+	
+	template <typename... Types>
+	template <typename Visitor>
+	void Either<Types...>::visit(Visitor& visitor) const {
+		detail::VisitorCaller<Self, Types...>(*this).visit(visitor);
 	}
 }
 
