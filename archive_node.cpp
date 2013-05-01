@@ -84,12 +84,11 @@ ArchiveNode& ArchiveNode::operator[](size_t idx) {
 }
 
 const ArchiveNode& ArchiveNode::operator[](StringRef key) const {
-	if (!is_map()) {
-		return archive_.empty();
-	}
 	const ArchiveNode* result;
 	value_.when<MapType>([&](const MapType& map) {
 		result = find_or(map, key, &archive_.empty());
+	}).otherwise([&]() {
+		result = &archive_.empty();
 	});
 	return *result;
 }
@@ -128,90 +127,78 @@ size_t ArchiveNode::array_size() const {
 	}
 	
 	void ArchiveNode::dump(FormattedStream& os, int indent) const {
-		if (is_empty()) {
+		value_.when<NothingType>([&](NothingType) {
 			os << "(none)";
-		} else if (is_string()) {
-			value_.when<StringType>([&](StringRef str) {
+		}).when<StringType>([&](StringRef str) {
 				os << "\"" << str << "\"";
-			});
-		} else if (is_integer()) {
-			value_.when<IntegerType>([&](IntegerType n) {
+		}).when<IntegerType>([&](IntegerType n) {
 				os << n;
-			});
-		} else if (is_float()) {
-			value_.when<FloatType>([&](FloatType f) {
+		}).when<FloatType>([&](FloatType f) {
 				os << f;
-			});
-		} else if (is_array()) {
-			value_.when<ArrayType>([&](const ArrayType& array) {
-				bool all_are_scalars = true;
+		}).when<ArrayType>([&](const ArrayType& array) {
+			bool all_are_scalars = true;
+			for (auto child: array) {
+				if (!child->is_scalar()) {
+					all_are_scalars = false;
+					break;
+				}
+			}
+			
+			if (all_are_scalars) {
+				// dump inline array
+				os << '[';
 				for (auto child: array) {
-					if (!child->is_scalar()) {
-						all_are_scalars = false;
-						break;
+					child->dump(os, -1);
+					if (child != array.back()) {
+						os << ", ";
 					}
 				}
-				
-				if (all_are_scalars) {
-					// dump inline array
-					os << '[';
-					for (auto child: array) {
-						child->dump(os, -1);
-						if (child != array.back()) {
-							os << ", ";
-						}
-					}
-					os << ']';
-				} else {
-					// dump multiline array
-					os << "[\n" << repeat(' ', indent);
-					for (auto child: array) {
-						child->dump(os, indent+2);
-						os << '\n' << repeat(' ', indent);
-					}
-					os << ']';
+				os << ']';
+			} else {
+				// dump multiline array
+				os << "[\n" << repeat(' ', indent);
+				for (auto child: array) {
+					child->dump(os, indent+2);
+					os << '\n' << repeat(' ', indent);
 				}
-			});
-		} else if (is_map()) {
-			value_.when<MapType>([&](const MapType& map) {
-				bool all_are_scalars = true;
-				for (auto pair: map) {
-					if (pair.first.size() > 10 || !pair.second->is_scalar()) {
-						all_are_scalars = false;
-						break;
+				os << ']';
+			}
+		}).when<MapType>([&](const MapType& map) {
+			bool all_are_scalars = true;
+			for (auto pair: map) {
+				if (pair.first.size() > 10 || !pair.second->is_scalar()) {
+					all_are_scalars = false;
+					break;
+				}
+			}
+			
+			auto keys = map.keys();
+			auto values = map.values();
+			if (all_are_scalars) {
+				// dump inline map
+				os << '{';
+				for (size_t i = 0; i < keys.size(); ++i) {
+					os << keys[i] << ": ";
+					values[i]->dump(os, -1);
+					if (i+1 != keys.size()) {
+						os << ", ";
 					}
 				}
-				
-				auto keys = map.keys();
-				auto values = map.values();
-				if (all_are_scalars) {
-					// dump inline map
-					os << '{';
-					for (size_t i = 0; i < keys.size(); ++i) {
-						os << keys[i] << ": ";
-						values[i]->dump(os, -1);
-						if (i+1 != keys.size()) {
-							os << ", ";
-						}
+				os << '}';
+			} else {
+				os << "{\n" << repeat(' ', indent);
+				for (size_t i = 0; i < keys.size(); ++i) {
+					os << repeat(' ', 2);
+					os << keys[i] << ": ";
+					values[i]->dump(os, indent+4);
+					if (i+1 != keys.size()) {
+						os << ",";
 					}
-					os << '}';
-				} else {
-					os << "{\n" << repeat(' ', indent);
-					for (size_t i = 0; i < keys.size(); ++i) {
-						os << repeat(' ', 2);
-						os << keys[i] << ": ";
-						values[i]->dump(os, indent+4);
-						if (i+1 != keys.size()) {
-							os << ",";
-						}
-						os << "\n" << repeat(' ', indent);
-					}
-					os << "}";
+					os << "\n" << repeat(' ', indent);
 				}
-			});
-		} else {
-			ASSERT(false); // Invalid ArchiveNode.
-		}
+				os << "}";
+			}
+		});
 	}
 	
 	const ArchiveNodeConstPtrType* BuildTypeInfo<const ArchiveNode*>::build() {

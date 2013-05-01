@@ -194,46 +194,36 @@ namespace falling {
 			}
 			
 			void serialize(const ArchiveNode* node) {
-				if (node->is_empty()) {
+				node->when<NothingType>([&](NothingType) {
 					emit_nil();
-				} else if (node->is_array()) {
+				}).when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& array) {
 					emit_begin_sequence();
-					node->when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& array) {
-						for (auto it: array) {
-							serialize(it);
-						}
-					});
+					for (auto it: array) {
+						serialize(it);
+					}
 					emit_end_sequence();
-				} else if (node->is_map()) {
+				}).when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
 					emit_begin_mapping();
-					node->when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
-						for (auto pair: map) {
-							emit_string(pair.first);
-							serialize(pair.second);
-						}
-					});
+					for (auto pair: map) {
+						emit_string(pair.first);
+						serialize(pair.second);
+					}
 					emit_end_mapping();
-				} else if (node->is_float()) {
-					ArchiveNode::FloatType f;
-					*node >> f;
+				}).when<ArchiveNode::FloatType>([&](ArchiveNode::FloatType f) {
 					StringStream ss;
 					ss << f;
 					emit_string(ss.str());
-				} else if (node->is_integer()) {
-					ArchiveNode::IntegerType n;
-					*node >> n;
+				}).when<ArchiveNode::IntegerType>([&](ArchiveNode::IntegerType n) {
 					StringStream ss;
 					ss << n;
 					emit_string(ss.str());
-				} else if (node->is_string()) {
-					StringRef str;
-					*node >> str;
+				}).when<ArchiveNode::StringType>([&](StringRef str) {
 					if (str == "~") {
 						emit_string("\\~");
 					} else {
 						emit_string(str);
 					}
-				}
+				});
 			}
 			
 			void emit_begin_sequence() {
