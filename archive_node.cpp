@@ -9,26 +9,26 @@
 namespace falling {
 class IUniverse;
 
-ArchiveNode::ArchiveNode(Archive& archive) : archive_(archive), value_(archive.allocator()) {}
+ArchiveNode::ArchiveNode(Archive& archive) : archive_(archive), value_(Nothing) {}
 
 bool ArchiveNode::is_integer() const {
-	return value_.type() == get_type<IntegerType>();
+	return value_.is_a<IntegerType>();
 }
 
 bool ArchiveNode::is_float() const {
-	return value_.type() == get_type<FloatType>();
+	return value_.is_a<FloatType>();
 }
 
 bool ArchiveNode::is_array() const {
-	return value_.type() == get_type<ArrayType>();
+	return value_.is_a<ArrayType>();
 }
 
 bool ArchiveNode::is_map() const {
-	return value_.type() == get_type<MapType>();
+	return value_.is_a<MapType>();
 }
 
 bool ArchiveNode::is_string() const {
-	return value_.type() == get_type<StringType>();
+	return value_.is_a<StringType>();
 }
 
 bool ArchiveNode::is_scalar() const {
@@ -36,7 +36,7 @@ bool ArchiveNode::is_scalar() const {
 }
 
 bool ArchiveNode::is_empty() const {
-	return value_.is_empty();
+	return value_.is_nothing();
 }
 
 IAllocator& ArchiveNode::allocator() const {

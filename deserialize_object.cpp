@@ -63,11 +63,11 @@ namespace {
 	};
 	
 	void merge_archive_node_map(ArchiveNode& into, const ArchiveNode& from) {
-		from.value().when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& from_map) {
+		from.when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& from_map) {
 			if (!into.is_map()) {
-				into.value() = ArchiveNode::MapType(into.allocator());
+				into.internal_value() = ArchiveNode::MapType(into.allocator());
 			}
-			into.value().when<ArchiveNode::MapType>([&](ArchiveNode::MapType& into_map) {
+			into.when<ArchiveNode::MapType>([&](ArchiveNode::MapType& into_map) {
 				for (auto pair: from_map) {
 					into_map[pair.first] = pair.second;
 				}
@@ -77,7 +77,7 @@ namespace {
 	
 	void copy_archive_node(ArchiveNode& to, const ArchiveNode& from) {
 		if (from.is_scalar()) {
-			to.value() = from.value();
+			to.internal_value() = from.internal_value();
 		} else if (from.is_array()) {
 			for (size_t i = 0; i < from.array_size(); ++i) {
 				ArchiveNode& n = to.array_push();

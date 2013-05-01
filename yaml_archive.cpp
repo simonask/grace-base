@@ -68,9 +68,9 @@ namespace falling {
 						break;
 					case Sequence:
 						if (!top()->is_array()) {
-							top()->value() = ArchiveNode::ArrayType(top()->allocator());
+							top()->internal_value() = ArchiveNode::ArrayType(top()->allocator());
 						}
-						top()->value().when<ArchiveNode::ArrayType>([&](ArchiveNode::ArrayType& array) {
+						top()->when<ArchiveNode::ArrayType>([&](ArchiveNode::ArrayType& array) {
 							array.push_back(node);
 						});
 						break;
@@ -84,9 +84,9 @@ namespace falling {
 					case MappingExpectingValue: {
 						// Insert value in top mapping.
 						if (!top()->is_map()) {
-							top()->value() = ArchiveNode::MapType(top()->allocator());
+							top()->internal_value() = ArchiveNode::MapType(top()->allocator());
 						}
-						top()->value().when<ArchiveNode::MapType>([&](ArchiveNode::MapType& map) {
+						top()->when<ArchiveNode::MapType>([&](ArchiveNode::MapType& map) {
 							map[top_key()] = node;
 						});
 						top_key() = "";
@@ -103,7 +103,7 @@ namespace falling {
 			
 			void begin_sequence(const char* anchor) {
 				auto n = make();
-				n->value() = ArchiveNode::ArrayType(n->allocator());
+				n->internal_value() = ArchiveNode::ArrayType(n->allocator());
 				push(n);
 				if (anchor != nullptr) anchors[anchor] = top();
 			}
@@ -118,7 +118,7 @@ namespace falling {
 			
 			void begin_mapping(const char* anchor) {
 				auto n = make();
-				n->value() = ArchiveNode::MapType(n->allocator());
+				n->internal_value() = ArchiveNode::MapType(n->allocator());
 				push(n);
 				if (anchor != nullptr) anchors[anchor] = top();
 			}
@@ -198,7 +198,7 @@ namespace falling {
 					emit_nil();
 				} else if (node->is_array()) {
 					emit_begin_sequence();
-					node->value().when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& array) {
+					node->when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& array) {
 						for (auto it: array) {
 							serialize(it);
 						}
@@ -206,7 +206,7 @@ namespace falling {
 					emit_end_sequence();
 				} else if (node->is_map()) {
 					emit_begin_mapping();
-					node->value().when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
+					node->when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
 						for (auto pair: map) {
 							emit_string(pair.first);
 							serialize(pair.second);
@@ -369,7 +369,7 @@ namespace falling {
 		
 		if (state.root() != nullptr) {
 			if (!state.root()->is_map()) {
-				root().value() = Dictionary<ArchiveNode*>({{"yaml_document", state.root()}}, root().allocator());
+				root().internal_value() = Dictionary<ArchiveNode*>({{"yaml_document", state.root()}}, root().allocator());
 			} else {
 				root_ = (YAMLArchiveNode*)state.root();
 			}

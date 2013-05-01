@@ -4,11 +4,12 @@
 
 #include "base/string.hpp"
 #include "base/map.hpp"
-#include "base/any.hpp"
+#include "base/either.hpp"
 #include "type/type.hpp"
 #include "type/array_type.hpp"
 #include "type/dictionary_type.hpp"
 #include "base/dictionary.hpp"
+#include "type/any_type.hpp"
 
 namespace falling {
 
@@ -95,9 +96,6 @@ struct ArchiveNode {
 	Archive& archive() const { return archive_; }
 	IAllocator& allocator() const;
 	
-	Any& value() { return value_; }
-	const Any& value() const { return value_; }
-	
 	using MapType     = Dictionary<ArchiveNode*>;
 	using ArrayType   = Array<ArchiveNode*>;
 	using StringType  = String;
@@ -105,13 +103,27 @@ struct ArchiveNode {
 	using FloatType   = float64;
 	
 	void dump(FormattedStream& os) const;
+	
+	using InternalValueType = Either<NothingType, IntegerType, FloatType, StringType, ArrayType, MapType>;
+	
+	template <typename T, typename... Args>
+	auto when(Args&&... args) -> decltype(InternalValueType(Nothing).when<T>(std::forward<Args>(args)...)) {
+		return value_.when<T>(std::forward<Args>(args)...);
+	}
+	template <typename T, typename... Args>
+	auto when(Args&&... args) const -> decltype(((const InternalValueType)InternalValueType(Nothing)).when<T>(std::forward<Args>(args)...)) {
+		return value_.when<T>(std::forward<Args>(args)...);
+	}
+	
+	InternalValueType& internal_value() { return value_; }
+	const InternalValueType& internal_value() const { return value_; }
 protected:
 	explicit ArchiveNode(Archive& archive);
 	
 	void dump(FormattedStream& os, int indent) const;
 protected:
 	Archive& archive_;
-	Any value_;
+	InternalValueType value_;
 	
 	ArchiveNode* make_child();
 };
@@ -288,7 +300,7 @@ struct BuildTypeInfo<ArchiveNode*> {
 	}
 	
 	inline void ArchiveNode::operator<<(NothingType) {
-		value_.clear();
+		value_ = Nothing;
 	}
 
 	template <typename F>
