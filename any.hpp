@@ -72,7 +72,7 @@ namespace falling {
 		void assign(const Any& other);
 		void assign(Any&& other);
 		
-		const Type* type() const { return stored_type_; }
+		const IType* type() const { return stored_type_; }
 		template <typename T>
 		bool is_a() const;
 		void clear();
@@ -92,11 +92,11 @@ namespace falling {
 		const byte* ptr() const;
 		byte* ptr();
 		
-		static Any take_memory(IAllocator&, const Type* type, void* memory);
+		static Any take_memory(IAllocator&, const IType* type, void* memory);
 	private:
 		typedef typename std::aligned_storage<Size, Alignment>::type Storage;
 		Storage memory_;
-		const Type* stored_type_ = nullptr;
+		const IType* stored_type_ = nullptr;
 		IAllocator& allocator_;
 		
 #if defined(DEBUG)
@@ -122,18 +122,6 @@ namespace falling {
 		void deallocate_storage();
 		
 		friend struct AnyType;
-	};
-	
-	struct AnyType : TypeFor<Any> {
-		void deserialize(Any& place, const ArchiveNode& n, IUniverse& u) const;
-		void serialize(const Any& place, ArchiveNode&, IUniverse&) const;
-		StringRef name() const { return "Any"; }
-		size_t size() const { return sizeof(Any); }
-	};
-	
-	template <>
-	struct BuildTypeInfo<Any> {
-		static const AnyType* build();
 	};
 	
 	inline Any::Any() : allocator_(default_allocator()) {
@@ -398,7 +386,7 @@ namespace falling {
 	
 	template <typename T>
 	T Any::unsafe_get() const {
-		ASSERT((const Type*)get_type<T>() != (const Type*)get_type<Any>());
+		//ASSERT((const Type*)get_type<T>() != (const Type*)get_type<Any>());
 		ASSERT(get_type<T>() == stored_type_);
 		return *reinterpret_cast<const T*>(ptr());
 	}
