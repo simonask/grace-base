@@ -13,6 +13,14 @@
 #include <type_traits>
 
 namespace falling {
+	struct TypeInfo;
+
+	struct UnsupportedTypeOperationError {
+		const TypeInfo& type;
+		const char* operation;
+		const char* what() const { return operation; }
+	};
+
 	struct TypeInfo {
 		using ConstructorFuncPtr     = void(*)(byte*);
 		using DestructorFuncPtr      = void(*)(byte*);
@@ -25,35 +33,59 @@ namespace falling {
 		const size_t size;
 		const size_t alignment;
 		
-		const ConstructorFuncPtr   construct;
-		const DestructorFuncPtr    destruct;
-		const CopyAssignFuncPtr    copy_assign;
-		const CopyConstructFuncPtr copy_construct;
-		const MoveAssignFuncPtr    move_assign;
-		const MoveConstructFuncPtr move_construct;
+		const ConstructorFuncPtr   construct_;
+		const DestructorFuncPtr    destruct_;
+		const CopyAssignFuncPtr    copy_assign_;
+		const CopyConstructFuncPtr copy_construct_;
+		const MoveAssignFuncPtr    move_assign_;
+		const MoveConstructFuncPtr move_construct_;
 		
-		bool is_constructible() const { return construct != nullptr; }
-		bool is_copy_assignable() const         { return copy_assign != nullptr; }
-		bool is_copy_constructible() const      { return copy_construct != nullptr; }
-		bool is_move_assignable() const         { return move_assign != nullptr; }
-		bool is_move_constructible() const      { return move_construct != nullptr; }
+		bool is_constructible() const { return construct_ != nullptr; }
+		bool is_copy_assignable() const         { return copy_assign_ != nullptr; }
+		bool is_copy_constructible() const      { return copy_construct_ != nullptr; }
+		bool is_move_assignable() const         { return move_assign_ != nullptr; }
+		bool is_move_constructible() const      { return move_construct_ != nullptr; }
 		bool is_move_or_copy_constructible() const { return is_move_constructible() || is_copy_constructible(); }
 		bool is_move_or_copy_assignable() const    { return is_move_assignable() || is_copy_assignable(); }
 		bool is_abstract() const { return !is_constructible() && !is_move_or_copy_constructible(); }
 		
+		void construct(byte* self) const {
+			construct_ ? construct_(self) : unsupported("construct");
+		}
+		void destruct(byte* self) const {
+			destruct_ ? destruct_(self) : unsupported("destruct");
+		}
+		void copy_assign(byte* self, const byte* other) const {
+			copy_assign_ ? copy_assign_(self, other) : unsupported("copy_assign");
+		}
+		void copy_construct(byte* self, const byte* other) const {
+			copy_construct_ ? copy_construct_(self, other) : unsupported("copy_construct");
+		}
+		void move_assign(byte* self, byte* other) const {
+			move_assign_ ? move_assign_(self, other) : unsupported("move_assign");
+		}
+		void move_construct(byte* self, byte* other) const {
+			move_construct_ ? move_construct_(self, other) : unsupported("move_construct");
+		}
+		
 		void move_or_copy_construct(byte* self, byte* other) const {
-			if (move_construct) {
+			if (move_construct_) {
 				move_construct(self, other);
-			} else if (copy_construct) {
+			} else {
 				copy_construct(self, other);
 			}
 		}
 		void move_or_copy_assign(byte* self, byte* other) const {
-			if (move_assign) {
+			if (move_assign_) {
 				move_assign(self, other);
-			} else if (copy_assign) {
+			} else {
 				copy_assign(self, other);
 			}
+		}
+		
+	private:
+		void unsupported(const char* op) const {
+			throw UnsupportedTypeOperationError{*this, op};
 		}
 	};
 	
@@ -108,12 +140,12 @@ namespace falling {
 			.internal_info  = typeid(T),
 			.size           = sizeof(T),
 			.alignment      = alignof(T),
-			.construct      = GET_FUNCTION_IF_SUPPORTED(T, construct),
-			.destruct       = falling::destruct<T>,
-			.copy_construct = GET_FUNCTION_IF_SUPPORTED(T, copy_construct),
-			.copy_assign    = GET_FUNCTION_IF_SUPPORTED(T, copy_assign),
-			.move_construct = GET_FUNCTION_IF_SUPPORTED(T, move_construct),
-			.move_assign    = GET_FUNCTION_IF_SUPPORTED(T, move_assign),
+			.construct_     = GET_FUNCTION_IF_SUPPORTED(T, construct),
+			.destruct_      = falling::destruct<T>,
+			.copy_construct_= GET_FUNCTION_IF_SUPPORTED(T, copy_construct),
+			.copy_assign_   = GET_FUNCTION_IF_SUPPORTED(T, copy_assign),
+			.move_construct_= GET_FUNCTION_IF_SUPPORTED(T, move_construct),
+			.move_assign_   = GET_FUNCTION_IF_SUPPORTED(T, move_assign),
 		};
 	};
 	
@@ -123,12 +155,12 @@ namespace falling {
 			.internal_info = typeid(void),
 			.size = 0,
 			.alignment = 0,
-			.construct = nullptr,
-			.destruct = nullptr,
-			.copy_construct = nullptr,
-			.copy_assign = nullptr,
-			.move_construct = nullptr,
-			.move_assign = nullptr,
+			.construct_ = nullptr,
+			.destruct_ = nullptr,
+			.copy_construct_ = nullptr,
+			.copy_assign_ = nullptr,
+			.move_construct_ = nullptr,
+			.move_assign_ = nullptr,
 		};
 	};
 	
