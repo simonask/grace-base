@@ -42,11 +42,11 @@ namespace falling {
 		
 		Either(const Self& other) {
 			static_assert(IsCopyConstructible, "Cannot copy-construct this Either, because one of the inner types does not support it.");
-			construct_copy(other);
+			construct_copy_opaque(other);
 		}
 		Either(Self&& other) {
 			static_assert(IsMoveConstructible, "Cannot move-construct this Either, because one of the inner types does not support it.");
-			construct_move(move(other));
+			construct_move_opaque(move(other));
 		}
 		
 		~Either();
@@ -65,13 +65,13 @@ namespace falling {
 		
 		Self& operator=(const Self& other) {
 			static_assert(IsCopyAssignable, "Cannot copy-assign this Either, because one of the inner types does not support it.");
-			assign_copy(other);
+			assign_copy_opaque(other);
 			return *this;
 		}
 		
 		Self& operator=(Self&& other) {
 			static_assert(IsMoveAssignable, "Cannot move-assign this Either, because one of the inner types does not support it.");
-			assign_move(move(other));
+			assign_move_opaque(move(other));
 			return *this;
 		}
 		
@@ -152,14 +152,14 @@ namespace falling {
 		uint8 type_index_ = UINT8_MAX;
 		static constexpr const TypeInfo* const type_infos_[sizeof...(Types)] = {&GetTypeInfo<Types>::Value...};
 		
-		void assign_move(Self&& other);
-		void assign_copy(const Self& other);
+		void assign_move_opaque(Self&& other);
+		void assign_copy_opaque(const Self& other);
 		template <typename T>
 		void assign_move(T&& other);
 		template <typename T>
 		void assign_copy(const T& other);
-		void construct_move(Self&& other);
-		void construct_copy(const Self& other);
+		void construct_move_opaque(Self&& other);
+		void construct_copy_opaque(const Self& other);
 		template <typename T>
 		void construct_move(T&& other);
 		template <typename T>
@@ -181,29 +181,29 @@ namespace falling {
 		Self tmp; // Uninitialized.
 		if (is_same_type_as(other)) {
 			if (IsMoveConstructible && IsMoveAssignable) {
-				tmp.construct_move(move(other));
-				other.assign_move(move(*this));
-				assign_move(tmp);
+				tmp.construct_move_opaque(move(other));
+				other.assign_move_opaque(move(*this));
+				assign_move_opaque(tmp);
 			} else if (IsCopyConstructible && IsMoveConstructible) {
-				tmp.construct_copy(other);
-				other.assign_copy(*this);
-				assign_copy(tmp);
+				tmp.construct_copy_opaque(other);
+				other.assign_copy_opaque(*this);
+				assign_copy_opaque(tmp);
 			} else {
 				UNREACHABLE();
 			}
 		} else {
 			if (IsMoveConstructible) {
-				tmp.construct_move(move(other));
+				tmp.construct_move_opaque(move(other));
 				other.destruct();
-				other.construct_move(move(*this));
+				other.construct_move_opaque(move(*this));
 				destruct();
 				construct_move(move(tmp));
 			} else if (IsCopyConstructible) {
-				tmp.construct_copy(other);
+				tmp.construct_copy_opaque(other);
 				other.destruct();
-				other.construct_copy(*this);
+				other.construct_copy_opaque(*this);
 				destruct();
-				construct_copy(tmp);
+				construct_copy_opaque(tmp);
 			} else {
 				UNREACHABLE();
 			}
@@ -219,27 +219,27 @@ namespace falling {
 	}
 	
 	template <typename... Types>
-	void Either<Types...>::assign_move(Self&& other) {
+	void Either<Types...>::assign_move_opaque(Self&& other) {
 		if (is_same_type_as(other)) {
 			type_info().move_assign(memory(), other.memory());
 		} else {
 			destruct();
-			construct_move(other);
+			construct_move_opaque(move(other));
 		}
 	}
 	
 	template <typename... Types>
-	void Either<Types...>::assign_copy(const Self &other) {
+	void Either<Types...>::assign_copy_opaque(const Self &other) {
 		if (is_same_type_as(other)) {
 			type_info().copy_assign(memory(), other.memory());
 		} else {
 			destruct();
-			construct_copy(other);
+			construct_copy_opaque(other);
 		}
 	}
 	
 	template <typename... Types>
-	void Either<Types...>::construct_move(Self&& other) {
+	void Either<Types...>::construct_move_opaque(Self&& other) {
 		ASSERT(type_index_ == UINT8_MAX); // Already constructed!
 		type_index_ = other.type_index_;
 		detail::poison_memory(memory(), memory() + sizeof(memory_), detail::UNINITIALIZED_MEMORY_PATTERN);
@@ -247,7 +247,7 @@ namespace falling {
 	}
 	
 	template <typename... Types>
-	void Either<Types...>::construct_copy(const Self &other) {
+	void Either<Types...>::construct_copy_opaque(const Self &other) {
 		ASSERT(type_index_ == UINT8_MAX); // Already constructed!
 		type_index_ = other.type_index_;
 		detail::poison_memory(memory(), memory() + sizeof(memory_), detail::UNINITIALIZED_MEMORY_PATTERN);
