@@ -66,12 +66,16 @@ namespace falling {
 		void pause_allocation_tracking();
 		void unpause_allocation_tracking();
 		Array<MemoryLeak> finish_allocation_tracking(IAllocator& leak_info_alloc);
+		
+		void display_backtrace_for_allocation(void* ptr);
 	private:
 		std::atomic<size_t> usage_;
 		MemoryTracker tracker_;
 	};
 	
 	SystemAllocator& default_allocator();
+	
+	void display_backtrace_for_system_allocation(void* ptr);
 	
 	/*
 	 LinearAllocator initially allocates one huge block of memory, which other allocators can

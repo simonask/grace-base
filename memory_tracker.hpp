@@ -11,6 +11,7 @@
 
 #include "base/basic.hpp"
 #include "base/array_ref.hpp"
+#include "base/maybe.hpp"
 
 namespace falling {
 	class String;
@@ -36,6 +37,8 @@ namespace falling {
 		void stop();
 		
 		void get_results(Array<MemoryLeak>& out_results);
+		
+		Maybe<MemoryLeak> get_allocation(void* ptr);
 	private:
 		struct Impl;
 		Impl* impl = nullptr;

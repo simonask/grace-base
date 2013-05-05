@@ -129,4 +129,14 @@ namespace falling {
 			}
 		}
 	}
+	
+	Maybe<MemoryLeak> MemoryTracker::get_allocation(void *ptr) {
+		MemoryLeak* bucket = get_bucket_for_address(impl->begin, impl->end, ptr);
+		for (size_t i = 0; i < LEAKS_PER_BUCKET; ++i) {
+			if (bucket[i].address == ptr) {
+				return bucket[i];
+			}
+		}
+		return Nothing;
+	}
 }

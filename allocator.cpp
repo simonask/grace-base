@@ -11,8 +11,11 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include <malloc/malloc.h>
+#include <mutex>
 #include "io/formatted_stream.hpp"
 #include "io/formatters.hpp"
+#include "base/arch.hpp"
+#include "io/stdio_stream.hpp"
 
 #define DETECT_OVERRUN 0
 #define DETECT_REUSE_AFTER_FREE 0
@@ -59,7 +62,6 @@ namespace falling {
 		typename std::enable_if<sizeof(T) == sizeof(uint32), T>::type
 		next_pow2(size_t n) { return next_pow2((uint32)n); }
 	}
-	
 
 
 	namespace {
@@ -82,6 +84,7 @@ namespace falling {
 				throw OutOfMemoryError();
 			}
 			void* object = (void*)((intptr_t)((pages + object_size) - nbytes) & ~(alignment-1));
+			ASSERT(((uintptr_t)object & (alignment-1)) == 0);
 			detail::poison_memory((byte*)pages, (byte*)object, detail::UNALLOCATED_MEMORY_PATTERN);
 			detail::poison_memory((byte*)object, pages + object_size, detail::UNINITIALIZED_MEMORY_PATTERN);
 			byte* guard = pages + object_size;
@@ -114,9 +117,10 @@ namespace falling {
 		void* system_realloc(void* ptr, size_t old_size, size_t new_size, size_t alignment) {
 #if DETECT_OVERRUN || DETECT_REUSE_AFTER_FREE
 			if (old_size < new_size) {
-				void* new_ptr = system_alloc(nbytes, alignment);
+				void* new_ptr = system_alloc(new_size, alignment);
 				memcpy(new_ptr, ptr, old_size);
-				system_free(ptr);
+				if (ptr)
+					system_free(ptr);
 				return new_ptr;
 			} else {
 				return ptr;
@@ -152,11 +156,14 @@ namespace falling {
             void* begin = ptr;
             size_t allocated_size = poison_bytes;
 #endif
+
+			// If you get a crash on this line, and DETECT_REUSE_AFTER_FREE is enabled,
+			// you have a double free somewhere!
             detail::poison_memory((byte*)begin, (byte*)begin + allocated_size, detail::FREED_MEMORY_PATTERN);
             
 #if DETECT_REUSE_AFTER_FREE
             ::mprotect(begin, allocated_size, PROT_NONE);
-#elsif DETECT_OVERRUN
+#elif DETECT_OVERRUN
             ::munmap(begin, allocated_size + PAGE_SIZE);
 #else
             ::free(ptr);
@@ -188,7 +195,7 @@ namespace falling {
             detail::poison_memory(o, o + actual_size, detail::FREED_MEMORY_PATTERN);
 #if DETECT_REUSE_AFTER_FREE
             ::mprotect(o, actual_size, PROT_NONE);
-#elsif DETECT_OVERRUN
+#elif DETECT_OVERRUN
             ::munmap(ptr, actual_size + PAGE_SIZE);
 #else
             ::munmap(ptr, actual_size);
@@ -270,6 +277,27 @@ namespace falling {
 	
 	SystemAllocator::~SystemAllocator() {
 		// TODO: Do leak checks.
+	}
+	
+	void SystemAllocator::display_backtrace_for_allocation(void *ptr) {
+		auto leak = tracker_.get_allocation(ptr);
+		leak.map([&](const MemoryLeak& leak) {
+			StdOut << "Backtrace for the allocation of pointer " << format("%p", ptr) << " (size: " << format_data_size(leak.size) << ")\n";
+			ScratchAllocator scratch;
+			String module(scratch);
+			String symbol(scratch);
+			uint32 offset;
+			for (size_t i = 0; i < MEMORY_LEAK_BACKTRACE_STEPS; ++i) {
+				resolve_symbol(leak.backtrace[i], module, symbol, offset);
+				StdOut << "  " << i << ": " << "[" << module << "]  " << symbol << " + " << offset << '\n';
+			}
+		}).otherwise([&]() {
+			fprintf(stdout, "No registered allocation for %p -- memory tracking could be disabled, or the pointer invalid.\n", ptr);
+		});
+	}
+	
+	void display_backtrace_for_system_allocation(void* ptr) {
+		default_allocator().display_backtrace_for_allocation(ptr);
 	}
 	
 	static byte default_allocator_mem[sizeof(SystemAllocator)];
