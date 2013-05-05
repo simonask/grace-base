@@ -11,6 +11,7 @@
 
 #include "base/basic.hpp"
 #include "memory/memory_tracker.hpp"
+#include <atomic>
 
 namespace falling {
 	class FormattedStream;
@@ -49,6 +50,7 @@ namespace falling {
 	*/
 	class SystemAllocator : public IAllocator {
 	public:
+		SystemAllocator();
 		~SystemAllocator();
 		void* allocate(size_t nbytes, size_t alignment) final;
 		void* reallocate(void* ptr, size_t old_size, size_t new_size, size_t alignment) final;
@@ -65,7 +67,7 @@ namespace falling {
 		void unpause_allocation_tracking();
 		Array<MemoryLeak> finish_allocation_tracking(IAllocator& leak_info_alloc);
 	private:
-		size_t usage_ = 0;
+		std::atomic<size_t> usage_;
 		MemoryTracker tracker_;
 	};
 	

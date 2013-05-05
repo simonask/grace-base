@@ -196,6 +196,10 @@ namespace falling {
         }
 	}
 	
+	SystemAllocator::SystemAllocator() {
+		std::atomic_init<size_t>(&usage_, 0);
+	}
+	
 	void* SystemAllocator::allocate(size_t nbytes, size_t alignment) {
 		if (nbytes == 0) return nullptr;
 		void* ptr = system_alloc(nbytes, alignment);
