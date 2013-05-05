@@ -88,6 +88,12 @@ namespace falling {
 		bool is_nothing() const {
 			return is_a<NothingType>();
 		}
+		bool is_empty() const {
+			return is_nothing();
+		}
+		void clear() const {
+			assign_copy(Nothing);
+		}
 		
 		template <typename T = NothingType>
 		explicit operator bool() const {
