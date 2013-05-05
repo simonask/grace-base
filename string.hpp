@@ -62,7 +62,8 @@ namespace falling {
 		explicit String(IAllocator& alloc = default_allocator()) : allocator_(alloc) {}
 		String(const char* utf8, IAllocator& alloc = default_allocator());
 		String(const char* utf8, size_t len, IAllocator& alloc = default_allocator());
-		String(const String& other, IAllocator& alloc = default_allocator());
+		String(const String& other, IAllocator& alloc);
+		String(const String& other);
 		explicit String(StringRef other, IAllocator& alloc = default_allocator());
 		String(String&& other);
 		~String();
@@ -70,6 +71,7 @@ namespace falling {
 		String& operator=(StringRef other);
 		String& operator=(const String& other);
 		String& operator=(String&& other);
+		void swap(String& other);
 		
 		IAllocator& allocator() const { return allocator_; }
 		
@@ -160,8 +162,11 @@ namespace falling {
 		assign(other.data(), other.size());
 	}
 	
+	inline String::String(const String& other) : String(other, other.allocator()) {
+	}
+	
 	inline String::String(String&& other) : allocator_(other.allocator_), data_(nullptr), size_(0) {
-		*this = std::move(other);
+		swap(other);
 	}
 	
 	inline String::~String() {
@@ -219,8 +224,20 @@ namespace falling {
 			other.size_ = 0;
 		} else {
 			assign(other.data_, other.size_);
+			other.clear();
 		}
 		return *this;
+	}
+	
+	inline void String::swap(String& other) {
+		if (&allocator() == &other.allocator()) {
+			std::swap(data_, other.data_);
+			std::swap(size_, other.size_);
+		} else {
+			String tmp(move(*this));
+			*this = other;
+			other = move(tmp);
+		}
 	}
 	
 	inline String::operator StringRef() const {
