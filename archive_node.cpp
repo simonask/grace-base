@@ -9,8 +9,6 @@
 namespace falling {
 class IUniverse;
 
-ArchiveNode::ArchiveNode(Archive& archive) : archive_(archive), value_(Nothing) {}
-
 bool ArchiveNode::is_integer() const {
 	return value_.is_a<IntegerType>();
 }

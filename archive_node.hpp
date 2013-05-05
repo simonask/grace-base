@@ -118,12 +118,12 @@ struct ArchiveNode {
 	InternalValueType& internal_value() { return value_; }
 	const InternalValueType& internal_value() const { return value_; }
 protected:
-	explicit ArchiveNode(Archive& archive);
+	explicit ArchiveNode(Archive& archive) : archive_(archive) {}
 	
 	void dump(FormattedStream& os, int indent) const;
 protected:
 	Archive& archive_;
-	InternalValueType value_;
+	InternalValueType value_ = InternalValueType(Nothing);
 	
 	ArchiveNode* make_child();
 };
