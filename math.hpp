@@ -152,6 +152,11 @@ namespace falling {
 		// TODO: Optimize with approximation
 		return atan_precise(vec);
 	}
+	
+	template <typename A, typename B>
+	constexpr auto max(A a, B b) -> typename std::common_type<A, B>::type {
+		return a > b ? a : b;
+	}
 }
 
 #endif

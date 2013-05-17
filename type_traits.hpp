@@ -10,14 +10,9 @@
 #define falling_type_traits_hpp
 
 #include <type_traits>
+#include "base/math.hpp"
 
 namespace falling {
-	// TODO: Move to a math-related header?
-	template <typename A, typename B>
-	constexpr auto max(A a, B b) -> typename std::common_type<A, B>::type {
-		return a > b ? a : b;
-	}
-
 	// === MaxSize ===
 	template <typename... Types> struct MaxSize;
 	template <> struct MaxSize<> {
