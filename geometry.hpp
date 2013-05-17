@@ -15,20 +15,70 @@
 #include "type/type.hpp"
 
 namespace falling {
-	struct Rect {
-		Rect() {}
-		Rect(float32 x, float32 y, float32 w, float32 h) : origin(x, y), size(w, h) {}
-		Rect(vec2 origin, vec2 size) : origin(origin), size(size) {}
-	
-		vec2 origin;
-		vec2 size;
+	template <typename T>
+	struct TRect {
+		using V = TVector<T, 2>;
+		using Self = TRect<T>;
+		TRect() {}
+		TRect(T x, T y, T w, T h) : origin(x, y), size(w, h) {}
+		TRect(V origin, V size) : origin(origin), size(size) {}
+		TRect(const Self& other) = default;
+		Self& operator=(const Self&) = default;
 		
-		static Rect zero() {
-			return Rect(vec2::zero(), vec2::zero());
+		static TRect<T> zero() {
+			return TRect<T>(V::zero(), V::zero());
 		}
 		
-		// TODO: intersect, union, etc.
+		V origin;
+		V size;
+		
+		V intersection_area(Self other) const {
+			auto self_end = origin + size;
+			auto other_end = other.origin + other.size;
+			auto end_xs = shuffle2<0, X, 1, X>(self_end, other_end);
+			auto end_ys = shuffle2<0, Y, 1, Y>(self_end, other_end);
+			auto origin_xs = shuffle2<0, X, 1, X>(origin, other.origin);
+			auto origin_ys = shuffle2<0, Y, 1, Y>(origin, other.origin);
+			auto overlap = max(V::zero(), min(end_xs, end_ys) - max(origin_xs, origin_ys));
+			return overlap;
+		}
+		
+		Self intersection(Self other) const {
+			V isize = intersection_area(other);
+			V iorigin = max(origin, other.origin);
+			// Return 0-rect if no intersection
+			iorigin = select(isize == V::zero(), V::zero(), iorigin);
+			return Self(iorigin, size);
+		}
+		
+		bool intersects(V coordinate) const {
+			auto end = origin + size;
+			auto m0 = coordinate >= origin;
+			auto m1 = coordinate < end;
+			auto bools = (m0 & m1) & V::MaskVector::replicate(1);
+			return bools.sum() == 2;
+		}
+		
+		Self join(Self other) const {
+			return *this + other;
+		}
+		
+		Self operator+(Self other) const {
+			Self s = *this;
+			s += other;
+			return s;
+		}
+		Self& operator+=(Self other) {
+			auto other_end = other.origin + other.size;
+			auto self_end = origin + size;
+			auto biggest_end = max(self_end, other_end);
+			origin = min(origin, other.origin);
+			size = biggest_end - origin;
+			return *this;
+		}
 	};
+	
+	using Rect = TRect<float32>;
 	
 	namespace detail {
 		const Type* build_rect_type();
