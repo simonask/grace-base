@@ -54,6 +54,9 @@ namespace falling {
         iterator end();
         const_iterator begin() const;
         const_iterator end() const;
+		
+		iterator find(const T& item) { return std::find(begin(), end(), item); }
+		const_iterator find(const T& item) const { return std::find(begin(), end(), item); }
         
         template <typename InputIterator>
         void insert(InputIterator i0, InputIterator i1);
