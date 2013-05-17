@@ -28,7 +28,7 @@ namespace falling {
 		virtual ~UniverseBase();
 		
 		// IUniverse interface (partial)
-		bool clear_and_instantiate(const ArchiveNode& scene_definition, String& out_error) final;
+		bool instantiate(const ArchiveNode& scene_definition, String& out_error) final;
 		void defer_attribute_deserialization(ObjectPtr<> obj, const IAttribute* attr, const ArchiveNode* serialized) final;
 		IAllocator& allocator() const final { return allocator_; }
 		

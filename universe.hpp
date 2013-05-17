@@ -31,7 +31,7 @@ namespace falling {
 		
 		// Serialization API
 		virtual void run_initializers() = 0;
-		virtual bool clear_and_instantiate(const ArchiveNode& scene_root, String& out_error) = 0;
+		virtual bool instantiate(const ArchiveNode& scene_root, String& out_error) = 0;
 		virtual bool serialize_scene(ArchiveNode& scene_definition, String& out_error) = 0;
 		virtual void defer_attribute_deserialization(ObjectPtr<> object, const IAttribute* attr, const ArchiveNode* serialized) = 0;
 		

@@ -34,9 +34,7 @@ namespace falling {
 		return p;
 	}
 
-	bool UniverseBase::clear_and_instantiate(const ArchiveNode &scene_definition, String &out_error) {
-		clear();
-		
+	bool UniverseBase::instantiate(const ArchiveNode &scene_definition, String &out_error) {
 		if (!scene_definition.is_map()) {
 			out_error = "Invalid scene definition.";
 			return false;
@@ -55,8 +53,6 @@ namespace falling {
 			deferred.perform(*this);
 		}
 		deferred_.clear();
-		
-		run_initializers();
 		return true;
 	}
 	
