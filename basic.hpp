@@ -216,6 +216,8 @@ auto linear_search(Container& container, const ComparableValue& value)
 	inline typename std::underlying_type<T>::type \
 	operator|(T a, T b) { return static_cast<typename std::underlying_type<T>::type>(+a | +b); } \
 	inline typename std::underlying_type<T>::type \
+	operator&(T a, T b) { return static_cast<typename std::underlying_type<T>::type>(+a & +b); } \
+	inline typename std::underlying_type<T>::type \
 	operator|(typename std::underlying_type<T>::type a, T b) \
 	{ return a | +b; } \
 	inline typename std::underlying_type<T>::type \
