@@ -16,6 +16,7 @@
 
 namespace falling {
 	BEGIN_TYPE_INFO(SpatialObject)
+		super<Renderable>();
 		property(&SpatialObject::position, &SpatialObject::set_position, "position", "World Position");
 		property(&SpatialObject::size, &SpatialObject::set_size, "size");
 		property(&SpatialObject::scale, &SpatialObject::set_scale, "scale");

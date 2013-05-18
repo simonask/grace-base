@@ -12,9 +12,10 @@
 #include "object/object.hpp"
 #include "base/vector.hpp"
 #include "base/geometry.hpp"
+#include "render/renderable.hpp"
 
 namespace falling {
-	class SpatialObject : public Object {
+	class SpatialObject : public Renderable {
 		REFLECT;
 	public:
 		virtual vec2 get_focus_point() const; // default: middle of bounds
