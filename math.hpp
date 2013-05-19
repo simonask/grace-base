@@ -26,6 +26,14 @@ namespace falling {
 	static const float32 TwoOverSqrtPi = M_2_SQRTPI;
 	static const float32 Sqrt2 = M_SQRT2;
 	static const float32 OneOverSqrt2 = M_SQRT1_2;
+	
+	inline float32 rad2deg(float32 rad) {
+		return rad * 180.f / Pi;
+	}
+	
+	inline float32 deg2rad(float32 deg) {
+		return deg * Pi / 180.f;
+	}
 
 	template <typename T, size_t N>
 	TVector<T,N> sin_precise(TVector<T,N> vec) {
