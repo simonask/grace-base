@@ -34,6 +34,8 @@ namespace falling {
 		
 		bool operator==(const Self& other) const;
 		bool operator!=(const Self& other) const { return !(*this == other); }
+		Row& operator[](size_t idx) { return row_at(idx); }
+		Row operator[](size_t idx) const { return row_at(idx); }
 		
 		static Self from_rows(ArrayRef<Row> rows);
 		static Self from_rows(ArrayRef<ElementType> row_elements);
