@@ -98,6 +98,7 @@ namespace falling {
 		vec2 r2 = shuffle2<0, X, 1, Y>(msinv, cosv);
 		return matrix22::from_rows({r1, r2});
 	}
+
 	
 	// TODO: Arbitrary rotation matrices for 3D-space
 	inline matrix33 make_rotation_matrix33_z(float32 theta) {
@@ -120,6 +121,18 @@ namespace falling {
 		trans.row_at(1).z = translation.y;
 		ASSERT(trans.row_at(2).z == 1.f);
 		return trans;
+	}
+	
+	inline matrix33 make_2d_rotation_matrix33(float32 theta, vec2 around_offset) {
+		float32 cosv = cosf(theta);
+		float32 sinv = sinf(theta);
+		vec3 r1 = { cosv, sinv, 0.f };
+		vec3 r2 = { -sinv, cosv, 0.f };
+		vec3 r3 = vec3::zero();
+		auto m1 = make_2d_translation_matrix33(-around_offset);
+		auto m2 = matrix33::from_rows({r1, r2, r3});
+		auto m3 = make_2d_translation_matrix33(around_offset);
+		return m1 * m2 * m3;
 	}
 	
 	inline matrix33 make_2d_scaling_matrix(vec2 scale_axes) {
