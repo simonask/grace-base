@@ -53,6 +53,7 @@ namespace falling {
 			deferred.perform(*this);
 		}
 		deferred_.clear();
+		
 		return true;
 	}
 	
@@ -154,6 +155,7 @@ namespace falling {
 	}
 	
 	void BasicUniverse::clear() {
+		UniverseBase::clear();
 		for (auto object: memory_map_) {
 			const StructuredType* type = object->object_type();
 			type->destruct(reinterpret_cast<byte*>(object), *this);
@@ -163,5 +165,27 @@ namespace falling {
 		object_map_.clear();
 		reverse_object_map_.clear();
 		memory_map_.clear();
+		
+	}
+	
+	void UniverseBase::clear() {
+		update_objects_.clear();
+	}
+	
+	void UniverseBase::update(GameTimeDelta delta) {
+		for (auto p: update_objects_) {
+			p->update(delta);
+		}
+	}
+	
+	void UniverseBase::register_object_for_update(ObjectPtr<> ptr) {
+		update_objects_.insert(ptr);
+	}
+	
+	void UniverseBase::unregister_object_for_update(ObjectPtr<> ptr) {
+		auto it = update_objects_.find(ptr);
+		if (it != update_objects_.end()) {
+			update_objects_.erase(it);
+		}
 	}
 }

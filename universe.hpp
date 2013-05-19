@@ -24,6 +24,9 @@ namespace falling {
 		virtual void set_root(const ObjectPtr<> root) = 0;
 		virtual void clear() = 0;
 		virtual IAllocator& allocator() const = 0;
+		virtual void update(GameTimeDelta delta) = 0; // Update all objects in universe
+		virtual void register_object_for_update(ObjectPtr<> obj) = 0;
+		virtual void unregister_object_for_update(ObjectPtr<> obj) = 0;
 		
 		// Editor/dev-time API
 		virtual bool rename_object(ObjectPtr<>, StringRef new_id) = 0;

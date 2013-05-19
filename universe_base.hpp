@@ -12,6 +12,7 @@
 #include "object/universe.hpp"
 #include "memory/unique_ptr.hpp"
 #include "object/aspect_cast.hpp"
+#include "base/priority_queue.hpp"
 
 namespace falling {
 	struct CompositeType;
@@ -31,6 +32,10 @@ namespace falling {
 		bool instantiate(const ArchiveNode& scene_definition, String& out_error) final;
 		void defer_attribute_deserialization(ObjectPtr<> obj, const IAttribute* attr, const ArchiveNode* serialized) final;
 		IAllocator& allocator() const final { return allocator_; }
+		void clear() override;
+		void update(GameTimeDelta delta) final;
+		void register_object_for_update(ObjectPtr<> ptr) final;
+		void unregister_object_for_update(ObjectPtr<> ptr) final;
 		
 		// UniverseBase interface
 		CompositeType* create_composite_type(const ObjectTypeBase* base, StringRef name = "");
@@ -62,13 +67,15 @@ namespace falling {
 		void set_event_loop(IEventLoop* el) final { event_loop_ = el; }
 		IEventLoop* event_loop() const final { return event_loop_; }
 	protected:
-		UniverseBase(IAllocator& alloc) : allocator_(alloc), auto_lists(alloc), deferred_(alloc), composite_types_(alloc) {}
+		UniverseBase(IAllocator& alloc) : allocator_(alloc), auto_lists(alloc), deferred_(alloc), composite_types_(alloc), update_objects_(alloc) {}
 		Array<DeferredAttributeDeserialization> deferred_;
 		Array<CompositeType*> composite_types_;
 	private:
 		IAllocator& allocator_;
 		Map<const StructuredType*, Map<size_t, VirtualAutoListBase*>> auto_lists;
 		IEventLoop* event_loop_ = nullptr;
+		// TODO: Use Set:
+		PriorityQueue<ObjectPtr<>> update_objects_;
 	};
 	
 	void error_category_already_initialized_with_different_type(StringRef name);

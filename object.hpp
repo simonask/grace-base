@@ -31,6 +31,7 @@ struct Object {
 	virtual ~Object() {}
 	
 	virtual void initialize() {} // Called after all other objects have been instantiated and deserialized.
+	virtual void update(GameTimeDelta delta) {}
 	virtual void debug_render(Renderer&) {}
 	
 	Object* find_parent();
