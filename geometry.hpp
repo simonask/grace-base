@@ -108,7 +108,7 @@ namespace falling {
 		vec3 msinv = -sinv;
 		vec3 r1 = shuffle2<0, X, 1, Y, 0, IgnoreAxis>(cosv, sinv);
 		vec3 r2 = shuffle2<0, X, 1, Y, 0, IgnoreAxis>(msinv, cosv);
-		vec3 r3 = vec3::zero();
+		vec3 r3 = { 0.f, 0.f, 1.f };
 		r1.z = 0.f;
 		r2.z = 0.f;
 		r3.z = 1.f; // identity
@@ -123,16 +123,17 @@ namespace falling {
 		return trans;
 	}
 	
-	inline matrix33 make_2d_rotation_matrix33(float32 theta, vec2 around_offset) {
-		float32 cosv = cosf(theta);
-		float32 sinv = sinf(theta);
+	inline matrix33 make_2d_rotation_matrix33(float32 deg, vec2 around_offset) {
+		float32 rad = deg2rad(deg);
+		float32 cosv = cosf(rad);
+		float32 sinv = sinf(rad);
 		vec3 r1 = { cosv, sinv, 0.f };
 		vec3 r2 = { -sinv, cosv, 0.f };
-		vec3 r3 = vec3::zero();
+		vec3 r3 = { 0.f, 0.f, 1.f };
 		auto m1 = make_2d_translation_matrix33(-around_offset);
 		auto m2 = matrix33::from_rows({r1, r2, r3});
 		auto m3 = make_2d_translation_matrix33(around_offset);
-		return m1 * m2 * m3;
+		return m3 * m2 * m1;
 	}
 	
 	inline matrix33 make_2d_scaling_matrix(vec2 scale_axes) {
