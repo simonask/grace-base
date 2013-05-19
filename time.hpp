@@ -42,7 +42,9 @@ namespace falling {
 		bool operator>=(TimeDelta<T> other) const { return nanoseconds_ >= other.nanoseconds_; }
 
 		int64 nanoseconds() const { return nanoseconds_; }
-		int64 microseconds() const { return nanoseconds_ / 1000; }
+		float64 microseconds() const { return nanoseconds_ / 1000.0; }
+		float64 milliseconds() const { return microseconds() / 1000.0; }
+		float64 seconds() const { return milliseconds() / 1000.0; }
 		
 		static TimeDelta<T> forever() { return TimeDelta<T>(INT64_MAX); }
 	private:
