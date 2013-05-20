@@ -90,7 +90,7 @@ namespace falling {
 					data_.erase(it);
 					return end();
 				} else {
-					*it = std::move(*last);
+					std::swap(*it, *last);
 					data_.erase(last);
 					return it;
 				}
