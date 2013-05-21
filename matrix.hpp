@@ -158,7 +158,7 @@ namespace falling {
 	template <typename T, size_t N, size_t M>
 	bool TMatrix<T,N,M>::operator==(const TMatrix<T,N,M>& other) const {
 		for (size_t row = 0; row < M; ++row) {
-			if (!rows_[row].all_equal(other.rows_[row])) return false;
+			if (rows_[row] != approximately(other.rows_[row], 0.0001f)) return false;
 		}
 		return true;
 	}

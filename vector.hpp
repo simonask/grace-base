@@ -12,8 +12,10 @@
 
 #include "base/basic.hpp"
 #include "base/simd.hpp"
+#include "base/approximately.hpp"
 
 #include <math.h>
+#include <numeric>
 
 namespace falling {
 	
@@ -176,64 +178,39 @@ namespace falling {
 		ALWAYS_INLINE ComparisonResult operator>=(const Self& other) const { return simd::cmp_gte(this->m, other.m); }
 		
 		template <typename T = ElementType>
-		ALWAYS_INLINE typename std::enable_if<!IsFloatingPoint<T>::Value, ComparisonResult>::type
-		operator==(const Self& other) const { return simd::cmp_eq(this->m, other.m); }
+		ALWAYS_INLINE ComparisonResult
+		operator==(const Self& other) const {
+			static_assert(IsFloatingPoint<T>::Value, "You should not compare vectors of floats directly with operator==. Use approximately(...) to pad one value with acceptable bounds.");
+			return simd::cmp_eq(this->m, other.m);
+		}
 		
 		template <typename T = ElementType>
-		ALWAYS_INLINE typename std::enable_if<!IsFloatingPoint<T>::Value, ComparisonResult>::type
-		operator!=(const Self& other) const { return simd::cmp_neq(this->m, other.m); }
+		ALWAYS_INLINE ComparisonResult
+		operator!=(const Self& other) const {
+			static_assert(IsFloatingPoint<T>::Value, "You should not compare vectors of floats directly with operator!=. Use approximately(...) to pad one value with acceptable bounds.");
+			return simd::cmp_neq(this->m, other.m);
+		}
 		
 		ALWAYS_INLINE ComparisonResult equal_within(const Self& other, ElementType epsilon) const {
 			Self diff = (*this - other).abs();
 			return diff <= replicate(epsilon);
 		}
 		
-		ALWAYS_INLINE bool all_equal_within(const Self& other, ElementType epsilon) const {
-			// TODO: This is SSE-specific, generalize.
-			ComparisonResult mask = ComparisonResult::replicate(1);
-			ComparisonResult bool_mask = equal_within(other, epsilon) & mask;
-			return bool_mask.sum() == N;
-		}
-		
 		ALWAYS_INLINE bool any_equal_within(const Self& other, ElementType epsilon) const {
-			// TODO: This is SSE-specific, generalize.
-			ComparisonResult mask = ComparisonResult::replicate(1);
-			ComparisonResult bool_mask = equal_within(other, epsilon) & mask;
-			return bool_mask.sum() > 0;
+			return simd::any_ones<N>(equal_within(other, epsilon).m);
 		}
-		
-		template <typename T = ElementType>
-		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
-		all_equal(const Self& other, MaskElementType ulps = 5) const {
-			auto abs_diff = MaskVector(this->mask - other.mask).abs();
-			auto result = abs_diff <= MaskVector::replicate(ulps);
-			auto bools = result & MaskVector::replicate(1);
-			return bools.sum() == N;
-		}
-		
-		template <typename T = ElementType>
-		ALWAYS_INLINE typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
-		all_equal(const Self& other) const {
-			auto mask = ComparisonResult::replicate(1);
-			auto result = (*this == other) & mask;
-			return result.sum() == N;
-		}
-		
+				
 		template <typename T = ElementType>
 		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
 		any_equal(const Self& other, MaskElementType ulps = 5) const {
 			auto abs_diff = MaskVector(this->mask - other.mask).abs();
-			auto result = abs_diff <= MaskVector::replicate(ulps);
-			auto bools = result & MaskVector::replicate(1);
-			return bools.sum() > 0;
+			return simd::any_ones(abs_diff <= MaskVector::replicate(ulps));
 		}
 		
 		template <typename T = ElementType>
 		ALWAYS_INLINE typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
 		any_equal(const Self& other) const {
-			auto mask = ComparisonResult::replicate(1);
-			auto result = (*this == other) & mask;
-			return result.sum() > 0;
+			return simd::any_ones(*this == other);
 		}
 		
 		template <typename T = ElementType>
@@ -394,6 +371,49 @@ namespace falling {
 		return to;
 	}
 	
+	// Comparison
+	
+	template <typename T, size_t N>
+	struct Approximately<TVector<T, N>, Approximation::Epsilon> {
+		const TVector<T, N> value;
+		const T epsilon;
+		
+		constexpr TVector<T, N> min() const {
+			return value - TVector<T,N>::replicate(epsilon);
+		}
+		constexpr TVector<T,N> max() const {
+			return value + TVector<T,N>::replicate(epsilon);
+		}
+		bool contains(TVector<T,N> v) const {
+			auto abs_diff = (value - v).abs();
+			const auto veps = TVector<T,N>::replicate(epsilon);
+			auto bool_mask = abs_diff < veps;
+			return simd::all_ones<N>(bool_mask.m);
+		}
+	};
+	template <typename T, size_t N>
+	struct Approximately<TVector<T, N>, Approximation::ULPs> {
+		const TVector<T, N> value;
+		using ULPs = typename IntegerTypeOfSize<sizeof(T)>::UnsignedType;
+		const ULPs ulps;
+		
+		bool contains(TVector<T,N> v) const {
+			auto diff = value - v;
+			auto abs_diff = diff.abs();
+			TVector<ULPs, N> ulps_diff(abs_diff.m);
+			auto result = ulps_diff <= TVector<ULPs, N>::replicate(ulps);
+			return simd::all_ones<N>(result.m);
+		}
+	};
+	
+	template <typename T, size_t N>
+	Approximately<TVector<T,N>, Approximation::Epsilon> approximately(TVector<T,N> value, T epsilon) {
+		return Approximately<TVector<T, N>, Approximation::Epsilon>{value, epsilon};
+	}
+	template <typename T, size_t N>
+	Approximately<TVector<T,N>, Approximation::ULPs> approximately(TVector<T,N> value, typename TVector<T,N>::MaskElementType ulps) {
+		return Approximately<TVector<T, N>, Approximation::ULPs>{value, ulps};
+	}
 	
 	
 	ALWAYS_INLINE vec1 sumv(vec1 vec) { return vec; }
@@ -472,7 +492,7 @@ namespace falling {
 	template <typename T, size_t N>
 	ALWAYS_INLINE TVector<T,N> TVector<T,N>::normalize_safe() const {
 		auto v = lengthv();
-		if (v.all_equal_within(zero(), 0.f)) {
+		if (v == approximately(zero(), 0)) {
 			throw_normalize_zero_length_vector_exception();
 		}
 		return (*this) / v;

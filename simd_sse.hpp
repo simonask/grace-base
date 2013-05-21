@@ -15,6 +15,9 @@
 #if defined(__SSE3__)
 #include <pmmintrin.h>
 #endif
+#if defined(__SSE4_1__)
+#include <smmintrin.h>
+#endif
 #endif
 
 #include <cmath>
@@ -568,6 +571,32 @@ namespace falling {
 		
 		ALWAYS_INLINE fvec4 ceil(fvec4 v) {
 			return {::ceilf(v[0]), ::ceilf(v[1]), ::ceilf(v[2]), ::ceilf(v[3])};
+		}
+		
+		template <size_t N = 4>
+		ALWAYS_INLINE bool all_ones(uvec4 v) {
+			int mask = _mm_movemask_epi8(v);
+			const auto m = ((N == 4) ? 0xffff : 0x0fff);
+			return (mask & m) == m;
+		}
+		
+		template <size_t N = 4>
+		ALWAYS_INLINE bool any_ones(uvec4 v) {
+			int mask = _mm_movemask_epi8(v);
+			const auto m = ((N == 4) ? 0xffff : 0x0fff);
+			return (mask & m) != 0x0;
+		}
+		
+		template <size_t N = 2>
+		ALWAYS_INLINE bool all_ones(uvec2 v) {
+			int mask = _mm_movemask_pi8(v);
+			return mask == 0xff;
+		}
+		
+		template <size_t N = 2>
+		ALWAYS_INLINE bool any_ones(uvec2 v) {
+			int mask = _mm_movemask_pi8(v);
+			return mask != 0x0;
 		}
 	}
 }
