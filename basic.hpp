@@ -205,6 +205,47 @@ auto linear_search(Container& container, const ComparableValue& value)
 		return round_up_impl(val, boundary, val % boundary);
 	}
 	
+	template <typename T, bool Move>
+	struct MoveOrCopyImpl;
+	template <typename T> struct MoveOrCopyImpl<T, true> {
+		static void move_or_copy(T& dst, T& src) {
+			dst = std::move(src);
+		}
+	};
+	template <typename T> struct MoveOrCopyImpl<T, false> {
+		static void move_or_copy(T& dst, const T& src) {
+			dst = src;
+		}
+	};
+	template <bool Move, typename T>
+	void move_or_copy(T& dst, T& src) {
+		MoveOrCopyImpl<T, Move>::move_or_copy(dst, src);
+	}
+	template <bool Move, typename T>
+	void move_or_copy(T& dst, const T& src) {
+		MoveOrCopyImpl<T, false>::move_or_copy(dst, src);
+	}
+	template <typename T, bool Move>
+	struct MoveOrCopyConstructImpl;
+	template <typename T> struct MoveOrCopyConstructImpl<T, true> {
+		static void move_or_copy(void* dst, T& src) {
+			new(dst) T(std::move(src));
+		}
+	};
+	template <typename T> struct MoveOrCopyConstructImpl<T, false> {
+		static void move_or_copy(void* dst, const T& src) {
+			new(dst) T(src);
+		}
+	};
+	template <bool Move, typename T>
+	void move_or_copy_construct(void* dst, T& src) {
+		MoveOrCopyConstructImpl<T, Move>::move_or_copy(dst, src);
+	}
+	template <bool Move, typename T>
+	void move_or_copy_construct(void* dst, const T& src) {
+		MoveOrCopyConstructImpl<T, false>::move_or_copy(dst, src);
+	}
+	
 	struct Less {
 		template <typename A, typename B>
 		bool operator()(const A& a, const B& b) const {
