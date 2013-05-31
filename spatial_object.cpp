@@ -21,15 +21,26 @@ namespace falling {
 		property(&SpatialObject::size, &SpatialObject::set_size, "size");
 		property(&SpatialObject::scale, &SpatialObject::set_scale, "scale");
 		property(&SpatialObject::rotation, &SpatialObject::set_rotation, "rotation");
+		property(&SpatialObject::rotation_origin, &SpatialObject::set_rotation_origin, "rotation_origin");
+		property(&SpatialObject::transform_parent, &SpatialObject::set_transform_parent, "transform_parent");
+		property(&SpatialObject::transform, nullptr, "transform");
+		property(&SpatialObject::local_transform, nullptr, "local_transform");
 	END_TYPE_INFO()
+	
+	void SpatialObject::initialize() {
+		Renderable::initialize();
+		if (transform_parent_ == nullptr) {
+			reset_transform_parent();
+		}
+	}
 	
 	vec2 SpatialObject::get_focus_point() const {
 		Rect b = bounds();
 		return b.origin + b.size / vec2::two();
 	}
-	
+		
 	Rect SpatialObject::bounds() const {
-		return Rect(position(), size() * scale());
+		return bounds_of_rotated_rectangle(Rect{position(), size()}, rotation());
 	}
 	
 	vec2 SpatialObject::position() const {
@@ -64,10 +75,63 @@ namespace falling {
 		rotation_ = rot;
 	}
 	
+	vec2 SpatialObject::rotation_origin() const {
+		return rotation_origin_;
+	}
+	
+	void SpatialObject::set_rotation_origin(vec2 offset) {
+		rotation_origin_ = offset;
+	}
+	
 	void SpatialObject::debug_render(Renderer& r) {
 		auto rect = bounds();
 		Path<SolidVertex2> path = make_solid_rect(default_allocator(), vec2::zero(), rect.size, Color(1, 1, 1, 0.1));
 		r.move_to(rect.origin);
 		r.fill_path(path);
+	}
+	
+	ObjectPtr<SpatialObject> SpatialObject::transform_parent() const {
+		return transform_parent_;
+	}
+	
+	void SpatialObject::set_transform_parent(ObjectPtr<SpatialObject> parent) {
+		ObjectPtr<SpatialObject> p = parent;
+		while (p != nullptr) {
+			if (p.get() == this) {
+				Warning() << "Spatial transform parent of '" << object_id() << "' is cyclic -- setting to null.";
+				transform_parent_ = nullptr;
+				return;
+			}
+			p = p->transform_parent();
+		}
+		
+		transform_parent_ = parent;
+	}
+	
+	void SpatialObject::reset_transform_parent() {
+		transform_parent_ = nullptr;
+		if (is_aspect_in_composite()) {
+			Object* p = find_parent();
+			while (p != nullptr) {
+				SpatialObject* ps = dynamic_cast<SpatialObject*>(p);
+				if (ps != nullptr) {
+					transform_parent_ = ObjectPtr<SpatialObject>(ps);
+					return;
+				}
+				p = p->find_parent();
+			}
+		}
+	}
+	
+	matrix33 SpatialObject::transform() const {
+		if (transform_parent_) {
+			return local_transform() * transform_parent_->transform();
+		} else {
+			return local_transform();
+		}
+	}
+	
+	matrix33 SpatialObject::local_transform() const {
+		return make_2d_transform_matrix(position(), scale(), rotation());
 	}
 }

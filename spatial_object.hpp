@@ -13,11 +13,14 @@
 #include "base/vector.hpp"
 #include "base/geometry.hpp"
 #include "render/renderable.hpp"
+#include "object/objectptr.hpp"
 
 namespace falling {
 	class SpatialObject : public Renderable {
 		REFLECT;
 	public:
+		void initialize() override;
+	
 		virtual vec2 get_focus_point() const; // default: middle of bounds
 		virtual Rect bounds() const;
 		virtual vec2 position() const;
@@ -28,13 +31,33 @@ namespace falling {
 		virtual void set_scale(vec2 v2);
 		virtual float32 rotation() const;
 		virtual void set_rotation(float32 rot);
+		virtual vec2 rotation_origin() const;
+		virtual void set_rotation_origin(vec2 offset);
 		
 		void debug_render(Renderer& render) override;
+		
+		/*
+		 Transform parent can be:
+		 1) Manually set as a property.
+		 2) If not manually set, it is initialized to the closest SpatialObject
+		    in the containing composites.
+		 3) If it isn't contained in a spatial object, it is a toplevel object,
+		    and transform_parent is NULL.
+		*/
+		ObjectPtr<SpatialObject> transform_parent() const;
+		void set_transform_parent(ObjectPtr<SpatialObject>);
+		void reset_transform_parent(); // like set_transform_parent(nullptr), but tries to find a parent in the composite.
+		
+		matrix33 transform() const; // global transform
+		matrix33 local_transform() const; // transform without parents
 	private:
 		vec2 position_ = vec2::zero();
 		vec2 size_ = vec2::replicate(100.f);
 		vec2 scale_ = vec2::one();
 		float32 rotation_ = 0.f;
+		vec2 rotation_origin_ = vec2::zero();
+		
+		ObjectPtr<SpatialObject> transform_parent_;
 	};
 }
 
