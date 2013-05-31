@@ -165,6 +165,11 @@ namespace falling {
 	constexpr auto max(A a, B b) -> typename std::common_type<A, B>::type {
 		return a > b ? a : b;
 	}
+	
+	template <typename T>
+	T abs(T value) {
+		return value < 0 ? -value : value;
+	}
 }
 
 #endif

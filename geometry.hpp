@@ -76,6 +76,10 @@ namespace falling {
 			size = biggest_end - origin;
 			return *this;
 		}
+		
+		float32 area() const {
+			return size.x * size.y;
+		}
 	};
 	
 	using Rect = TRect<float32>;
@@ -146,6 +150,20 @@ namespace falling {
 	inline matrix33 make_2d_transform_matrix(vec2 translation, vec2 scale, float32 rotation) {
 		// TODO: Optimize
 		return make_2d_scaling_matrix(scale) * make_rotation_matrix33_z(rotation) * make_2d_translation_matrix33(translation);
+	}
+	
+	// Rotates around center
+	inline Rect bounds_of_rotated_rectangle(const Rect& r, float32 deg) {
+		const auto rad = deg2rad(deg);
+		const auto cosr = std::abs(std::cos(rad));
+		const auto sinr = std::abs(std::sin(rad));
+		const auto sincosv = vec2{sinr, cosr};
+		const auto cossinv = vec2{cosr, sinr};
+		const auto new_width = (r.size * cossinv).sumv();
+		const auto new_height = (r.size * sincosv).sumv();
+		const auto new_size = shuffle2<0, X, 1, Y>(new_width, new_height);
+		const auto new_origin = r.origin - ((new_size-r.size) / vec2::two());
+		return Rect{new_origin, new_size};
 	}
 }
 
