@@ -14,6 +14,7 @@
 #include "base/array.hpp"
 #include "base/matrix.hpp"
 #include "base/array_list.hpp"
+#include "base/maxarray.hpp"
 #include "base/color.hpp"
 #include "base/function.hpp"
 #include "base/time.hpp"
@@ -211,6 +212,14 @@ namespace falling {
 	
 	template <typename T>
 	FormattedStream& operator<<(FormattedStream& stream, const ArrayRef<T>& array) {
+		stream << '[';
+		stream << join(array, ", ");
+		stream << ']';
+		return stream;
+	}
+	
+	template <typename T, uint32 C>
+	FormattedStream& operator<<(FormattedStream& stream, const MaxArray<T, C>& array) {
 		stream << '[';
 		stream << join(array, ", ");
 		stream << ']';
