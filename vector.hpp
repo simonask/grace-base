@@ -199,6 +199,13 @@ namespace falling {
 		ALWAYS_INLINE bool any_equal_within(const Self& other, ElementType epsilon) const {
 			return simd::any_ones<N>(equal_within(other, epsilon).m);
 		}
+		
+		template <typename T = ElementType>
+		ALWAYS_INLINE
+		typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
+		all_equal(const Self& other) const {
+			return simd::all_ones<N>((*this == other).m);
+		}
 				
 		template <typename T = ElementType>
 		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
@@ -414,6 +421,7 @@ namespace falling {
 	Approximately<TVector<T,N>, Approximation::ULPs> approximately(TVector<T,N> value, typename TVector<T,N>::MaskElementType ulps) {
 		return Approximately<TVector<T, N>, Approximation::ULPs>{value, ulps};
 	}
+	
 	
 	
 	ALWAYS_INLINE vec1 sumv(vec1 vec) { return vec; }
