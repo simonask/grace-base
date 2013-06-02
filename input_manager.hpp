@@ -11,6 +11,7 @@
 
 #include "event/event_loop.hpp"
 #include "base/auto_link_queue.hpp"
+#include "object/signal.hpp"
 
 namespace falling {
 	class IInputResponder;
@@ -28,6 +29,12 @@ namespace falling {
 		IInputResponder* first_responder() const;
 		EventResponse push_event(const InputEvent&);
 		void clear();
+		
+		Signal<> on_begin_text_input;
+		Signal<> on_end_text_input;
+		
+		void begin_text_input();
+		void end_text_input();
 
 		struct Impl;
 		Impl* impl;

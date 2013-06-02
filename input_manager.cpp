@@ -106,4 +106,12 @@ namespace falling {
 			return EventResponse::PassOn;
 		}
 	}
+	
+	void InputManager::begin_text_input() {
+		on_begin_text_input();
+	}
+	
+	void InputManager::end_text_input() {
+		on_end_text_input();
+	}
 }
