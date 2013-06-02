@@ -21,6 +21,7 @@ public:
 	static void add(const EnumType* type);
 	static ArrayRef<const ObjectTypeBase*> object_types();
 	static ArrayRef<const EnumType*> enum_types();
+	static ArrayRef<const VertexType*> vertex_types();
 	static void add_missing_types(); // Search registered types for references to non-registered types and register them.
 	
 	static const ObjectTypeBase* get(StringRef name);

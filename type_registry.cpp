@@ -52,6 +52,10 @@ ArrayRef<const EnumType*> TypeRegistry::enum_types() {
 	return impl()->enum_type_map.values();
 }
 
+ArrayRef<const VertexType*> TypeRegistry::vertex_types() {
+	return impl()->vertex_type_map.values();
+}
+
 void TypeRegistry::add_missing_types() {
 	ScratchAllocator scratch;
 	Array<const ObjectTypeBase*> registered_types(impl()->type_map.values(), scratch);
