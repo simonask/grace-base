@@ -67,7 +67,7 @@ namespace falling {
         template <typename InputIterator>
         void insert_move(InputIterator i0, InputIterator i1, const iterator& before);
 		void insert(T value, const iterator& before);
-        void erase(iterator it);
+        iterator erase(iterator it);
 		void resize(size_t new_size, T filler = T());
     private:
         template <bool> friend struct iterator_impl;
@@ -376,10 +376,11 @@ namespace falling {
 	}
 	
 	template <typename T>
-	void ArrayList<T>::erase(iterator it) {
+	typename ArrayList<T>::iterator ArrayList<T>::erase(iterator it) {
 		if (it == end()) {
 			throw IndexOutOfBoundsException();
 		}
+		size_t pos = it - begin();
 		auto output_begin = it;
 		auto input_begin = it+1;
 		auto input_end = end();
@@ -394,6 +395,7 @@ namespace falling {
 			}
 		}
 		--size_;
+		return begin() + pos;
 	}
 	
 	template <typename T>
