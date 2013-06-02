@@ -66,6 +66,7 @@ namespace falling {
         void insert_move(InputIterator i0, InputIterator i1);
         template <typename InputIterator>
         void insert_move(InputIterator i0, InputIterator i1, const iterator& before);
+		void insert(T value, const iterator& before);
         void erase(iterator it);
 		void resize(size_t new_size, T filler = T());
     private:
@@ -280,6 +281,11 @@ namespace falling {
 			iterator i0 = make_room_at(before, n);
 			std::move(a, b, i0);
 		}
+	}
+	
+	template <typename T>
+	void ArrayList<T>::insert(T value, const iterator &before) {
+		insert_move(&value, &value + 1, before);
 	}
     
     template <typename T>
