@@ -180,14 +180,14 @@ namespace falling {
 		template <typename T = ElementType>
 		ALWAYS_INLINE ComparisonResult
 		operator==(const Self& other) const {
-			static_assert(IsFloatingPoint<T>::Value, "You should not compare vectors of floats directly with operator==. Use approximately(...) to pad one value with acceptable bounds.");
+			static_assert(!IsFloatingPoint<T>::Value, "You should not compare vectors of floats directly with operator==. Use approximately(...) to pad one value with acceptable bounds.");
 			return simd::cmp_eq(this->m, other.m);
 		}
 		
 		template <typename T = ElementType>
 		ALWAYS_INLINE ComparisonResult
 		operator!=(const Self& other) const {
-			static_assert(IsFloatingPoint<T>::Value, "You should not compare vectors of floats directly with operator!=. Use approximately(...) to pad one value with acceptable bounds.");
+			static_assert(!IsFloatingPoint<T>::Value, "You should not compare vectors of floats directly with operator!=. Use approximately(...) to pad one value with acceptable bounds.");
 			return simd::cmp_neq(this->m, other.m);
 		}
 		
