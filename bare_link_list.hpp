@@ -20,7 +20,7 @@ namespace falling {
 		virtual ~ListLinkBase() {
 			unlink();
 		}
-	private:
+	protected:
 		void unlink() {
 			next->previous = previous;
 			previous->next = next;
