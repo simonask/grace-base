@@ -44,6 +44,7 @@ namespace falling {
 		const_iterator begin() const { return begin_; }
 		const_iterator end() const { return end_; }
 		
+		T* data() { return begin_; }
 		const T* data() const { return begin_; }
 	private:
 		T* begin_;
