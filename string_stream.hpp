@@ -24,6 +24,7 @@ namespace falling {
 		String string(IAllocator& alloc) const;
 		String string() const;
 		void set_string(StringRef);
+		size_t size() const { return buffer_.size(); }
 		
 		// StringStream-like
 		String str() const { return string(); }
