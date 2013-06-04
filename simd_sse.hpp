@@ -9,9 +9,9 @@
 #ifndef falling_simd_sse_hpp
 #define falling_simd_sse_hpp
 
+
 #if defined(__SSE__) && defined(__SSE2__)
 #include <xmmintrin.h>
-#include <mmintrin.h>
 #if defined(__SSE3__)
 #include <pmmintrin.h>
 #endif
@@ -500,8 +500,7 @@ namespace falling {
 		
 		
 		static const uint32 SIGNMASK_FLOAT32 = 0x80000000;
-		static const __m128 SIGNMASK_VEC4 = _mm_set1_epi32(SIGNMASK_FLOAT32);
-		static const __m64 SIGNMASK_VEC2 = _mm_set1_pi32(SIGNMASK_FLOAT32);
+		static const uvec4 SIGNMASK_VEC4 = _mm_set1_epi32(SIGNMASK_FLOAT32);
 		
 		ALWAYS_INLINE fvec4 neg(fvec4 v) {
 			fvec4 negval = _mm_xor_ps(v, SIGNMASK_VEC4);
@@ -522,8 +521,12 @@ namespace falling {
 			return absval;
 		}
 		
-		ALWAYS_INLINE fvec2 abs(fvec2 v) {
-			fvec2 absval = _mm_andnot_si64(SIGNMASK_VEC2, v);
+		inline fvec2 abs(fvec2 v) {
+			fvec4 v4;
+			fvec2 absval;
+			convert2(v, v4);
+			fvec4 absval4 = _mm_andnot_ps(SIGNMASK_VEC4, v4);
+			convert2(absval4, absval);
 			return absval;
 		}
 		
@@ -576,27 +579,29 @@ namespace falling {
 		template <size_t N = 4>
 		ALWAYS_INLINE bool all_ones(uvec4 v) {
 			int mask = _mm_movemask_epi8(v);
-			const auto m = ((N == 4) ? 0xffff : 0x0fff);
+			const auto m = ((N == 4) ? 0xffff : (N == 3 ? 0x0fff : 0x00ff));
 			return (mask & m) == m;
 		}
 		
 		template <size_t N = 4>
 		ALWAYS_INLINE bool any_ones(uvec4 v) {
 			int mask = _mm_movemask_epi8(v);
-			const auto m = ((N == 4) ? 0xffff : 0x0fff);
+			const auto m = ((N == 4) ? 0xffff : (N == 3 ? 0x0fff : 0x00ff));
 			return (mask & m) != 0x0;
 		}
 		
 		template <size_t N = 2>
 		ALWAYS_INLINE bool all_ones(uvec2 v) {
-			int mask = _mm_movemask_pi8(v);
-			return mask == 0xff;
+			uvec4 v4;
+			convert2(v, v4);
+			return all_ones<2>(v4);
 		}
 		
 		template <size_t N = 2>
 		ALWAYS_INLINE bool any_ones(uvec2 v) {
-			int mask = _mm_movemask_pi8(v);
-			return mask != 0x0;
+			uvec4 v4;
+			convert2(v, v4);
+			return any_ones<2>(v4);
 		}
 	}
 }
