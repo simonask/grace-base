@@ -168,7 +168,7 @@ namespace falling {
 	template <typename T, typename R, typename... Args>
 	Function<R(Args...)> bind_method(T* self, R(T::*method)(Args...)) {
 		auto f = [=](Args... args) {
-			(self->*method)(std::forward<Args>(args)...);
+			return (self->*method)(std::forward<Args>(args)...);
 		};
 		return Function<R(Args...)>(move(f));
 	}
@@ -176,7 +176,7 @@ namespace falling {
 	template <typename T, typename R, typename... Args>
 	Function<R(Args...)> bind_method(const T* self, R(T::*method)(Args...) const) {
 		auto f = [=](Args... args) {
-			(self->*method)(std::forward<Args>(args)...);
+			return (self->*method)(std::forward<Args>(args)...);
 		};
 		return Function<R(Args...)>(move(f));
 	}
