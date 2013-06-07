@@ -42,6 +42,11 @@ namespace falling {
 		
 		template <typename T>
 		ObjectPtr<T> create(String id) {
+			// Give a compilation error in case T is abstract.
+			if (false) {
+				new(nullptr) T;
+			}
+			
 			ObjectPtr<> o = this->create_object(get_type<T>(), std::move(id));
 			ObjectPtr<T> ptr = aspect_cast<T>(o);
 			ASSERT(ptr != nullptr); // create_object did not create an instance of T.
@@ -50,6 +55,11 @@ namespace falling {
 		
 		template <typename T>
 		ObjectPtr<T> create_root(String id) {
+			// Give a compilation error in case T is abstract.
+			if (false) {
+				new(nullptr) T;
+			}
+			
 			ObjectPtr<> o = this->create_object_and_set_as_root(get_type<T>(), std::move(id));
 			ObjectPtr<T> ptr = aspect_cast<T>(o);
 			ASSERT(ptr != nullptr);
