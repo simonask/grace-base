@@ -148,20 +148,20 @@ namespace falling {
 		ALWAYS_INLINE TVector() {}
 		ALWAYS_INLINE explicit TVector(const ElementType* elements) { simd::unaligned_load(this->m, elements); }
 		ALWAYS_INLINE explicit TVector(ElementType elements[N])     { simd::unaligned_load(this->m, elements); }
-		ALWAYS_INLINE TVector(const Self& other) { this->m = other.m; }
+		ALWAYS_INLINE TVector(const Self& other) = default;
 		ALWAYS_INLINE TVector(Type repr) { this->m = repr; }
 		
 		
 		template <typename Enable = void>
 		ALWAYS_INLINE explicit TVector(ElementType x, typename std::enable_if<N == 1, Enable*>::type = nullptr) { this->m = Type{x}; }
 		template <typename Enable = void>
-		ALWAYS_INLINE TVector(ElementType x, ElementType y, typename std::enable_if<N == 2, Enable*>::type = nullptr) { this->m = Type{x, y}; }
+		ALWAYS_INLINE TVector(ElementType x, ElementType y, typename std::enable_if<N == 2, Enable*>::type = nullptr) { this->m = simd::set(x, y); }
 		template <typename Enable = void>
-		ALWAYS_INLINE TVector(ElementType x, ElementType y, ElementType z, typename std::enable_if<N == 3, Enable*>::type = nullptr) { this->m = Type{x, y, z}; }
+		ALWAYS_INLINE TVector(ElementType x, ElementType y, ElementType z, typename std::enable_if<N == 3, Enable*>::type = nullptr) { this->m = simd::set(x, y, z, (ElementType)1); }
 		template <typename Enable = void>
-		ALWAYS_INLINE TVector(ElementType x, ElementType y, ElementType z, ElementType w, typename std::enable_if<N == 4, Enable*>::type = nullptr) { this->m = Type{x, y, z, w}; }
+		ALWAYS_INLINE TVector(ElementType x, ElementType y, ElementType z, ElementType w, typename std::enable_if<N == 4, Enable*>::type = nullptr) { this->m = simd::set(x, y, z, w); }
 		
-		ALWAYS_INLINE Self& operator=(Self other) { this->m = other.m; return *this; }
+		ALWAYS_INLINE Self& operator=(const Self& other) = default;
 		
 		
 		// Conversion
@@ -197,27 +197,27 @@ namespace falling {
 		}
 		
 		ALWAYS_INLINE bool any_equal_within(const Self& other, ElementType epsilon) const {
-			return simd::any_ones<N>(equal_within(other, epsilon).m);
+			return simd::any_true<N>(equal_within(other, epsilon).m);
 		}
 		
 		template <typename T = ElementType>
 		ALWAYS_INLINE
 		typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
 		all_equal(const Self& other) const {
-			return simd::all_ones<N>((*this == other).m);
+			return simd::all_true<N>((*this == other).m);
 		}
 				
 		template <typename T = ElementType>
 		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
 		any_equal(const Self& other, MaskElementType ulps = 5) const {
 			auto abs_diff = MaskVector(this->mask - other.mask).abs();
-			return simd::any_ones(abs_diff <= MaskVector::replicate(ulps));
+			return simd::any_true<N>(abs_diff <= MaskVector::replicate(ulps));
 		}
 		
 		template <typename T = ElementType>
 		ALWAYS_INLINE typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
 		any_equal(const Self& other) const {
-			return simd::any_ones(*this == other);
+			return simd::any_true<N>(*this == other);
 		}
 		
 		template <typename T = ElementType>
@@ -266,26 +266,29 @@ namespace falling {
 		
 		// Arithmetic
 		
-		ALWAYS_INLINE Self& operator+=(Self other) { this->m += other.m; return *this; }
-		ALWAYS_INLINE Self operator+(Self other) const { return Self(this->m + other.m); }
-		ALWAYS_INLINE Self& operator-=(Self other) { this->m -= other.m; return *this; }
-		ALWAYS_INLINE Self operator-(Self other) const { return Self(this->m - other.m); }
-		ALWAYS_INLINE Self operator-() const;
-		ALWAYS_INLINE Self& operator*=(Self other) { this->m *= other.m; return *this; }
-		ALWAYS_INLINE Self operator*(Self other) const { return Self(this->m * other.m); }
-		ALWAYS_INLINE Self& operator/=(Self other) { this->m /= other.m; return *this; }
-		ALWAYS_INLINE Self operator/(Self other) const { return Self(this->m / other.m); }
+		ALWAYS_INLINE Self& operator+=(Self other) { this->m = simd::add(this->m, other.m); return *this; }
+		ALWAYS_INLINE Self operator+(Self other) const { return Self(simd::add(this->m, other.m)); }
+		ALWAYS_INLINE Self& operator-=(Self other) { this->m = simd::sub(this->m, other.m); return *this; }
+		ALWAYS_INLINE Self operator-(Self other) const { return Self(simd::sub(this->m, other.m)); }
+		template <typename T = ElementType>
+		typename std::enable_if<std::is_signed<T>::value, TVector<T,N>>::type operator-() const {
+			return simd::neg(this->m);
+		}
+		ALWAYS_INLINE Self& operator*=(Self other) { this->m = simd::mul(this->m, other.m); return *this; }
+		ALWAYS_INLINE Self operator*(Self other) const { return Self(simd::mul(this->m, other.m)); }
+		ALWAYS_INLINE Self& operator/=(Self other) { this->m = simd::div(this->m, other.m); return *this; }
+		ALWAYS_INLINE Self operator/(Self other) const { return Self(simd::div(this->m, other.m)); }
 		
 		
 		// Masking
 		
-		ALWAYS_INLINE Self operator&(MaskVector msk) const { return this->mask & msk.mask; }
-		ALWAYS_INLINE Self operator|(MaskVector msk) const { return this->mask | msk.mask; }
-		ALWAYS_INLINE Self operator^(MaskVector msk) const { return this->mask ^ msk.mask; }
-		ALWAYS_INLINE Self operator~() const { return ~this->mask; }
-		ALWAYS_INLINE Self& operator&=(MaskVector  msk) { this->mask &= msk.m; return *this; }
-		ALWAYS_INLINE Self& operator|=(MaskVector msk) { this->mask |= msk.m; return *this; }
-		ALWAYS_INLINE Self& operator^=(MaskVector msk) { this->mask ^= msk.m; return *this; }
+		ALWAYS_INLINE MaskVector operator&(MaskVector msk) const { return simd::bitwise_and(this->mask, msk.mask); }
+		ALWAYS_INLINE MaskVector operator|(MaskVector msk) const { return simd::bitwise_or(this->mask, msk.mask); }
+		ALWAYS_INLINE MaskVector operator^(MaskVector msk) const { return simd::bitwise_xor(this->mask, msk.mask); }
+		ALWAYS_INLINE MaskVector operator~() const { return simd::bitwise_not(this->mask); }
+		ALWAYS_INLINE Self& operator&=(MaskVector msk) { this->mask = simd::bitwise_and(this->mask, msk.m); return *this; }
+		ALWAYS_INLINE Self& operator|=(MaskVector msk) { this->mask = simd::bitwise_or(this->mask, msk.m); return *this; }
+		ALWAYS_INLINE Self& operator^=(MaskVector msk) { this->mask = simd::bitwise_xor(this->mask, msk.m); return *this; }
 		
 		Self abs() const;
 		Self sumv() const;
@@ -299,9 +302,7 @@ namespace falling {
 		
 		static TVector<ElementType, N> replicate(ElementType value) {
 			Self v;
-			for (size_t i = 0; i < N; ++i) {
-				v[i] = value;
-			}
+			simd::replicate(v.m, value);
 			return v;
 		}
 		
@@ -395,7 +396,7 @@ namespace falling {
 			auto abs_diff = (value - v).abs();
 			const auto veps = TVector<T,N>::replicate(epsilon);
 			auto bool_mask = abs_diff < veps;
-			return simd::all_ones<N>(bool_mask.m);
+			return simd::all_true<N>(bool_mask.m);
 		}
 	};
 	template <typename T, size_t N>
@@ -407,9 +408,9 @@ namespace falling {
 		bool contains(TVector<T,N> v) const {
 			auto diff = value - v;
 			auto abs_diff = diff.abs();
-			TVector<ULPs, N> ulps_diff(abs_diff.m);
+			TVector<ULPs, N> ulps_diff(abs_diff.mask);
 			auto result = ulps_diff <= TVector<ULPs, N>::replicate(ulps);
-			return simd::all_ones<N>(result.m);
+			return simd::all_true<N>(result.m);
 		}
 	};
 	
@@ -429,13 +430,13 @@ namespace falling {
 	ALWAYS_INLINE vec3 sumv(vec3 vec) { return vec3(simd::hadd3(vec.m)); }
 	ALWAYS_INLINE vec4 sumv(vec4 vec) { return vec4(simd::hadd4(vec.m)); }
 	ALWAYS_INLINE uvec1 sumv(uvec1 vec) { return vec; }
-	ALWAYS_INLINE uvec2 sumv(uvec2 vec) { return uvec2(simd::hadd2u(vec.m)); }
-	ALWAYS_INLINE uvec3 sumv(uvec3 vec) { return uvec3(simd::hadd3u(vec.m)); }
-	ALWAYS_INLINE uvec4 sumv(uvec4 vec) { return uvec4(simd::hadd4u(vec.m)); }
+	ALWAYS_INLINE uvec2 sumv(uvec2 vec) { return uvec2(simd::hadd2(vec.m)); }
+	ALWAYS_INLINE uvec3 sumv(uvec3 vec) { return uvec3(simd::hadd3(vec.m)); }
+	ALWAYS_INLINE uvec4 sumv(uvec4 vec) { return uvec4(simd::hadd4(vec.m)); }
 	ALWAYS_INLINE ivec1 sumv(ivec1 vec) { return vec; }
-	ALWAYS_INLINE ivec2 sumv(ivec2 vec) { return ivec2(simd::hadd2i(vec.m)); }
-	ALWAYS_INLINE ivec3 sumv(ivec3 vec) { return ivec3(simd::hadd3i(vec.m)); }
-	ALWAYS_INLINE ivec4 sumv(ivec4 vec) { return ivec4(simd::hadd4i(vec.m)); }
+	ALWAYS_INLINE ivec2 sumv(ivec2 vec) { return ivec2(simd::hadd2(vec.m)); }
+	ALWAYS_INLINE ivec3 sumv(ivec3 vec) { return ivec3(simd::hadd3(vec.m)); }
+	ALWAYS_INLINE ivec4 sumv(ivec4 vec) { return ivec4(simd::hadd4(vec.m)); }
 	
 	template <typename T, size_t N>
 	ALWAYS_INLINE TVector<T,N> TVector<T,N>::sumv() const {
@@ -541,11 +542,6 @@ namespace falling {
 	template <typename T, size_t N>
 	ALWAYS_INLINE TVector<T,N> TVector<T,N>::ceil() const {
 		return simd::ceil(this->m);
-	}
-	
-	template <typename T, size_t N>
-	ALWAYS_INLINE TVector<T,N> TVector<T,N>::operator-() const {
-		return simd::neg(this->m);
 	}
 	
 	template <Axis X_, Axis Y_, Axis Z_, Axis W_, typename T>
@@ -660,7 +656,7 @@ namespace falling {
 	
 	template <typename T, size_t N>
 	ALWAYS_INLINE TVector<T, N> select(typename TVector<T,N>::ComparisonResult cmp, TVector<T,N> if_true, TVector<T,N> if_false) {
-		return (if_true & cmp) | (if_false & ~cmp).mask;
+		return simd::select(cmp.m, if_true.m, if_false.m);
 	}
 	
 	template <typename T, size_t N>
