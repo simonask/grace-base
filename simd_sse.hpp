@@ -145,7 +145,7 @@ namespace falling {
 		float32 get(fvec4 x) {
 #if defined(__SSE4_1)
 			const int a = (int)A;
-			return _mm_extract_ps(x, 3-a);
+			return _mm_extract_ps(x, a);
 #else
 			return reinterpret_cast<float32*>(&x.v)[A];
 #endif
@@ -154,7 +154,7 @@ namespace falling {
 		int32 get(ivec4 x) {
 #if defined(__SSE4_1__)
 			const int a = (int)A;
-			return _mm_extract_epi32(x.v, 3-a);
+			return _mm_extract_epi32(x.v, a);
 #else
 			return reinterpret_cast<int32*>(&x.v)[A];
 #endif
@@ -163,7 +163,7 @@ namespace falling {
 		uint32 get(uvec4 x) {
 #if defined(__SSE4_1__)
 			const int a = (int)A;
-			return _mm_extract_epi32(x.v, 3-a);
+			return _mm_extract_epi32(x.v, a);
 #else
 			return reinterpret_cast<uint32*>(&x.v)[A];
 #endif
@@ -373,16 +373,20 @@ namespace falling {
 		}
 		ALWAYS_INLINE ivec4 mul(ivec4 a, ivec4 b) {
 #if defined(__SSE4_1__)
-			return {_mm_mul_epi32(a, b)};
+			return {_mm_mullo_epi32(a, b)};
 #else
-			return set(get<X>(a)*get<X>(b), get<Y>(a)*get<Y>(b), get<Z>(a)*get<Z>(b), get<W>(a)*get<W>(b));
+			__m128i tmp1 = _mm_mul_epu32(a,b); /* mul 2,0*/
+			__m128i tmp2 = _mm_mul_epu32( _mm_srli_si128(a,4), _mm_srli_si128(b,4)); /* mul 3,1 */
+			return {_mm_unpacklo_epi32(_mm_shuffle_epi32(tmp1, _MM_SHUFFLE (0,0,2,0)), _mm_shuffle_epi32(tmp2, _MM_SHUFFLE (0,0,2,0)))}; /* shuffle results to [63..0] and pack */
 #endif
 		}
 		ALWAYS_INLINE uvec4 mul(uvec4 a, uvec4 b) {
 #if defined(__SSE4_1__)
-			return {_mm_mul_epi32(a, b)};
+			return {_mm_mullo_epi32(a, b)};
 #else
-			return set(get<X>(a)*get<X>(b), get<Y>(a)*get<Y>(b), get<Z>(a)*get<Z>(b), get<W>(a)*get<W>(b));
+			__m128i tmp1 = _mm_mul_epu32(a,b); /* mul 2,0*/
+			__m128i tmp2 = _mm_mul_epu32( _mm_srli_si128(a,4), _mm_srli_si128(b,4)); /* mul 3,1 */
+			return {_mm_unpacklo_epi32(_mm_shuffle_epi32(tmp1, _MM_SHUFFLE (0,0,2,0)), _mm_shuffle_epi32(tmp2, _MM_SHUFFLE (0,0,2,0)))}; /* shuffle results to [63..0] and pack */
 #endif
 		}
 
