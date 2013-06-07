@@ -36,34 +36,6 @@ namespace falling {
 		ComponentType  alpha() const { return components_[3]; }
 		ComponentType& alpha()       { return components_[3]; }
 		
-		template <typename Function>
-		auto pass_as_rgb(Function function) const
-		-> decltype(function(ComponentType(), ComponentType(), ComponentType()))
-		{
-			return function(red(), green(), blue());
-		}
-		
-		template <typename Function>
-		auto pass_as_rgba(Function function) const
-		-> decltype(function(ComponentType(), ComponentType(), ComponentType(), ComponentType()))
-		{
-			return function(red(), green(), blue(), alpha());
-		}
-		
-		template <typename Function>
-		auto pass_as_bgr(Function function) const
-		-> decltype(function(ComponentType(), ComponentType(), ComponentType()))
-		{
-			return function(blue(), green(), red());
-		}
-		
-		template <typename Function>
-		auto pass_as_bgra(Function function) const
-		-> decltype(function(ComponentType(), ComponentType(), ComponentType(), ComponentType()))
-		{
-			return function(blue(), green(), red(), alpha());
-		}
-		
 		static const Color White;
 		static const Color Black;
 		static const Color Red;
