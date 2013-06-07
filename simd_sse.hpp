@@ -224,10 +224,10 @@ namespace falling {
 		struct ConvertElementType {
 			// 4->4 conversion
 			void operator()(ivec4& dst, fvec4 src) {
-				dst.v = _mm_cvtps_epi32(src.v);
+				dst.v = _mm_cvttps_epi32(src.v);
 			}
 			void operator()(uvec4& dst, fvec4 src) {
-				dst.v = _mm_cvtps_epi32(src.v);
+				dst.v = _mm_cvttps_epi32(src.v);
 			}
 			void operator()(fvec4& dst, ivec4 src) {
 				dst.v = _mm_cvtepi32_ps(src.v);
@@ -390,10 +390,40 @@ namespace falling {
 			return {_mm_div_ps(a, b)};
 		}
 		ALWAYS_INLINE ivec4 div(ivec4 a, ivec4 b) {
-			return {a.v/b.v};
+#if defined(_mm_idiv_epi32)
+			return {_mm_idiv_epi32(a, b)};
+#else
+			// Warning: Super slow!
+			return set(get<X>(a)/get<X>(b), get<Y>(a)/get<Y>(b), get<Z>(a)/get<Z>(b), get<W>(a)/get<W>(b));
+#endif
 		}
 		ALWAYS_INLINE uvec4 div(uvec4 a, uvec4 b) {
-			return {a.v/b.v};
+#if defined(_mm_idiv_epi32)
+			return {_mm_idiv_epi32(a, b)};
+#else
+			// Warning: Super slow!
+			return set(get<X>(a)/get<X>(b), get<Y>(a)/get<Y>(b), get<Z>(a)/get<Z>(b), get<W>(a)/get<W>(b));
+#endif
+		}
+		
+		ALWAYS_INLINE ivec4 divrem(ivec4 a, ivec4 b, ivec4* rem) {
+#if defined(_mm_idivrem_epi32)
+			return {_mm_idivrem_epi32(&rem, a, b)};
+#else
+			// Warning: Super slow!
+			*rem = set(get<X>(a)%get<X>(b), get<Y>(a)%get<Y>(b), get<Z>(a)%get<Z>(b), get<W>(a)%get<W>(b));
+			return set(get<X>(a)/get<X>(b), get<Y>(a)/get<Y>(b), get<Z>(a)/get<Z>(b), get<W>(a)/get<W>(b));
+#endif
+		}
+		
+		ALWAYS_INLINE uvec4 divrem(uvec4 a, uvec4 b, uvec4* rem) {
+#if defined(_mm_idivrem_epi32)
+			return {_mm_idivrem_epi32(&rem, a, b)};
+#else
+			// Warning: Super slow!
+			*rem = set(get<X>(a)%get<X>(b), get<Y>(a)%get<Y>(b), get<Z>(a)%get<Z>(b), get<W>(a)%get<W>(b));
+			return set(get<X>(a)/get<X>(b), get<Y>(a)/get<Y>(b), get<Z>(a)/get<Z>(b), get<W>(a)/get<W>(b));
+#endif
 		}
 
 #pragma mark Bitwise (And/Or/Xor/Not)
@@ -476,7 +506,7 @@ namespace falling {
 			return {_mm_cmpgt_epi32(a.v, b.v)};
 		}
 		ALWAYS_INLINE uvec4 cmp_gte(ivec4 a, ivec4 b) {
-			return {_mm_or_si128(cmp_eq(a, b).v, cmp_lt(a, b).v)};
+			return {_mm_or_si128(cmp_eq(a, b).v, cmp_gt(a, b).v)};
 		}
 		ALWAYS_INLINE uvec4 cmp_eq(uvec4 a, uvec4 b) {
 			return {_mm_cmpeq_epi32(a.v, b.v)};
@@ -497,7 +527,7 @@ namespace falling {
 			return {_mm_cmpgt_epi32(a.v, b.v)};
 		}
 		ALWAYS_INLINE uvec4 cmp_gte(uvec4 a, uvec4 b) {
-			return {_mm_or_si128(cmp_eq(a, b).v, cmp_lt(a, b).v)};
+			return {_mm_or_si128(cmp_eq(a, b).v, cmp_gt(a, b).v)};
 		}
 
 
@@ -700,9 +730,19 @@ namespace falling {
 		fvec4 shuffle2(fvec4 a, fvec4 b) {
 			return shuffle2<XVector, X_, YVector, Y_, XVector, Z, XVector, W>(a, b);
 		}
+		
+		template <size_t XVector, Axis X_, size_t YVector, Axis Y_, size_t ZVector, Axis Z_, size_t WVector = 1, Axis W_ = W>
+		ivec4 shuffle2(ivec4 a, ivec4 b) {
+			return Shuffle2<XVector, X_, YVector, Y_, ZVector, Z_, WVector, W_>::shuffle(a, b);
+		}
 		template <size_t XVector, Axis X_, size_t YVector, Axis Y_>
 		ivec4 shuffle2(ivec4 a, ivec4 b) {
 			return shuffle2<XVector, X_, YVector, Y_, XVector, Z, XVector, W>(a, b);
+		}
+		
+		template <size_t XVector, Axis X_, size_t YVector, Axis Y_, size_t ZVector, Axis Z_, size_t WVector = 1, Axis W_ = W>
+		uvec4 shuffle2(uvec4 a, uvec4 b) {
+			return Shuffle2<XVector, X_, YVector, Y_, ZVector, Z_, WVector, W_>::shuffle(a, b);
 		}
 		template <size_t XVector, Axis X_, size_t YVector, Axis Y_>
 		uvec4 shuffle2(uvec4 a, uvec4 b) {
@@ -728,10 +768,11 @@ namespace falling {
 #pragma mark Horizontal Addition
 		ALWAYS_INLINE fvec4 hadd3(fvec4 v) {
 #if defined(__SSE3__)
-			__m128 tmp = shuffle<X,Y,X,Y>(v);
-			tmp = _mm_hadd_ps(tmp, tmp); // Is hadd actually faster than shuffle?
-			__m128 tmp2 = shuffle<Z,Z,Z,Z>(v);
-			return {tmp + tmp2};
+			__m128 zero = _mm_set1_ps(0.f);
+			__m128 masked = shuffle2<0, X, 0, Y, 0, Z, 1, W>(v, {zero});
+			__m128 tmp = _mm_hadd_ps(masked, masked);
+			__m128 r = _mm_hadd_ps(tmp, tmp);
+			return shuffle<X,X,X,X>(fvec4{r});
 #else
 			fvec4 a = shuffle<X,X,X,X>(v);
 			fvec4 b = shuffle<Y,Y,Y,Y>(v);
@@ -771,7 +812,8 @@ namespace falling {
 		
 		ALWAYS_INLINE uvec4 hadd2(uvec4 v) {
 #if defined(__SSSE3__)
-			return {_mm_hadd_epi32(v, v)};
+			uvec4 tmp = {_mm_hadd_epi32(v,v)};
+			return shuffle<X,X>(tmp);
 #else
 			uint32 sum = get<X>(v) + get<Y>(v);
 			return set(sum, sum);
@@ -780,10 +822,11 @@ namespace falling {
 		
 		ALWAYS_INLINE ivec4 hadd3(ivec4 v) {
 #if defined(__SSSE3__)
-			__m128i tmp = shuffle<X,Y,X,Y>(v); // TODO: Use unpack!
-			tmp = _mm_hadd_epi32(v, v);
-			__m128 tmp2 = shuffle<Z,Z,Z,Z>(v);
-			return {_mm_add_epi32(tmp, tmp2)};
+			__m128i zero = _mm_set1_epi32(0);
+			__m128i masked = shuffle2<0, X, 0, Y, 0, Z, 1, W>(v, {zero});
+			__m128i tmp = _mm_hadd_epi32(masked, masked);
+			__m128i r = _mm_hadd_epi32(tmp, tmp);
+			return shuffle<X,X,X,X>(ivec4{r});
 #else
 			auto sum = get<X>(v) + get<Y>(v) + get<Z>(v);
 			return set(sum, sum, sum, sum);
@@ -792,10 +835,11 @@ namespace falling {
 		
 		ALWAYS_INLINE uvec4 hadd3(uvec4 v) {
 #if defined(__SSSE3__)
-			__m128i tmp = shuffle<X,Y,X,Y>(v); // TODO: Use unpack!
-			tmp = _mm_hadd_epi32(v, v);
-			__m128 tmp2 = shuffle<Z,Z,Z,Z>(v);
-			return {_mm_add_epi32(tmp, tmp2)};
+			__m128i zero = _mm_set1_epi32(0);
+			__m128i masked = shuffle2<0, X, 0, Y, 0, Z, 1, W>(v, {zero});
+			__m128i tmp = _mm_hadd_epi32(masked, masked);
+			__m128i r = _mm_hadd_epi32(tmp, tmp);
+			return shuffle<X,X,X,X>(uvec4{r});
 #else
 			auto sum = get<X>(v) + get<Y>(v) + get<Z>(v);
 			return set(sum, sum, sum, sum);
@@ -832,15 +876,15 @@ namespace falling {
 		}
 		
 		ALWAYS_INLINE float32 sqrt(float32 f) {
-			fvec4 v = {_mm_set_ps1(f)};
-			v = sqrt(v);
-			return get<X>(v);
+			fvec4 v = {_mm_set_ss(f)};
+			fvec4 r = {_mm_sqrt_ss(v)};
+			return get<X>(r);
 		}
 		
 		ALWAYS_INLINE float32 rsqrt(float32 f) {
-			fvec4 v = {_mm_set_ps1(f)};
-			v = rsqrt(v);
-			return get<X>(v);
+			fvec4 v = {_mm_set_ss(f)};
+			fvec4 r = {_mm_rsqrt_ss(v)};
+			return get<X>(r);
 		}
 
 		ALWAYS_INLINE ivec4 sqrt(ivec4 v) {
@@ -887,8 +931,8 @@ namespace falling {
 		}
 
 		ALWAYS_INLINE ivec4 neg(ivec4 v) {
-			ivec4 negval = {_mm_xor_ps(v, SIGNMASK_IVEC4)};
-			return negval;
+			__m128i zero = _mm_set1_epi32(0);
+			return {_mm_sub_epi32(zero, v)};
 		}
 		
 		ALWAYS_INLINE float32 neg(float32 f) {
@@ -900,9 +944,11 @@ namespace falling {
 			return absval;
 		}
 
-
 		ALWAYS_INLINE ivec4 abs(ivec4 v) {
-			ivec4 absval = {_mm_andnot_ps(SIGNMASK_VEC4, v)};
+			__m128i zero = _mm_set1_epi32(0);
+			auto below_zero = cmp_lt(v, {zero});
+			auto nv = neg(v);
+			ivec4 absval = select(below_zero, nv, v);
 			return absval;
 		}
 
@@ -936,13 +982,9 @@ namespace falling {
 #if defined(__SSE4_1__)
 			return {_mm_round_ps(v, _MM_FROUND_NO_EXC | _MM_FROUND_TO_NEAREST_INT)};
 #else
-			__m128 junk = _mm_set_ps1(0.f);
-			__m128 zero = _mm_xor_ps(junk, junk);
-			fvec4 half;
-			replicate(half, 0.5f);
-			fvec4 mhalf = neg(half);
-			fvec4 adjusted = add(v, select(cmp_gt(v, {zero}), half, mhalf));
-			return {_mm_cvttps_epi32(adjusted)};
+			_MM_SET_ROUNDING_MODE(_MM_ROUND_NEAREST);
+			__m128i as_integer = _mm_cvtps_epi32(v);
+			return {_mm_cvtepi32_ps(as_integer)};
 #endif
 		}
 		
@@ -950,12 +992,9 @@ namespace falling {
 #if defined(__SSE4_1__)
 			return {_mm_round_ps(v, _MM_FROUND_NO_EXC | _MM_FROUND_TO_NEG_INF)};
 #else
-			__m128 junk = _mm_set_ps1(0.f);
-			__m128 zero = _mm_xor_ps(junk, junk);
-			fvec4 mhalf;
-			replicate(mhalf, -0.5f);
-			fvec4 adjusted = add(v, select(cmp_lt(v, {zero}), mhalf, {zero}));
-			return {_mm_cvttps_epi32(adjusted)};
+			_MM_SET_ROUNDING_MODE(_MM_ROUND_DOWN);
+			__m128i as_integer = _mm_cvtps_epi32(v);
+			return {_mm_cvtepi32_ps(as_integer)};
 #endif
 		}
 		
@@ -963,12 +1002,9 @@ namespace falling {
 #if defined(__SSE4_1__)
 			return {_mm_round_ps(v, _MM_FROUND_NO_EXC | _MM_FROUND_TO_POS_INF)};
 #else
-			__m128 junk = _mm_set_ps1(0.f);
-			__m128 zero = _mm_xor_ps(junk, junk);
-			fvec4 half;
-			replicate(half, 0.5f);
-			fvec4 adjusted = add(v, select(cmp_gt(v, {zero}), half, {zero}));
-			return {_mm_cvttps_epi32(adjusted)};
+			_MM_SET_ROUNDING_MODE(_MM_ROUND_UP);
+			__m128i as_integer = _mm_cvtps_epi32(v);
+			return {_mm_cvtepi32_ps(as_integer)};
 #endif
 		}
 		
