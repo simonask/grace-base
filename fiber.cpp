@@ -134,6 +134,7 @@ namespace falling {
 			}
 			catch (FiberTerminated) {}
 			catch (...) {
+				// TODO: Use std::current_exception() interface.
 				const std::type_info* ex_type = __cxxabiv1::__cxa_current_exception_type();
 				const char* ex_name = ex_type->name();
 				Debug() << "Unhandled exception in fiber: " << ex_name;
@@ -249,6 +250,7 @@ namespace falling {
 					// coming back!
 					if (impl().state == FiberState::UnhandledException) {
 						// If the fiber threw an unhandled exception, rethrow it:
+						// TODO: Use C++11 exception encapsulation features.
 						__cxxabiv1::__cxa_rethrow();
 					}
 					if (impl().state != FiberState::Sleeping && impl().state != FiberState::Unstarted) {
@@ -278,6 +280,7 @@ namespace falling {
 					// coming back!
 					if (impl().state == FiberState::UnhandledException) {
 						// If the fiber threw an exception, rethrow it:
+						// TODO: Use C++11 exception encapsulation features.
 						__cxxabiv1::__cxa_rethrow();
 					}
 					if (impl().state != FiberState::Sleeping && impl().state != FiberState::Unstarted) {
