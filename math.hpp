@@ -49,16 +49,17 @@ namespace falling {
 		static const auto LowerBound = TVector<T,N>::replicate(-Pi);
 		static const auto UpperBound = TVector<T,N>::replicate(Pi);
 		static const auto ClampAdd   = TVector<T,N>::two() * UpperBound;
+		static const auto Zero = TVector<T,N>::zero();
 
 		auto add_mask = vec < LowerBound;
 		auto sub_mask = vec > UpperBound;
-		vec += ClampAdd & add_mask;
-		vec -= ClampAdd & sub_mask;
+		vec += select(add_mask, ClampAdd, Zero);
+		vec -= select(sub_mask, ClampAdd, Zero);
 
 		static const auto C1 = TVector<T,N>::replicate(1.27323954);
 		static const auto C2 = TVector<T,N>::replicate(0.405284735);
 		static const auto C3 = TVector<T,N>::replicate(0.225);
-		static const auto Zero = TVector<T,N>::zero();
+		
 		
 		const auto c1vec = C1 * vec;
 		const auto c2vecvec = C2 * vec * vec;
