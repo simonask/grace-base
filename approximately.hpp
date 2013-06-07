@@ -94,6 +94,12 @@ namespace falling {
 		return Approximately<float64, Approximation::EpsilonAndULPs>{value, max_diff, max_ulps_diff};
 	}
 	
+	template <typename T>
+	typename std::enable_if<std::is_integral<T>::value, Approximately<T, Approximation::Epsilon>>::type
+	approximately(T value, T epsilon) {
+		return Approximately<T, Approximation::Epsilon>{value, epsilon};
+	}
+	
 	
 	template <typename T, Approximation A>
 	inline bool operator==(T value, const Approximately<T, A>& approx) {
