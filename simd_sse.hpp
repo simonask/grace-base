@@ -32,8 +32,8 @@ namespace falling {
 			using ElementType = T;
 			static const size_t NumComponents = 16 / sizeof(T);
 			M v;
-			operator M&() { return v; }
-			operator const M&() const { return v; }
+			ALWAYS_INLINE operator M&() { return v; }
+			ALWAYS_INLINE operator const M&() const { return v; }
 		};
 		// TODO: 256-bit vectors (AVX)
 	
