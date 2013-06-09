@@ -53,6 +53,27 @@ namespace grace {
 		return StringRef(str.data() + begin, str.data() + end);
 	}
 	
+	size_t find(StringRef str, const StringRef& needle) {
+		if (needle.size() == 0) return str.size();
+		if (str.size() == 0) return String::NPos;
+		if (needle.size() > str.size()) return String::NPos;
+		
+		for (size_t i = 0; i < str.size() - needle.size(); ++i) {
+			if (substr(str, i, needle.size()) == needle) return i;
+		}
+		return String::NPos;
+	}
+	
+	size_t find(StringRef str, char needle) {
+		if (str.size() == 0) return String::NPos;
+		for (ssize_t i = 0; i < str.size(); ++i) {
+			if (str[i] == needle) {
+				return i;
+			}
+		}
+		return String::NPos;
+	}
+	
 	size_t rfind(StringRef str, const StringRef& needle) {
 		if (needle.size() == 0) return str.size();
 		if (str.size() == 0) return String::NPos;
