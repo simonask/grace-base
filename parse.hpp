@@ -1,13 +1,13 @@
 //
 //  parse.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 02/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_parse_hpp
-#define falling_parse_hpp
+#ifndef grace_parse_hpp
+#define grace_parse_hpp
 
 #include "base/maybe.hpp"
 #include "base/string.hpp"
@@ -15,7 +15,7 @@
 
 #include <type_traits>
 
-namespace falling {
+namespace grace {
 	template <typename T>
 	struct Parser;
 

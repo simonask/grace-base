@@ -5,7 +5,7 @@
 #include "base/array.hpp"
 #include "memory/fixed_allocator.hpp"
 
-namespace falling {
+namespace grace {
 
 template <typename T, typename Container = Array<T*>>
 class ContainedBag {

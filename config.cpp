@@ -1,6 +1,6 @@
 //
 //  config.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 16/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -8,7 +8,7 @@
 
 #include "base/config.hpp"
 
-namespace falling {
+namespace grace {
 	namespace {
 		byte ConfigurationManager_memory[sizeof(ConfigurationManager)];
 	}

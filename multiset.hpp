@@ -1,17 +1,17 @@
 //
 //  multiset.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 03/04/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_multiset_hpp
-#define falling_multiset_hpp
+#ifndef grace_multiset_hpp
+#define grace_multiset_hpp
 
 #include "base/basic.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename T> class Array;
 	
 	template <typename T, typename C = Array<T>>

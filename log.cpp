@@ -1,6 +1,6 @@
 //
 //  log.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 02/06/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -9,7 +9,7 @@
 #include "base/log.hpp"
 #include <stdio.h>
 
-namespace falling {
+namespace grace {
 	struct LogManager::Impl {
 		Signal<const LogEntry&> on_log;
 		LogLevel current_log_level = DefaultLogLevel;

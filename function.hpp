@@ -1,13 +1,13 @@
 //
 //  function.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 21/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_function_hpp
-#define falling_function_hpp
+#ifndef grace_function_hpp
+#define grace_function_hpp
 
 #include "base/basic.hpp"
 #include "base/maybe.hpp"
@@ -16,7 +16,7 @@
 
 #include <type_traits>
 
-namespace falling {
+namespace grace {
 	template <typename Signature>
 	class Function;
 	

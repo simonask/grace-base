@@ -1,17 +1,17 @@
 //
 //  auto_link_stack.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 25/11/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_auto_link_stack_hpp
-#define falling_auto_link_stack_hpp
+#ifndef grace_auto_link_stack_hpp
+#define grace_auto_link_stack_hpp
 
 #include "base/basic.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename T>
 	struct AutoListLink {
 		AutoListLink<T>* next = nullptr;

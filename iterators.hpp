@@ -1,18 +1,18 @@
 //
 //  iterators.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 25/11/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_iterators_hpp
-#define falling_iterators_hpp
+#ifndef grace_iterators_hpp
+#define grace_iterators_hpp
 
 #include <utility>
 #include <iterator>
 
-namespace falling {
+namespace grace {
 	template <typename T>
 	struct GetNodeValueType {
 		using Type = T;
@@ -231,16 +231,16 @@ namespace falling {
 
 namespace std {
 	template <class Owner, typename Node, bool IsConst>
-	struct iterator_traits<falling::ForwardLinkListIterator<Owner, Node, IsConst>> {
-		using value_type = typename falling::ForwardLinkListIterator<Owner, Node, IsConst>::ValueType;
+	struct iterator_traits<grace::ForwardLinkListIterator<Owner, Node, IsConst>> {
+		using value_type = typename grace::ForwardLinkListIterator<Owner, Node, IsConst>::ValueType;
 		using pointer = value_type*;
 		using reference = value_type&;
 		using iterator_category = std::bidirectional_iterator_tag;
 	};
 	
 	template <typename T, bool IsConst>
-	struct iterator_traits<falling::LinearMemoryIterator<T, IsConst>> {
-		using value_type = typename falling::LinearMemoryIterator<T, IsConst>::ValueType;
+	struct iterator_traits<grace::LinearMemoryIterator<T, IsConst>> {
+		using value_type = typename grace::LinearMemoryIterator<T, IsConst>::ValueType;
 		using pointer = value_type*;
 		using reference = value_type&;
 		using difference_type = ptrdiff_t;

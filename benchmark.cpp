@@ -1,6 +1,6 @@
 //
 //  benchmark.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 06/04/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -10,7 +10,7 @@
 #include "base/log.hpp"
 #include "io/formatters.hpp"
 
-namespace falling {
+namespace grace {
 	BenchmarkResults benchmark(StringRef description, uint32 iterations, Function<void()> function) {
 		if (iterations == 0) iterations = 1;
 		BenchmarkResults results;

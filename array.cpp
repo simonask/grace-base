@@ -1,6 +1,6 @@
 //
 //  array.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 04/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -9,7 +9,7 @@
 #include "base/array.hpp"
 #include "base/string.hpp"
 
-namespace falling {
+namespace grace {
 	template class Array<byte>;
 	template class Array<float32>;
 	template class Array<uint32>;

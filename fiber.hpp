@@ -1,20 +1,20 @@
 //
 //  fiber.h
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 01/08/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef __falling__fiber__
-#define __falling__fiber__
+#ifndef __grace__fiber__
+#define __grace__fiber__
 
 #include "base/function.hpp"
 #include "base/array.hpp"
 #include "base/time.hpp"
 #include "memory/unique_ptr.hpp"
 
-namespace falling {
+namespace grace {
 	enum FiberState : byte {
 		Unstarted,
 		Running,
@@ -90,4 +90,4 @@ namespace falling {
 	};
 }
 
-#endif /* defined(__falling__fiber__) */
+#endif /* defined(__grace__fiber__) */

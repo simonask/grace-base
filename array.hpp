@@ -10,12 +10,12 @@
 
 #if defined(USE_STD_VECTOR)
 #include <vector>
-namespace falling {
+namespace grace {
 template <typename T> using Array = std::vector<T>;
 }
 #else
 
-namespace falling {
+namespace grace {
 
 template <typename T>
 class Array {
@@ -227,7 +227,7 @@ T Array<T>::pop_back() {
 template <typename T>
 void Array<T>::reserve(size_t new_size) {
 	size_t alloc_size = alloc_size_;
-	data_ = falling::resize_allocation<T>(allocator_, data_, &alloc_size, size_, new_size, 3, 2);
+	data_ = grace::resize_allocation<T>(allocator_, data_, &alloc_size, size_, new_size, 3, 2);
 	alloc_size_ = (uint32)alloc_size;
 }
 

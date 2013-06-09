@@ -1,13 +1,13 @@
 //
 //  work_queue.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 17/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_work_queue_hpp
-#define falling_work_queue_hpp
+#ifndef grace_work_queue_hpp
+#define grace_work_queue_hpp
 
 #include "base/priority_queue.hpp"
 #include "base/time.hpp"
@@ -16,7 +16,7 @@
 #include <condition_variable>
 #include <chrono>
 
-namespace falling {
+namespace grace {
 	template <typename Payload>
 	class WorkQueue {
 	public:

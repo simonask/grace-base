@@ -1,6 +1,6 @@
 //
 //  time.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 31/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -22,7 +22,7 @@
 
 #define USE_HIGH_PRECISION_CLOCK 1
 
-namespace falling {
+namespace grace {
 	template struct Time<Timeline::System>;
 	template struct Time<Timeline::Game>;
 	template struct Time<Timeline::Process>;

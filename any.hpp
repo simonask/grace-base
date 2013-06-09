@@ -1,13 +1,13 @@
 //
 //  any.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 23/10/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_any_hpp
-#define falling_any_hpp
+#ifndef grace_any_hpp
+#define grace_any_hpp
 
 #include "base/basic.hpp"
 #include "type/type.hpp"
@@ -16,7 +16,7 @@
 
 #include <type_traits>
 
-namespace falling {
+namespace grace {
 	template <bool> struct AnyWhenImpl;
 	
 #if defined(DEBUG)

@@ -1,14 +1,14 @@
 //
 //  vector.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 27/05/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
 #pragma once
-#ifndef falling_vector_hpp
-#define falling_vector_hpp
+#ifndef grace_vector_hpp
+#define grace_vector_hpp
 
 #include "base/basic.hpp"
 #include "base/simd.hpp"
@@ -17,7 +17,7 @@
 #include <math.h>
 #include <numeric>
 
-namespace falling {
+namespace grace {
 	
 	template <typename T, size_t N>
 	struct VectorCrosser;
@@ -440,7 +440,7 @@ namespace falling {
 	
 	template <typename T, size_t N>
 	ALWAYS_INLINE TVector<T,N> TVector<T,N>::sumv() const {
-		return falling::sumv(*this);
+		return grace::sumv(*this);
 	}
 	
 	template <typename T, size_t N>
@@ -510,7 +510,7 @@ namespace falling {
 	template <typename T, size_t N>
 	ALWAYS_INLINE TVector<T,N> TVector<T,N>::lengthv() const {
 		TVector<T,N> sq = (*this) * (*this);
-		return falling::sqrt(sq.sumv());
+		return grace::sqrt(sq.sumv());
 	}
 	
 	template <typename T, size_t N>

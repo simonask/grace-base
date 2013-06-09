@@ -1,20 +1,20 @@
 //
 //  regex.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 02/08/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_regex_hpp
-#define falling_regex_hpp
+#ifndef grace_regex_hpp
+#define grace_regex_hpp
 
 #include "base/string.hpp"
 #include "base/basic.hpp"
 #include "base/array.hpp"
 #include "io/formatted_stream.hpp"
 
-namespace falling {
+namespace grace {
 	enum RegexOptions : uint32 {
 		None = 0,
 		CaseInsensitive = 1 << ('i' - 'a'),

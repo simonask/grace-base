@@ -1,15 +1,15 @@
 //
 //  pair.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 19/01/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_pair_hpp
-#define falling_pair_hpp
+#ifndef grace_pair_hpp
+#define grace_pair_hpp
 
-namespace falling {
+namespace grace {
 	template <typename Key, typename Value>
 	struct Pair {
 		Key first;

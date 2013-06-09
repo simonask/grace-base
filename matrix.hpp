@@ -1,20 +1,20 @@
 //
 //  matrix.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 27/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_matrix_hpp
-#define falling_matrix_hpp
+#ifndef grace_matrix_hpp
+#define grace_matrix_hpp
 
 #include "base/vector.hpp"
 #include "base/array_ref.hpp"
 #include <array>
 #include <initializer_list>
 
-namespace falling {
+namespace grace {
 	template <typename ElementType, size_t N /* width */, size_t M /* height */>
 	struct TMatrix {
 		// We use row-major notation.

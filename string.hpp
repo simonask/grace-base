@@ -1,13 +1,13 @@
 //
 //  string.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 25/10/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_string_hpp
-#define falling_string_hpp
+#ifndef grace_string_hpp
+#define grace_string_hpp
 
 #include "base/basic.hpp"
 #include "base/array_ref.hpp"
@@ -15,7 +15,7 @@
 #include "base/iterators.hpp"
 #include <algorithm> // for std::copy
 
-namespace falling {
+namespace grace {
 	struct StringRef {
 	public:
 		constexpr StringRef() : begin_(nullptr), end_(nullptr) {}
@@ -252,11 +252,11 @@ namespace falling {
 	}
 
 	inline ssize_t StringRef::compare(StringRef other) const {
-		return falling::compare(*this, other);
+		return grace::compare(*this, other);
 	}
 	
 	inline ssize_t String::compare(StringRef other) const {
-		return falling::compare(*this, other);
+		return grace::compare(*this, other);
 	}
 
 	inline ssize_t compare(StringRef a, StringRef b) {
@@ -338,7 +338,7 @@ namespace falling {
 	}
 	
 	inline StringRef String::substr(ssize_t b, ssize_t len) const {
-		return falling::substr(*this, b, len);
+		return grace::substr(*this, b, len);
 	}
 	
 	inline void String::assign(const char* utf8) {
@@ -359,14 +359,14 @@ namespace falling {
 }
 
 #if defined(__has_feature) && __has_feature(cxx_user_literals)
-inline constexpr falling::StringRef operator "" _C(const char* str, size_t length) {
-	return falling::StringRef(str, str+length);
+inline constexpr grace::StringRef operator "" _C(const char* str, size_t length) {
+	return grace::StringRef(str, str+length);
 }
 #endif
 
 template <size_t N>
-inline falling::String operator+(const char(&a)[N], const falling::String& b) {
-	return falling::String(a) + b;
+inline grace::String operator+(const char(&a)[N], const grace::String& b) {
+	return grace::String(a) + b;
 }
 
 #endif

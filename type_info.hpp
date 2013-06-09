@@ -1,18 +1,18 @@
 //
 //  type_info.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 28/04/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_type_info_hpp
-#define falling_type_info_hpp
+#ifndef grace_type_info_hpp
+#define grace_type_info_hpp
 
 #include "base/basic.hpp"
 #include <type_traits>
 
-namespace falling {
+namespace grace {
 	struct TypeInfo;
 
 	struct UnsupportedTypeOperationError {
@@ -141,7 +141,7 @@ namespace falling {
 			.size           = sizeof(T),
 			.alignment      = alignof(T),
 			.construct_     = GET_FUNCTION_IF_SUPPORTED(T, construct),
-			.destruct_      = falling::destruct<T>,
+			.destruct_      = grace::destruct<T>,
 			.copy_construct_= GET_FUNCTION_IF_SUPPORTED(T, copy_construct),
 			.copy_assign_   = GET_FUNCTION_IF_SUPPORTED(T, copy_assign),
 			.move_construct_= GET_FUNCTION_IF_SUPPORTED(T, move_construct),

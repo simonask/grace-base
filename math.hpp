@@ -1,18 +1,18 @@
 //
 //  math.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 31/10/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_math_hpp
-#define falling_math_hpp
+#ifndef grace_math_hpp
+#define grace_math_hpp
 
 #include <cmath>
 #include "base/vector.hpp"
 
-namespace falling {
+namespace grace {
 	static const float32 E = M_E;
 	static const float32 Log2E = M_LOG2E;
 	static const float32 Log10E = M_LOG10E;

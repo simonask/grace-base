@@ -1,17 +1,17 @@
 //
 //  dictionary.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 05/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_dictionary_hpp
-#define falling_dictionary_hpp
+#ifndef grace_dictionary_hpp
+#define grace_dictionary_hpp
 
 #include "base/map.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename Value, typename Cmp = Less>
 	class Dictionary {
 	public:

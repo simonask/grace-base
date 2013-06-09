@@ -9,7 +9,7 @@
 #include <memory>
 #include <type_traits>
 
-namespace falling {
+namespace grace {
 
 typedef signed char int8;
 typedef short int16;
@@ -22,6 +22,8 @@ typedef unsigned long long int uint64;
 typedef float float32;
 typedef double float64;
 typedef uint8 byte;
+
+#define GRACE_CAPI extern "C"
 
 #if !defined(SSIZE_MAX)
 #define SSIZE_MAX INTPTR_MAX

@@ -1,13 +1,13 @@
 //
 //  map.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 10/01/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_map_hpp
-#define falling_map_hpp
+#ifndef grace_map_hpp
+#define grace_map_hpp
 
 #include "memory/allocator.hpp"
 #include "base/basic.hpp"
@@ -20,7 +20,7 @@
 
 #include <algorithm>
 
-namespace falling {
+namespace grace {
 	template <typename Key, typename Value, bool IsConst>
 	class MapIteratorImpl;
 
@@ -495,8 +495,8 @@ namespace falling {
 	void Map<K,V,C>::reserve(size_t new_size) {
 		size_t k_alloc_size = alloc_size_;
 		size_t v_alloc_size = alloc_size_;
-		keys_ = falling::resize_allocation<K>(allocator_, keys_, &k_alloc_size, size_, new_size, 3, 2);
-		values_ = falling::resize_allocation(allocator_, values_, &v_alloc_size, size_, new_size, 3, 2);
+		keys_ = grace::resize_allocation<K>(allocator_, keys_, &k_alloc_size, size_, new_size, 3, 2);
+		values_ = grace::resize_allocation(allocator_, values_, &v_alloc_size, size_, new_size, 3, 2);
 		ASSERT(k_alloc_size == v_alloc_size);
 		ASSERT(k_alloc_size < UINT32_MAX);
 		alloc_size_ = (uint32)k_alloc_size;
@@ -530,9 +530,9 @@ namespace falling {
 
 namespace std {
 	template <typename Key, typename Value, bool IsConst>
-	struct iterator_traits<falling::MapIteratorImpl<Key, Value, IsConst>> {
+	struct iterator_traits<grace::MapIteratorImpl<Key, Value, IsConst>> {
 		using difference_type = ptrdiff_t;
-		using value_type = typename falling::MapIteratorImpl<Key, Value, IsConst>::PairType;
+		using value_type = typename grace::MapIteratorImpl<Key, Value, IsConst>::PairType;
 		using pointer = value_type*;
 		using reference = value_type&;
 		using iterator_category = std::random_access_iterator_tag;

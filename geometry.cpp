@@ -1,6 +1,6 @@
 //
 //  geometry.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 20/10/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -9,7 +9,7 @@
 #include "base/geometry.hpp"
 #include "type/vector_type.hpp"
 
-namespace falling {
+namespace grace {
 	namespace detail {
 		struct RectType : TypeFor<Rect> {
 			StringRef name() const { return "Rect"; }

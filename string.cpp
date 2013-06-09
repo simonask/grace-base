@@ -1,6 +1,6 @@
 //
 //  string.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 02/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -8,7 +8,7 @@
 
 #include "base/string.hpp"
 
-namespace falling {
+namespace grace {
 	String String::take_ownership(IAllocator &alloc, const char *utf8, size_t size) {
 		String s(alloc);
 		s.data_ = utf8;

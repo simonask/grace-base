@@ -1,20 +1,20 @@
 //
 //  linear_map.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 06/08/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_linear_map_hpp
-#define falling_linear_map_hpp
+#ifndef grace_linear_map_hpp
+#define grace_linear_map_hpp
 
 #include "base/basic.hpp"
 #include "base/array.hpp"
 
 #include <algorithm>
 
-namespace falling {
+namespace grace {
 	template <typename K, typename V>
 	class LinearMap {
 	public:

@@ -1,6 +1,6 @@
 //
 //  any.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 30/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -11,7 +11,7 @@
 #include "type/array_type.hpp"
 #include "type/map_type.hpp"
 
-namespace falling {
+namespace grace {
 	Any Any::take_memory(IAllocator& alloc, const IType* type, void *memory) {
 		if (memory == nullptr) return Nothing;
 		Any result(alloc);

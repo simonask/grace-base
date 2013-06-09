@@ -1,6 +1,6 @@
 //
 //  arch.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 07/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -13,7 +13,7 @@
 #include <execinfo.h>
 #include <cxxabi.h>
 
-namespace falling {
+namespace grace {
 	void get_backtrace(void** out_instruction_pointers, size_t num_steps, size_t offset) {
 		size_t total_steps = num_steps + offset + 1;
 		void* buffer[total_steps];

@@ -1,20 +1,20 @@
 //
 //  geometry.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 12/10/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_geometry_hpp
-#define falling_geometry_hpp
+#ifndef grace_geometry_hpp
+#define grace_geometry_hpp
 
 #include "base/vector.hpp"
 #include "base/matrix.hpp"
 #include "base/math.hpp"
 #include "type/type.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename T>
 	struct TRect {
 		using V = TVector<T, 2>;

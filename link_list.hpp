@@ -1,13 +1,13 @@
 //
 //  link_list.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 12/10/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_auto_list_hpp
-#define falling_auto_list_hpp
+#ifndef grace_auto_list_hpp
+#define grace_auto_list_hpp
 
 #include "base/basic.hpp"
 #include "memory/allocator.hpp"
@@ -16,7 +16,7 @@
 #include "base/bare_link_list.hpp"
 #include "base/iterators.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename T> class LinkList;
 
 	template <typename T>

@@ -1,6 +1,6 @@
 //
 //  color.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 01/06/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -8,7 +8,7 @@
 
 #include "base/color.hpp"
 
-namespace falling {
+namespace grace {
 #define DEF_COLOR(NAME, R, G, B) const Color Color::NAME = Color(R, G, B, 1.f)
 	DEF_COLOR(White, 1.f, 1.f, 1.f);
 	DEF_COLOR(Black, 0, 0, 0);

@@ -1,13 +1,13 @@
 //
 //  config.h
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 16/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef __falling__config__
-#define __falling__config__
+#ifndef __grace__config__
+#define __grace__config__
 
 #include "base/basic.hpp"
 #include "base/any.hpp"
@@ -17,7 +17,7 @@
 // Commonly used option types:
 #include "type/types.hpp"
 
-namespace falling {
+namespace grace {
 	struct ConfigOption {
 		const Type* type;
 		StringRef description;
@@ -105,4 +105,4 @@ namespace falling {
 
 }
 
-#endif /* defined(__falling__config__) */
+#endif /* defined(__grace__config__) */

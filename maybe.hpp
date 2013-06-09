@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <new>
 
-namespace falling {
+namespace grace {
 
 template <typename M, typename ReturnType> struct MaybeIfImpl;
 

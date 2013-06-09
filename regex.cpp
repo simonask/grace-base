@@ -1,6 +1,6 @@
 //
 //  regex.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 28/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -10,7 +10,7 @@
 #include "io/string_stream.hpp"
 #include <regex.h>
 
-namespace falling {
+namespace grace {
 	void Regex::parse_options(const char* options) {
 		for (const char* o = options; *o; ++o) {
 			switch (*o) {

@@ -1,13 +1,13 @@
 //
 //  simd_sse.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 27/05/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_simd_sse_hpp
-#define falling_simd_sse_hpp
+#ifndef grace_simd_sse_hpp
+#define grace_simd_sse_hpp
 
 #include <xmmintrin.h>
 #include <pmmintrin.h>
@@ -24,7 +24,7 @@
 
 #include <cmath>
 
-namespace falling {
+namespace grace {
 	namespace simd {
 		template <typename T, typename M>
 		struct ALIGNED(16) M128 {
@@ -584,7 +584,7 @@ namespace falling {
 		struct Shuffle2<0, X_, 0, Y_, 0, Z_, 0, W_> {
 			template <typename V>
 			static V shuffle(V a, V b) {
-				return falling::simd::shuffle<X_, Y_, Z_, W_>(a);
+				return grace::simd::shuffle<X_, Y_, Z_, W_>(a);
 			}
 		};
 		

@@ -1,6 +1,6 @@
 //
 //  fiber-armv7.s
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 23/10/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -8,8 +8,8 @@
 #if defined(__arm__)
 .arm
 .text
-.global falling_launch_fiber
-falling_launch_fiber:
+.global grace_launch_fiber
+grace_launch_fiber:
 	mov r4, sp
 	mov sp, a2
 	blx a3

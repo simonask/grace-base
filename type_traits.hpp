@@ -1,18 +1,18 @@
 //
 //  type_traits.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 04/05/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_type_traits_hpp
-#define falling_type_traits_hpp
+#ifndef grace_type_traits_hpp
+#define grace_type_traits_hpp
 
 #include <type_traits>
 #include "base/math.hpp"
 
-namespace falling {
+namespace grace {
 	// === MaxSize ===
 	template <typename... Types> struct MaxSize;
 	template <> struct MaxSize<> {
@@ -66,20 +66,20 @@ namespace falling {
 	template <template <typename T> class Trait> struct AnyTypesSatifyTrait_standard<Trait> {
 		static const bool Value = false;
 	};
-	// AllTypesSatisfyTrait_falling
-	template <template <typename T> class Trait, typename... Types> struct AllTypesSatifyTrait_falling;
-	template <template <typename T> class Trait, typename First, typename... Rest> struct AllTypesSatifyTrait_falling<Trait, First, Rest...> {
-		static const bool Value = Trait<First>::Value && AllTypesSatifyTrait_falling<Trait, Rest...>::Value;
+	// AllTypesSatisfyTrait_grace
+	template <template <typename T> class Trait, typename... Types> struct AllTypesSatifyTrait_grace;
+	template <template <typename T> class Trait, typename First, typename... Rest> struct AllTypesSatifyTrait_grace<Trait, First, Rest...> {
+		static const bool Value = Trait<First>::Value && AllTypesSatifyTrait_grace<Trait, Rest...>::Value;
 	};
-	template <template <typename T> class Trait> struct AllTypesSatifyTrait_falling<Trait> {
+	template <template <typename T> class Trait> struct AllTypesSatifyTrait_grace<Trait> {
 		static const bool Value = true;
 	};
-	// AnyTypesSatisfyTrait_falling
-	template <template <typename T> class Trait, typename... Types> struct AnyTypesSatifyTrait_falling;
-	template <template <typename T> class Trait, typename First, typename... Rest> struct AnyTypesSatifyTrait_falling<Trait, First, Rest...> {
-		static const bool Value = Trait<First>::Value || AllTypesSatifyTrait_falling<Trait, Rest...>::Value;
+	// AnyTypesSatisfyTrait_grace
+	template <template <typename T> class Trait, typename... Types> struct AnyTypesSatifyTrait_grace;
+	template <template <typename T> class Trait, typename First, typename... Rest> struct AnyTypesSatifyTrait_grace<Trait, First, Rest...> {
+		static const bool Value = Trait<First>::Value || AllTypesSatifyTrait_grace<Trait, Rest...>::Value;
 	};
-	template <template <typename T> class Trait> struct AnyTypesSatifyTrait_falling<Trait> {
+	template <template <typename T> class Trait> struct AnyTypesSatifyTrait_grace<Trait> {
 		static const bool Value = false;
 	};
 	

@@ -1,13 +1,13 @@
 //
 //  simd.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 27/05/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_simd_hpp
-#define falling_simd_hpp
+#ifndef grace_simd_hpp
+#define grace_simd_hpp
 
 // TODO: Provide implementations for lower-than-SSE4.2 architectures and ARM NEON.
 
@@ -17,7 +17,7 @@
 #endif
 
 
-namespace falling {
+namespace grace {
 	enum Axis {
 		IgnoreAxis = 0,
 		X = 0,

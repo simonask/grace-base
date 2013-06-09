@@ -1,6 +1,6 @@
 //
 //  array_ref.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 04/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -9,7 +9,7 @@
 #include "base/array_ref.hpp"
 #include "base/string.hpp"
 
-namespace falling {
+namespace grace {
 	template struct ArrayRef<byte>;
 	template struct ArrayRef<char>;
 	template struct ArrayRef<float32>;

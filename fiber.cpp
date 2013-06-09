@@ -1,6 +1,6 @@
 //
 //  fiber.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 01/08/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -17,10 +17,10 @@
 // Since Xcode compiles everything in Thumb mode by default (and we want that),
 // but the stack pointer is not accessible in Thumb mode, we need a separate
 // symbol, compiled in regular ARM mode, to do the jump to the fiber stack.
-extern "C" void falling_launch_fiber(void* self, void* stack_top, void* launchpad);
+extern "C" void grace_launch_fiber(void* self, void* stack_top, void* launchpad);
 #endif
 
-namespace falling {
+namespace grace {
 	IFiberManager* IFiberManager::current_manager_ = nullptr; // TODO: Thread-local
 	
 	FiberManager::FiberManager() : current_(nullptr) {}
@@ -242,7 +242,7 @@ namespace falling {
 					 : "esp", "ebx" // clobbered
 					);
 #elif defined(__arm__)
-					falling_launch_fiber(this, fiber_stack_top, (void*)fiber_launchpad);
+					grace_launch_fiber(this, fiber_stack_top, (void*)fiber_launchpad);
 #else
 #error Fibers are not supported on this platform.
 #endif

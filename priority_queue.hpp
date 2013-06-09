@@ -1,19 +1,19 @@
 //
 //  priority_queue.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 17/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_priority_queue_hpp
-#define falling_priority_queue_hpp
+#ifndef grace_priority_queue_hpp
+#define grace_priority_queue_hpp
 
 #include "base/basic.hpp"
 #include "memory/allocator.hpp"
 #include <algorithm>
 
-namespace falling {
+namespace grace {
 	template <typename T> class Array;
 	
 	template <typename T, typename Container = Array<T>, typename Compare = Less>

@@ -1,18 +1,18 @@
 //
 //  stack_array.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 29/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_stack_array_hpp
-#define falling_stack_array_hpp
+#ifndef grace_stack_array_hpp
+#define grace_stack_array_hpp
 
 #include "base/array_ref.hpp"
 #include <alloca.h>
 
-namespace falling {
+namespace grace {
 	/*
 	 StackArray is equivalent to std::array, except the size does not have to be known at compile-time.
 	*/
@@ -30,8 +30,8 @@ namespace falling {
 	
 #define DEFINE_STACK_ARRAY(T, NAME, SIZE) \
 	T* NAME ## _data_ ## __LINE__ = (T*)alloca(sizeof(T) * SIZE); \
-	falling::StackArrayHolder<T> NAME ## _holder_ ## __LINE__(NAME ## _data_ ## __LINE__, NAME ## _data_ ## __LINE__ + SIZE); \
-	falling::ArrayRef<T> NAME(NAME ## _data_ ## __LINE__, NAME ## _data_ ## __LINE__ + SIZE)
+	grace::StackArrayHolder<T> NAME ## _holder_ ## __LINE__(NAME ## _data_ ## __LINE__, NAME ## _data_ ## __LINE__ + SIZE); \
+	grace::ArrayRef<T> NAME(NAME ## _data_ ## __LINE__, NAME ## _data_ ## __LINE__ + SIZE)
 
 #define COPY_STRING_REF_TO_CSTR_BUFFER(BUFFER_NAME, INPUT) DEFINE_STACK_ARRAY(char, BUFFER_NAME, (INPUT).size() + 1); std::copy((INPUT).begin(), (INPUT).end(), (BUFFER_NAME).begin()); (BUFFER_NAME)[(INPUT).size()] = '\0'
 }

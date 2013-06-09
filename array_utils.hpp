@@ -1,19 +1,19 @@
 //
 //  array_utils.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 03/02/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_array_utils_hpp
-#define falling_array_utils_hpp
+#ifndef grace_array_utils_hpp
+#define grace_array_utils_hpp
 
 #include "base/basic.hpp"
 #include "memory/allocator.hpp"
 #include <type_traits>
 
-namespace falling {
+namespace grace {
 	/*
 	 Reallocate array memory, with overallocation.
 	 Returns: New data.

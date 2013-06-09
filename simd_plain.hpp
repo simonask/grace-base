@@ -1,17 +1,17 @@
 //
 //  simd_plain.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 27/05/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_simd_plain_hpp
-#define falling_simd_plain_hpp
+#ifndef grace_simd_plain_hpp
+#define grace_simd_plain_hpp
 
 #include <math.h>
 
-namespace falling {
+namespace grace {
 	namespace simd {
 		typedef int32   __attribute__((vector_size(8 ))) ivec2;
 		typedef int32   __attribute__((vector_size(16))) ivec4;

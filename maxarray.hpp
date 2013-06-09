@@ -1,19 +1,19 @@
 //
 //  maxarray.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 15/05/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_maxarray_hpp
-#define falling_maxarray_hpp
+#ifndef grace_maxarray_hpp
+#define grace_maxarray_hpp
 
 #include "base/array_ref.hpp"
 #include "base/iterators.hpp"
 #include <type_traits>
 
-namespace falling {
+namespace grace {
 	struct MaxArrayTooSmallError {
 		const char* what() const { return "The MaxArray capacity was too small to contain the attempted insertion."; }
 	};

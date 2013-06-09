@@ -1,20 +1,20 @@
 //
 //  anim_utils.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 30/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_anim_utils_hpp
-#define falling_anim_utils_hpp
+#ifndef grace_anim_utils_hpp
+#define grace_anim_utils_hpp
 
 #include "base/basic.hpp"
 #include "base/vector.hpp"
 #include "base/matrix.hpp"
 #include "base/color.hpp"
 
-namespace falling {
+namespace grace {
 	inline float32 anim_lerp(float32 current, float32 target, float64 progress_ratio) {
 		return current + ((target - current) * progress_ratio);
 	}

@@ -1,15 +1,15 @@
 //
 //  approximately.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 20/05/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_approximately_hpp
-#define falling_approximately_hpp
+#ifndef grace_approximately_hpp
+#define grace_approximately_hpp
 
-namespace falling {
+namespace grace {
 	enum class Approximation {
 		Epsilon,
 		ULPs,

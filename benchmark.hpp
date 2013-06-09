@@ -1,13 +1,13 @@
 //
 //  benchmark.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 06/04/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef __falling__benchmark__
-#define __falling__benchmark__
+#ifndef __grace__benchmark__
+#define __grace__benchmark__
 
 #include "base/time.hpp"
 #include "base/string.hpp"
@@ -16,7 +16,7 @@
 #include "base/bare_link_list.hpp"
 #include "base/array.hpp"
 
-namespace falling {
+namespace grace {
 	struct BenchmarkResults {
 		StringRef description;
 		uint32 iterations;
@@ -96,4 +96,4 @@ namespace falling {
 #define BENCHMARK_SUBSCOPE(NAME) BenchmarkScope _benchmark_scope_## NAME ## _ ## __LINE__(#NAME, false)
 }
 
-#endif /* defined(__falling__benchmark__) */
+#endif /* defined(__grace__benchmark__) */

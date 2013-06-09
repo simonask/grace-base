@@ -1,19 +1,19 @@
 //
 //  either.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 28/04/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_either_hpp
-#define falling_either_hpp
+#ifndef grace_either_hpp
+#define grace_either_hpp
 
 #include "base/basic.hpp"
 #include "base/type_info.hpp"
 #include "base/type_traits.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename... Types> // max 255 types!
 	class Either {
 	public:

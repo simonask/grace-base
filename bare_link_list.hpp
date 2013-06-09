@@ -1,17 +1,17 @@
 //
 //  bare_link_list.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 25/11/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_bare_link_list_hpp
-#define falling_bare_link_list_hpp
+#ifndef grace_bare_link_list_hpp
+#define grace_bare_link_list_hpp
 
 #include "base/iterators.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename T> class BareLinkList;
     
     template <typename T>
