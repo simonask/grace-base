@@ -1,6 +1,6 @@
 #include "object/object_type.hpp"
 
-namespace falling {
+namespace grace {
 
 const StructuredType* ObjectTypeBase::super() const {
 	if (super_ != nullptr) return super_;

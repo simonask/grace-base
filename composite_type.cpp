@@ -2,7 +2,7 @@
 #include "object/object_type.hpp"
 #include "base/log.hpp"
 
-namespace falling {
+namespace grace {
 
 CompositeType::CompositeType(IAllocator& alloc, StringRef name, const ObjectTypeBase* base_type) : StructuredType(GetTypeInfo<Object>::Value), base_type_(base_type), name_(std::move(name), alloc), aspects_(alloc), exposed_attributes_(alloc), exposed_slots_(alloc), frozen_(false) {
 	size_ = this->base_type()->size();

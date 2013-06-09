@@ -1,13 +1,13 @@
 //
 //  property_animator.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 29/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_property_animator_hpp
-#define falling_property_animator_hpp
+#ifndef grace_property_animator_hpp
+#define grace_property_animator_hpp
 
 #include "object/object.hpp"
 #include "object/objectptr.hpp"
@@ -15,7 +15,7 @@
 #include "base/auto_link_queue.hpp"
 #include "memory/unique_ptr.hpp"
 
-namespace falling {
+namespace grace {
 	enum PropertyAnimationStyle : uint8 {
 		LinearInterpolation,
 		// TODO: Add more

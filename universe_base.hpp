@@ -1,20 +1,20 @@
 //
 //  universe_base.h
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 08/01/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef __falling__universe_base__
-#define __falling__universe_base__
+#ifndef __grace__universe_base__
+#define __grace__universe_base__
 
 #include "object/universe.hpp"
 #include "memory/unique_ptr.hpp"
 #include "object/aspect_cast.hpp"
 #include "base/priority_queue.hpp"
 
-namespace falling {
+namespace grace {
 	struct CompositeType;
 
 	struct DeferredAttributeDeserialization {
@@ -153,4 +153,4 @@ namespace falling {
 
 }
 
-#endif /* defined(__falling__universe_base__) */
+#endif /* defined(__grace__universe_base__) */

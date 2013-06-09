@@ -1,19 +1,19 @@
 //
 //  aspect_cast.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 30/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_aspect_cast_hpp
-#define falling_aspect_cast_hpp
+#ifndef grace_aspect_cast_hpp
+#define grace_aspect_cast_hpp
 
 #include "object/objectptr.hpp"
 #include "object/composite_type.hpp"
 #include "object/object_type_base.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename To, typename From>
 	typename std::enable_if<HasReflection<To>::Value && HasReflection<From>::Value, ObjectPtr<To>>::type
 	aspect_cast(ObjectPtr<From> ptr) {

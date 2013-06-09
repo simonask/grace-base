@@ -1,19 +1,19 @@
 //
 //  object_type_base.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 30/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_object_type_base_hpp
-#define falling_object_type_base_hpp
+#ifndef grace_object_type_base_hpp
+#define grace_object_type_base_hpp
 
 #include "type/structured_type.hpp"
 #include "base/string.hpp"
 #include "object/slot.hpp"
 
-namespace falling {
+namespace grace {
 	class IAllocator;
 	
 	struct ObjectTypeBase : StructuredType {

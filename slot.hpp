@@ -1,13 +1,13 @@
 //
 //  slot.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 03/08/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_slot_hpp
-#define falling_slot_hpp
+#ifndef grace_slot_hpp
+#define grace_slot_hpp
 
 #include "base/basic.hpp"
 #include "type/type.hpp"
@@ -15,7 +15,7 @@
 #include "object/objectptr.hpp"
 #include "serialization/deserialize_tuple.hpp"
 
-namespace falling {
+namespace grace {
 	struct ArchiveNode;
 	struct IUniverse;
 	class Any;

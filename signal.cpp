@@ -4,7 +4,7 @@
 #include "base/log.hpp"
 #include "io/string_stream.hpp"
 
-namespace falling {
+namespace grace {
 
 String SignalTypeBase::build_signal_name(ArrayRef<const Type*> signature) {
 	StringStream ss;

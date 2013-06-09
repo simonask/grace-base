@@ -1,6 +1,6 @@
 //
 //  spatial_object.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 29/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -14,7 +14,7 @@
 #include "render/path.hpp"
 #include "render/vertex.hpp"
 
-namespace falling {
+namespace grace {
 	BEGIN_TYPE_INFO(SpatialObject)
 		super<Renderable>();
 		property(&SpatialObject::position, &SpatialObject::set_position, "position", "World Position");
@@ -81,13 +81,6 @@ namespace falling {
 	
 	void SpatialObject::set_rotation_origin(vec2 offset) {
 		rotation_origin_ = offset;
-	}
-	
-	void SpatialObject::debug_render(Renderer& r) {
-		auto rect = bounds();
-		Path<SolidVertex2> path = make_solid_rect(default_allocator(), vec2::zero(), rect.size, Color(1, 1, 1, 0.1));
-		r.move_to(rect.origin);
-		r.fill_path(path);
 	}
 	
 	ObjectPtr<SpatialObject> SpatialObject::transform_parent() const {

@@ -9,7 +9,7 @@
 #include "type/attribute.hpp"
 #include <new>
 
-namespace falling {
+namespace grace {
 	
 struct ExposedAttribute : public IAttribute {
 	// IAttribute interface

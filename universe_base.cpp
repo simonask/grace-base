@@ -1,6 +1,6 @@
 //
 //  universe_base.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 08/01/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -14,7 +14,7 @@
 #include "io/formatters.hpp"
 #include "object/composite_type.hpp"
 
-namespace falling {
+namespace grace {
 	void DeferredAttributeDeserialization::perform(IUniverse& universe) const {
 		attribute->deserialize_attribute(object.get(), *node, universe);
 	}
@@ -57,11 +57,11 @@ namespace falling {
 		return true;
 	}
 	
-	bool BasicUniverse::serialize_scene(ArchiveNode &root_node, falling::String &out_error) {
+	bool BasicUniverse::serialize_scene(ArchiveNode &root_node, grace::String &out_error) {
 		root_node["format"] << 1;
 		auto& objects = root_node["objects"];
 		for (auto ptr: object_map_.values()) {
-			falling::serialize(*ptr, objects.array_push(), *this);
+			grace::serialize(*ptr, objects.array_push(), *this);
 		}
 		return true; // XXX: Report errors
 	}

@@ -1,6 +1,6 @@
 //
 //  property_animator.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 30/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -11,7 +11,7 @@
 #include "base/anim_utils.hpp"
 #include "type/any_type.hpp"
 
-namespace falling {
+namespace grace {
 	BEGIN_TYPE_INFO(PropertyAnimator)
 	REFLECT_AUTO_LIST(PropertyAnimator, link);
 	property(&PropertyAnimator::object, &PropertyAnimator::set_object, "object", "The object that owns the property to be animated.");

@@ -5,7 +5,7 @@
 #include "type/type.hpp"
 #include "object/object.hpp"
 
-namespace falling {
+namespace grace {
 
 /*
 	RULES ABOUT ObjectPtr<T>:

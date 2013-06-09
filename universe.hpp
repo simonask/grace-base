@@ -5,7 +5,7 @@
 #include "base/string.hpp"
 #include "object/objectptr.hpp"
 
-namespace falling {
+namespace grace {
 	class Object;
 	struct StructuredType;
 	struct DeserializeReferenceBase;

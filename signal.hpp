@@ -1,13 +1,13 @@
 //
 //  signal.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 03/08/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_signal_hpp
-#define falling_signal_hpp
+#ifndef grace_signal_hpp
+#define grace_signal_hpp
 
 #include "base/basic.hpp"
 #include "object/objectptr.hpp"
@@ -19,7 +19,7 @@
 #include "base/function.hpp"
 #include <type_traits>
 
-namespace falling {
+namespace grace {
     struct SignalInvokerBase {
         virtual ObjectPtr<> receiver() const = 0;
         virtual const ISlot* slot() const = 0;

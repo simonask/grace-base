@@ -1,18 +1,18 @@
 //
 //  editor_universe.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 21/01/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef __falling__editor_universe__
-#define __falling__editor_universe__
+#ifndef __grace__editor_universe__
+#define __grace__editor_universe__
 
 #include "object/universe_base.hpp"
 #include "object/object_ptr_root.hpp"
 
-namespace falling {
+namespace grace {
 	class EditorUniverse : public UniverseBase {
 	public:
 		// EditorUniverse API
@@ -43,4 +43,4 @@ namespace falling {
 	};
 }
 
-#endif /* defined(__falling__editor_universe__) */
+#endif /* defined(__grace__editor_universe__) */

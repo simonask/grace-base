@@ -1,6 +1,6 @@
 //
 //  editor_universe.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 21/01/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -19,7 +19,7 @@
 #include "type/type_registry.hpp"
 #include "base/log.hpp"
 
-namespace falling {
+namespace grace {
 	struct EditorUniverse::Impl {
 		Map<StringRef, ObjectPtr<>> object_map_;
 		Map<ObjectPtr<>, StringRef> reverse_object_map_;

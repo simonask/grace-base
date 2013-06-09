@@ -1,13 +1,13 @@
 //
 //  spatial_object.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 29/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_spatial_object_hpp
-#define falling_spatial_object_hpp
+#ifndef grace_spatial_object_hpp
+#define grace_spatial_object_hpp
 
 #include "object/object.hpp"
 #include "base/vector.hpp"
@@ -15,7 +15,7 @@
 #include "render/renderable.hpp"
 #include "object/objectptr.hpp"
 
-namespace falling {
+namespace grace {
 	class SpatialObject : public Renderable {
 		REFLECT;
 	public:
@@ -33,8 +33,6 @@ namespace falling {
 		virtual void set_rotation(float32 rot);
 		virtual vec2 rotation_origin() const;
 		virtual void set_rotation_origin(vec2 offset);
-		
-		void debug_render(Renderer& render) override;
 		
 		/*
 		 Transform parent can be:

@@ -6,7 +6,7 @@
 #include "base/time.hpp"
 #include "base/string.hpp"
 
-namespace falling {
+namespace grace {
 
 struct IUniverse;
 struct Type;

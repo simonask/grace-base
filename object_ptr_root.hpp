@@ -1,18 +1,18 @@
 //
 //  object_ptr_root.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 30/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_object_ptr_root_hpp
-#define falling_object_ptr_root_hpp
+#ifndef grace_object_ptr_root_hpp
+#define grace_object_ptr_root_hpp
 
 #include "object/objectptr.hpp"
 #include "object/aspect_cast.hpp"
 
-namespace falling {
+namespace grace {
 	struct ObjectPtrRootBase {
 		virtual void set(ObjectPtr<> root) const = 0;
 		virtual ObjectPtr<> get() const = 0;

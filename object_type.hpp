@@ -11,7 +11,7 @@
 #include "object/universe_base.hpp"
 #include "object/object_type_base.hpp"
 
-namespace falling {
+namespace grace {
 
 template <typename T> struct AutoListRegistrarForObject;
 

@@ -1,19 +1,19 @@
 //
 //  object_template.h
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 07/08/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef __falling__object_template__
-#define __falling__object_template__
+#ifndef __grace__object_template__
+#define __grace__object_template__
 
 #include "base/basic.hpp"
 #include "serialization/yaml_archive.hpp"
 #include "io/resource.hpp"
 
-namespace falling {
+namespace grace {
 	struct ObjectTemplate : public Resource {
 		YAMLArchive archive;
 		
@@ -21,4 +21,4 @@ namespace falling {
 	};
 }
 
-#endif /* defined(__falling__object_template__) */
+#endif /* defined(__grace__object_template__) */
