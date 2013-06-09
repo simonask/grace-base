@@ -27,6 +27,7 @@ namespace grace {
 		size_t write(const byte* buffer, size_t max) final { return stream_.write(buffer, max); }
 		size_t tell_write() const final { return stream_.tell_write(); }
 		bool seek_write(size_t position) final { return stream_.seek_write(position); }
+		void flush() final { return stream_.flush(); }
 	protected:
 		OutputStream& stream_;
 	};

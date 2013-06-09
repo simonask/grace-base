@@ -79,6 +79,7 @@ namespace grace {
 		size_t write(const byte* buffer, size_t n) override;
 		size_t tell_write() const override;
 		bool seek_write(size_t pos) override;
+		void flush() override;
 	};
 }
 

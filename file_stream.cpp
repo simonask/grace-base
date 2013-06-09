@@ -170,4 +170,10 @@ namespace grace {
 	bool OutputFileStream::seek_write(size_t pos) {
 		return seek(pos);
 	}
+	
+	void OutputFileStream::flush() {
+		if (is_open()) {
+			fflush(impl().fp);
+		}
+	}
 }

@@ -87,6 +87,7 @@ namespace grace {
 		size_t write(const byte* buffer, size_t max) final;
 		size_t tell_write() const final;
 		bool seek_write(size_t pos) final;
+		void flush() final {}
 		
 		// MemoryBufferStream API
 		IAllocator& allocator() const { return buffer_.allocator(); }
