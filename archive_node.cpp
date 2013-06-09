@@ -6,7 +6,7 @@
 #include "io/formatters.hpp"
 #include "io/stdio_stream.hpp"
 
-namespace falling {
+namespace grace {
 class IUniverse;
 
 bool ArchiveNode::is_integer() const {
@@ -204,11 +204,11 @@ size_t ArchiveNode::array_size() const {
 		return &type;
 	}
 	
-	void ArchiveNodeConstPtrType::deserialize(ArchiveNodeConstPtrType::T &place, const falling::ArchiveNode & node, falling::IUniverse &) const {
+	void ArchiveNodeConstPtrType::deserialize(ArchiveNodeConstPtrType::T &place, const grace::ArchiveNode & node, grace::IUniverse &) const {
 		place = &node;
 	}
 	
-	void ArchiveNodeConstPtrType::serialize(const ArchiveNodeConstPtrType::T &place, falling::ArchiveNode &, falling::IUniverse &) const {
+	void ArchiveNodeConstPtrType::serialize(const ArchiveNodeConstPtrType::T &place, grace::ArchiveNode &, grace::IUniverse &) const {
 		ASSERT(false); // Cannot serialize a reference into another serialized tree.
 	}
 
@@ -221,11 +221,11 @@ size_t ArchiveNode::array_size() const {
 		return &type;
 	}
 	
-	void ArchiveNodePtrType::deserialize(ArchiveNodePtrType::T &place, const falling::ArchiveNode & node, falling::IUniverse &) const {
+	void ArchiveNodePtrType::deserialize(ArchiveNodePtrType::T &place, const grace::ArchiveNode & node, grace::IUniverse &) const {
 		ASSERT(false); // Cannot deserialize a non-const pointer to an ArchiveNode.
 	}
 	
-	void ArchiveNodePtrType::serialize(const ArchiveNodePtrType::T &place, falling::ArchiveNode &, falling::IUniverse &) const {
+	void ArchiveNodePtrType::serialize(const ArchiveNodePtrType::T &place, grace::ArchiveNode &, grace::IUniverse &) const {
 		ASSERT(false); // Cannot serialize a reference into another serialized tree.
 	}
 	

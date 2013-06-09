@@ -1,19 +1,19 @@
 //
 //  slot_invoke.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 08/09/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_slot_invoke_hpp
-#define falling_slot_invoke_hpp
+#ifndef grace_slot_invoke_hpp
+#define grace_slot_invoke_hpp
 
 #include "serialization/archive_node.hpp"
 #include "base/basic.hpp"
 #include "base/any.hpp"
 
-namespace falling {
+namespace grace {
 	struct IUniverse;
 	
 	template <size_t SourceIdx, size_t TupleIdx, typename... TupleTypes>

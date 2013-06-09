@@ -1,6 +1,6 @@
 //
 //  binary_archive.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 02/06/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -10,7 +10,7 @@
 #include "base/log.hpp"
 #include "io/util.hpp"
 
-namespace falling {
+namespace grace {
 	namespace {
 		enum NodeType : uint8 {
 			Empty,
@@ -121,7 +121,7 @@ namespace falling {
 		}
 	}
 	
-	bool BinaryArchiveNode::read(const byte*& p, const byte *end, falling::String &out_error) {
+	bool BinaryArchiveNode::read(const byte*& p, const byte *end, grace::String &out_error) {
 		byte type;
 		if (!read_bytes(p, end, &type)) {
 			out_error = "Unexpected end of stream.";
@@ -213,13 +213,13 @@ namespace falling {
 	void BinaryArchive::write(OutputStream &os) const {
 		StringStream ss;
 		root_.write(ss);
-		falling::String data = ss.str();
+		grace::String data = ss.str();
 		uint32 stream_length = (uint32)data.size();
 		write_bytes(os, &stream_length);
 		FormattedStream(os) << data;
 	}
 	
-	size_t BinaryArchive::read(InputStream& is, falling::String& out_error) {
+	size_t BinaryArchive::read(InputStream& is, grace::String& out_error) {
 		clear();
 		if (is.has_length()) {
 			size_t stream_length = is.length();

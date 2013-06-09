@@ -10,7 +10,7 @@
 #include "io/resource_manager.hpp"
 #include <memory>
 
-namespace falling {
+namespace grace {
 
 namespace {
 	const StructuredType* get_type_from_map(const ArchiveNode& node, String& out_error);

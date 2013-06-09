@@ -1,20 +1,20 @@
 //
 //  yaml_archive.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 27/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_yaml_archive_hpp
-#define falling_yaml_archive_hpp
+#ifndef grace_yaml_archive_hpp
+#define grace_yaml_archive_hpp
 
 #include "serialization/archive.hpp"
 #include "serialization/archive_node.hpp"
 
 #include "base/bag.hpp"
 
-namespace falling {
+namespace grace {
 	struct YAMLArchive;
 	
 	struct YAMLArchiveNode : ArchiveNode {

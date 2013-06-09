@@ -1,20 +1,20 @@
 //
 //  binary_archive.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 02/06/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_binary_archive_hpp
-#define falling_binary_archive_hpp
+#ifndef grace_binary_archive_hpp
+#define grace_binary_archive_hpp
 
 #include "serialization/archive.hpp"
 #include "serialization/archive_node.hpp"
 
 #include "base/bag.hpp"
 
-namespace falling {
+namespace grace {
 	struct BinaryArchive;
 	
 	struct BinaryArchiveNode : ArchiveNode {

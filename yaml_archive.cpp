@@ -1,6 +1,6 @@
 //
 //  yaml_archive.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 27/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -14,7 +14,7 @@
 #include <yaml.h>
 #include <stdexcept>
 
-namespace falling {
+namespace grace {
 	namespace {
 		struct YAMLParserError {
 			String message_;

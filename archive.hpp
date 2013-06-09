@@ -12,7 +12,7 @@
 #include "io/input_stream.hpp"
 #include "io/file_stream.hpp"
 
-namespace falling {
+namespace grace {
 
 struct ArchiveNode;
 struct IUniverse;
