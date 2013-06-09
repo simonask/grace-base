@@ -77,6 +77,8 @@ namespace grace {
 		bool seek_write(size_t position) {
 			return false;
 		}
+		void flush() final {
+		}
 	};
 }
 
