@@ -1,19 +1,19 @@
 //
 //  allocator.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 17/11/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_allocator_hpp
-#define falling_allocator_hpp
+#ifndef grace_allocator_hpp
+#define grace_allocator_hpp
 
 #include "base/basic.hpp"
 #include "memory/memory_tracker.hpp"
 #include <atomic>
 
-namespace falling {
+namespace grace {
 	class FormattedStream;
 
 	struct BadAlignmentError {};
@@ -254,7 +254,7 @@ namespace falling {
 	}
 	
 	template <typename T>
-	inline void destroy(T* ptr, falling::IAllocator& alloc) {
+	inline void destroy(T* ptr, grace::IAllocator& alloc) {
 		if (ptr != nullptr) {
 			ptr->~T();
 		}
@@ -263,20 +263,20 @@ namespace falling {
 }
 
 inline void* operator new(size_t nbytes) {
-	return falling::default_allocator().allocate(nbytes, 16);
+	return grace::default_allocator().allocate(nbytes, 16);
 }
 inline void* operator new[](size_t nbytes) {
-	return falling::default_allocator().allocate(nbytes, 16);
+	return grace::default_allocator().allocate(nbytes, 16);
 }
 
 inline void operator delete(void* ptr) throw() {
-	falling::default_allocator().free(ptr);
+	grace::default_allocator().free(ptr);
 }
 inline void operator delete[](void* ptr) throw() {
-	falling::default_allocator().free(ptr);
+	grace::default_allocator().free(ptr);
 }
 
-inline void* operator new(size_t nbytes, falling::IAllocator& alloc, size_t alignment = 0) {
+inline void* operator new(size_t nbytes, grace::IAllocator& alloc, size_t alignment = 0) {
 	return alloc.allocate(nbytes, alignment ? alignment : 16);
 }
 

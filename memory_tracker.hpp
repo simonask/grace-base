@@ -1,19 +1,19 @@
 //
 //  memory_tracker.h
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 07/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef __falling__memory_tracker__
-#define __falling__memory_tracker__
+#ifndef __grace__memory_tracker__
+#define __grace__memory_tracker__
 
 #include "base/basic.hpp"
 #include "base/array_ref.hpp"
 #include "base/maybe.hpp"
 
-namespace falling {
+namespace grace {
 	class String;
 	
 	static const size_t MEMORY_LEAK_BACKTRACE_STEPS = 14;
@@ -46,4 +46,4 @@ namespace falling {
 	};
 }
 
-#endif /* defined(__falling__memory_tracker__) */
+#endif /* defined(__grace__memory_tracker__) */

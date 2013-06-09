@@ -1,17 +1,17 @@
 //
 //  fixed_allocator.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 25/11/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_fixed_allocator_hpp
-#define falling_fixed_allocator_hpp
+#ifndef grace_fixed_allocator_hpp
+#define grace_fixed_allocator_hpp
 
 #include "memory/allocator.hpp"
 
-namespace falling {
+namespace grace {
 	template <size_t Max, size_t Alignment = 16>
 	class FixedAllocator : public IAllocator {
 	public:

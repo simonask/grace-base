@@ -1,6 +1,6 @@
 //
 //  allocator.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 17/11/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -27,7 +27,7 @@
 #undef MALLOC_SIZE
 #endif
 
-namespace falling {
+namespace grace {
 #if !defined(PAGE_SIZE)
 	static const size_t PAGE_SIZE = 4096; // defined by malloc.h
 #endif

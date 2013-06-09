@@ -1,18 +1,18 @@
 //
 //  unique_ptr.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 24/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_unique_ptr_hpp
-#define falling_unique_ptr_hpp
+#ifndef grace_unique_ptr_hpp
+#define grace_unique_ptr_hpp
 
 #include "base/basic.hpp"
 #include "memory/allocator.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename T>
 	class UniquePtr {
 	public:

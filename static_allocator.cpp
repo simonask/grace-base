@@ -1,6 +1,6 @@
 //
 //  static_allocator.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 26/11/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -8,7 +8,7 @@
 
 #include "memory/static_allocator.hpp"
 
-namespace falling {
+namespace grace {
 	static const size_t STATIC_MEMORY_ARENA = 0x080000; // 512 KiB
 
 	namespace {

@@ -1,6 +1,6 @@
 //
 //  memory_tracker.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 07/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -14,7 +14,7 @@
 #include "base/arch.hpp"
 #include <sys/mman.h>
 
-namespace falling {
+namespace grace {
 	struct MemoryTracker::Impl {
 		MemoryLeak* begin;
 		MemoryLeak* end;
