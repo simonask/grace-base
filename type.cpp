@@ -2,7 +2,7 @@
 #include "serialization/archive_node.hpp"
 #include "base/map.hpp"
 
-namespace falling {
+namespace grace {
 
 #define DEFINE_SIMPLE_TYPE(T, IS_FLOAT, IS_SIGNED) \
 const SimpleType* BuildTypeInfo<T>::build() {\

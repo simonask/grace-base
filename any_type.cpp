@@ -1,6 +1,6 @@
 //
 //  any_type.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 30/04/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -9,7 +9,7 @@
 #include "type/any_type.hpp"
 #include "serialization/archive_node.hpp"
 
-namespace falling {
+namespace grace {
 	void AnyType::deserialize(Any &place, const ArchiveNode &n, IUniverse &u) const {
 		ArchiveNode::IntegerType inum;
 		ArchiveNode::FloatType fnum;

@@ -8,7 +8,7 @@
 #include "serialization/archive_node.hpp"
 #include "object/aspect_cast.hpp"
 
-namespace falling {
+namespace grace {
 
 struct ReferenceType : Type {
 	ReferenceType(const TypeInfo& ti) : Type(ti) {}

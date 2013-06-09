@@ -7,7 +7,7 @@
 #include "serialization/archive_node.hpp"
 #include "base/any.hpp"
 
-namespace falling {
+namespace grace {
 	struct IAttribute {
 		virtual const IType* type() const = 0;
 		virtual StringRef name() const = 0;

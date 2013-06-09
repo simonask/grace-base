@@ -1,6 +1,6 @@
 #include "type/maybe_type.hpp"
 
-namespace falling {
+namespace grace {
 	
 String build_maybe_type_name(const Type* inner_type) {
 	StringStream ss;

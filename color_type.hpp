@@ -1,18 +1,18 @@
 //
 //  color_type.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 01/06/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_color_type_hpp
-#define falling_color_type_hpp
+#ifndef grace_color_type_hpp
+#define grace_color_type_hpp
 
 #include "base/color.hpp"
 #include "type/type.hpp"
 
-namespace falling {
+namespace grace {
 	struct ArchiveNode;
 	struct IUniverse;
 	

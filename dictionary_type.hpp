@@ -1,18 +1,18 @@
 //
 //  dictionary_type.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 06/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_dictionary_type_hpp
-#define falling_dictionary_type_hpp
+#ifndef grace_dictionary_type_hpp
+#define grace_dictionary_type_hpp
 
 #include "type/map_type.hpp"
 #include "base/dictionary.hpp"
 
-namespace falling {
+namespace grace {
 	String build_dictionary_type_name(IAllocator& alloc, const Type* value_type);
 
 	template <typename Value, typename Cmp>

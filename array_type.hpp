@@ -4,7 +4,7 @@
 
 #include "type/type.hpp"
 
-namespace falling {
+namespace grace {
 
 struct IArrayReader;
 struct IArrayWriter;

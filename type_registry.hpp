@@ -7,7 +7,7 @@
 #include "object/objectptr.hpp"
 #include "base/string.hpp"
 
-namespace falling {
+namespace grace {
 
 	struct VertexType;
 	struct EnumType;

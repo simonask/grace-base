@@ -1,18 +1,18 @@
 //
 //  pointer_type.h
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 02/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef __falling__pointer_type__
-#define __falling__pointer_type__
+#ifndef __grace__pointer_type__
+#define __grace__pointer_type__
 
 #include "type/type.hpp"
 #include <typeinfo>
 
-namespace falling {
+namespace grace {
 	class PointerType : public IType {
 	public:
 		PointerType(IAllocator& alloc, const Type* pointee_type, bool is_const);
@@ -77,4 +77,4 @@ namespace falling {
 	};
 }
 
-#endif /* defined(__falling__pointer_type__) */
+#endif /* defined(__grace__pointer_type__) */

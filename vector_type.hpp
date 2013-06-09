@@ -1,19 +1,19 @@
 //
 //  vector_type.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 29/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_vector_type_hpp
-#define falling_vector_type_hpp
+#ifndef grace_vector_type_hpp
+#define grace_vector_type_hpp
 
 #include "type/type.hpp"
 #include "base/vector.hpp"
 #include "serialization/archive_node.hpp"
 
-namespace falling {
+namespace grace {
 	struct VectorType : public SimpleType {
 		VectorType(const TypeInfo& ti, IAllocator& alloc, StringRef name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(alloc, ti, move(name), width, component_width, is_float, is_signed) {}
 	};

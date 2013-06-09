@@ -1,6 +1,6 @@
 //
 //  map_type.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 10/01/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -10,7 +10,7 @@
 #include "io/string_stream.hpp"
 #include "serialization/archive_node.hpp"
 
-namespace falling {
+namespace grace {
 	void MapType::build_map_type_name() {
 		ScratchAllocator scratch;
 		StringStream ss(scratch);

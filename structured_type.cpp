@@ -1,6 +1,6 @@
 //
 //  structured_type.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 02/01/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -10,7 +10,7 @@
 #include "object/slot.hpp"
 #include "type/attribute.hpp"
 
-namespace falling {
+namespace grace {
 	const ISlot* StructuredType::find_slot_by_name(StringRef name) const {
 		const StructuredType* t = this;
 		while (t != nullptr) {

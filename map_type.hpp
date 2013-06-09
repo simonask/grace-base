@@ -1,18 +1,18 @@
 //
 //  map_type.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 10/01/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_map_type_hpp
-#define falling_map_type_hpp
+#ifndef grace_map_type_hpp
+#define grace_map_type_hpp
 
 #include "type/type.hpp"
 #include "base/map.hpp"
 
-namespace falling {
+namespace grace {
 	struct IMapReader;
 	struct IMapWriter;
 

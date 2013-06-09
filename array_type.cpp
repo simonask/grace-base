@@ -2,7 +2,7 @@
 #include "io/string_stream.hpp"
 #include "serialization/archive_node.hpp"
 
-namespace falling {
+namespace grace {
 	
 String build_variable_length_array_type_name(IAllocator& alloc, StringRef base_name, const Type* element_type) {
 	StringStream ss;

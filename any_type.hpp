@@ -1,18 +1,18 @@
 //
 //  any_type.h
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 30/04/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef __falling__any_type__
-#define __falling__any_type__
+#ifndef __grace__any_type__
+#define __grace__any_type__
 
 #include "base/any.hpp"
 #include "type/type.hpp"
 
-namespace falling {
+namespace grace {
 	struct AnyType : Type {
 		AnyType() : Type(GetTypeInfo<Any>::Value) {}
 		void deserialize(Any& place, const ArchiveNode& n, IUniverse& u) const;
@@ -40,4 +40,4 @@ namespace falling {
 	};
 }
 
-#endif /* defined(__falling__any_type__) */
+#endif /* defined(__grace__any_type__) */

@@ -1,13 +1,13 @@
 //
 //  types.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 29/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_types_hpp
-#define falling_types_hpp
+#ifndef grace_types_hpp
+#define grace_types_hpp
 
 #include "type/boolean_type.hpp"
 #include "type/array_type.hpp"

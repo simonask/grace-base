@@ -1,6 +1,6 @@
 //
 //  boolean_type.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 12/12/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -9,7 +9,7 @@
 #include "type/boolean_type.hpp"
 #include "serialization/archive_node.hpp"
 
-namespace falling {
+namespace grace {
 	BooleanType* BuildTypeInfo<bool>::build() {
 		static BooleanType* p = new_static BooleanType;
 		return p;

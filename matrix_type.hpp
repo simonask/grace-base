@@ -1,19 +1,19 @@
 //
 //  matrix_type.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 03/11/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_matrix_type_hpp
-#define falling_matrix_type_hpp
+#ifndef grace_matrix_type_hpp
+#define grace_matrix_type_hpp
 
 #include "base/matrix.hpp"
 #include "type/type.hpp"
 #include "base/log.hpp"
 
-namespace falling {
+namespace grace {
 	struct MatrixType : public SimpleType {
 		MatrixType(const TypeInfo& ti, IAllocator& alloc, StringRef name, size_t width, size_t component_width, bool is_float, bool is_signed = true) : SimpleType(alloc, ti, std::move(name), width, component_width, is_float, is_signed) {}
 		virtual size_t num_columns() const = 0;

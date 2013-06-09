@@ -1,17 +1,17 @@
 //
 //  enum_type.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 24/02/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_enum_type_hpp
-#define falling_enum_type_hpp
+#ifndef grace_enum_type_hpp
+#define grace_enum_type_hpp
 
 #include "type/type.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename T>
 	struct EnumTypeImpl : TypeFor<T, EnumType> {
 		EnumTypeImpl(IAllocator& alloc, StringRef name, size_t width) : TypeFor<T, EnumType>(alloc, name, width) {}
@@ -98,15 +98,15 @@ namespace falling {
 }
 
 #define BEGIN_ENUM_INFO(T) \
-	struct EnumTypeBuilder_##T : falling::EnumTypeBuilder<T> { \
+	struct EnumTypeBuilder_##T : grace::EnumTypeBuilder<T> { \
 		static const EnumType* build(); \
 		void define__() final; \
 	}; \
-	const falling::EnumType* falling::BuildTypeInfo<T>::build() { \
-		static const falling::EnumType* p = EnumTypeBuilder_##T::build(); \
+	const grace::EnumType* grace::BuildTypeInfo<T>::build() { \
+		static const grace::EnumType* p = EnumTypeBuilder_##T::build(); \
 		return p; \
 	} \
-	inline const falling::EnumType* EnumTypeBuilder_##T::build() { \
+	inline const grace::EnumType* EnumTypeBuilder_##T::build() { \
 		EnumTypeBuilder_##T builder; \
 		builder.name(#T); \
 		builder.width(sizeof(T)); \

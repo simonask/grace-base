@@ -4,7 +4,7 @@
 #include "base/map.hpp"
 #include "render/vertex_type.hpp"
 
-namespace falling {
+namespace grace {
 
 struct TypeRegistry::Impl {
 	Map<String, const ObjectTypeBase*> type_map;

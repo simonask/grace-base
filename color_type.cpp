@@ -1,6 +1,6 @@
 //
 //  color_type.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 01/06/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -9,7 +9,7 @@
 #include "type/color_type.hpp"
 #include "serialization/archive_node.hpp"
 
-namespace falling {
+namespace grace {
 	
 	void ColorType::deserialize(Color& color, const ArchiveNode& node, IUniverse&) const {
 		if (node.is_map()) {
