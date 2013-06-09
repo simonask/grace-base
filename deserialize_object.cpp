@@ -132,7 +132,7 @@ const StructuredType* get_or_create_object_type(const ArchiveNode& object_defini
 					
 					Array<StringRef> exposed_slot_names;
 					auto& exposed_slots = aspect["__slots"];
-					if (aspect["__slots"] >> exposed_slot_names) {
+					if (exposed_slots >> exposed_slot_names) {
 						for (auto slot_name: exposed_slot_names) {
 							ct->expose_slot(n, slot_name);
 						}
