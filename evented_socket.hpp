@@ -20,6 +20,7 @@ namespace grace {
 	enum class SocketEvent : uint8 {
 		Read  = 1 << 0,
 		Write = 1 << 1,
+		AllEventsMask = 0xff
 	};
 	ENUM_IS_FLAGS(SocketEvent);
 
