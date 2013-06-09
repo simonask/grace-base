@@ -986,9 +986,9 @@ namespace grace {
 #if defined(__SSE4_1__)
 			return {_mm_round_ps(v, _MM_FROUND_NO_EXC | _MM_FROUND_TO_NEAREST_INT)};
 #else
-			_MM_SET_ROUNDING_MODE(_MM_ROUND_NEAREST);
 			__m128i as_integer = _mm_cvtps_epi32(v);
-			return {_mm_cvtepi32_ps(as_integer)};
+			__m128 result = _mm_cvtepi32_ps(as_integer);
+			return {result};
 #endif
 		}
 		
@@ -996,9 +996,11 @@ namespace grace {
 #if defined(__SSE4_1__)
 			return {_mm_round_ps(v, _MM_FROUND_NO_EXC | _MM_FROUND_TO_NEG_INF)};
 #else
-			_MM_SET_ROUNDING_MODE(_MM_ROUND_DOWN);
-			__m128i as_integer = _mm_cvtps_epi32(v);
-			return {_mm_cvtepi32_ps(as_integer)};
+			__m128 half = _mm_set1_ps(0.5f);
+			__m128 adjusted = _mm_sub_ps(v, half);
+			__m128i as_integer = _mm_cvtps_epi32(adjusted);
+			__m128 result = _mm_cvtepi32_ps(as_integer);
+			return {result};
 #endif
 		}
 		
@@ -1006,9 +1008,11 @@ namespace grace {
 #if defined(__SSE4_1__)
 			return {_mm_round_ps(v, _MM_FROUND_NO_EXC | _MM_FROUND_TO_POS_INF)};
 #else
-			_MM_SET_ROUNDING_MODE(_MM_ROUND_UP);
-			__m128i as_integer = _mm_cvtps_epi32(v);
-			return {_mm_cvtepi32_ps(as_integer)};
+			__m128 half = _mm_set1_ps(0.5f);
+			__m128 adjusted = _mm_add_ps(v, half);
+			__m128i as_integer = _mm_cvtps_epi32(adjusted);
+			__m128 result = _mm_cvtepi32_ps(as_integer);
+			return {result};
 #endif
 		}
 		
