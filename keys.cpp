@@ -1,6 +1,6 @@
 //
 //  keys.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 16/05/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -11,7 +11,7 @@
 
 #include <SDL2/SDL_keyboard.h>
 
-namespace falling {
+namespace grace {
 	FormattedStream& operator<<(FormattedStream& os, Key key) {
 		SDL_Keycode code = (SDL_Keycode)key;
 		StringRef keyname = SDL_GetKeyName(code);

@@ -1,19 +1,19 @@
 //
 //  input_manager.h
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 14/05/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef __falling__input_manager__
-#define __falling__input_manager__
+#ifndef __grace__input_manager__
+#define __grace__input_manager__
 
 #include "event/event_loop.hpp"
 #include "base/auto_link_queue.hpp"
 #include "object/signal.hpp"
 
-namespace falling {
+namespace grace {
 	class IInputResponder;
 	class IInputSpace;
 
@@ -43,4 +43,4 @@ namespace falling {
 	};
 }
 
-#endif /* defined(__falling__input_manager__) */
+#endif /* defined(__grace__input_manager__) */

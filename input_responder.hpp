@@ -1,19 +1,19 @@
 //
 //  input_responder.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 24/02/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_input_responder_hpp
-#define falling_input_responder_hpp
+#ifndef grace_input_responder_hpp
+#define grace_input_responder_hpp
 
 #include "base/auto_link_queue.hpp"
 #include "base/geometry.hpp"
 #include "event/events.hpp"
 
-namespace falling {
+namespace grace {
 	struct InputEvent;
 	
 	class IInputResponder {

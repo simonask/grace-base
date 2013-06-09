@@ -1,13 +1,13 @@
 //
 //  event_loop.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 19/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_event_loop_hpp
-#define falling_event_loop_hpp
+#ifndef grace_event_loop_hpp
+#define grace_event_loop_hpp
 
 #include "base/basic.hpp"
 #include "memory/unique_ptr.hpp"
@@ -17,7 +17,7 @@
 #include "base/function.hpp"
 #include "event/events.hpp"
 
-namespace falling {
+namespace grace {
 	using FileSystemDescriptor = int;
 	
 	using CallbackID = uintptr_t;
@@ -40,6 +40,9 @@ namespace falling {
 		
 		// Async File I/O API
 		virtual IEventHandle* watch_descriptor(IAllocator&, FileSystemDescriptor fd, uint8 event_mask, FileSystemCallback callback, SystemTimeDelta timeout = SystemTimeDelta::forever()) = 0;
+		
+		// Main
+		virtual void run() = 0;
 	};
 	
 	struct IEventedSocket;

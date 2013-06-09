@@ -1,6 +1,6 @@
 //
 //  input_manager.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 14/05/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
@@ -10,7 +10,7 @@
 #include "event/input_responder.hpp"
 #include "event/input_space.hpp"
 
-namespace falling {
+namespace grace {
 	struct InputManager::Impl {
 		IInputSpace* space = nullptr;
 		

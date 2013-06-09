@@ -1,13 +1,13 @@
 //
 //  keys.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 14/05/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_keys_hpp
-#define falling_keys_hpp
+#ifndef grace_keys_hpp
+#define grace_keys_hpp
 
 #include "base/basic.hpp"
 
@@ -19,7 +19,7 @@
 #include <SDL_keyboard.h>
 #endif
 
-namespace falling {
+namespace grace {
 	enum class Key : uint32 {
 		Unknown = SDLK_UNKNOWN,
 		

@@ -1,17 +1,17 @@
 //
 //  input_space.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 15/05/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_input_space_hpp
-#define falling_input_space_hpp
+#ifndef grace_input_space_hpp
+#define grace_input_space_hpp
 
 #include "event/events.hpp"
 
-namespace falling {
+namespace grace {
 	class IInputResponder;
 	
 	struct IInputSpace {

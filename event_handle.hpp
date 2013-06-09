@@ -1,15 +1,15 @@
 //
 //  event_handle.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 20/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_event_handle_hpp
-#define falling_event_handle_hpp
+#ifndef grace_event_handle_hpp
+#define grace_event_handle_hpp
 
-namespace falling {
+namespace grace {
 	struct IEventHandle {
 		virtual bool is_repeating() const = 0;
 		virtual bool is_active() const = 0;

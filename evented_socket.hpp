@@ -1,13 +1,13 @@
 //
 //  evented_socket.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 20/03/13.
 //  Copyright (c) 2013 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_evented_socket_hpp
-#define falling_evented_socket_hpp
+#ifndef grace_evented_socket_hpp
+#define grace_evented_socket_hpp
 
 #include "io/input_stream.hpp"
 #include "io/output_stream.hpp"
@@ -16,7 +16,7 @@
 
 #include <algorithm>
 
-namespace falling {
+namespace grace {
 	enum class SocketEvent : uint8 {
 		Read  = 1 << 0,
 		Write = 1 << 1,
