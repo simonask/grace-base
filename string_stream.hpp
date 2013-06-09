@@ -1,19 +1,19 @@
 //
 //  string_stream.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 29/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_string_stream_hpp
-#define falling_string_stream_hpp
+#ifndef grace_string_stream_hpp
+#define grace_string_stream_hpp
 
 #include "io/formatted_stream.hpp"
 #include "io/memory_stream.hpp"
 #include "base/string.hpp"
 
-namespace falling {
+namespace grace {
 	class StringStream : public FormattedStream {
 	public:
 		StringStream(IAllocator& alloc = default_allocator()) : buffer_(alloc), FormattedStream(buffer_) {}

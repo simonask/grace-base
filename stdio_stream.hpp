@@ -1,18 +1,18 @@
 //
 //  stdio_stream.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 30/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_stdio_stream_hpp
-#define falling_stdio_stream_hpp
+#ifndef grace_stdio_stream_hpp
+#define grace_stdio_stream_hpp
 
 #include "io/formatted_stream.hpp"
 #include "io/file_stream.hpp"
 
-namespace falling {
+namespace grace {
 	enum StandardOStreamType {
 		StandardOutputStreamType,
 		StandardErrorStreamType,

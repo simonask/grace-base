@@ -1,6 +1,6 @@
 //
 //  resource_manager.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 27/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -15,7 +15,7 @@
 
 #include "io/file_stream.hpp"
 
-namespace falling {
+namespace grace {
 	static const size_t RESOURCE_ARENA_SIZE = 0x2000000; // 32 Mb
 
 	struct ResourceLoaderFiberManager : IFiberManager {

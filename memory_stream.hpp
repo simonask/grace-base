@@ -1,20 +1,20 @@
 //
 //  memorystream.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 21/06/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_memorystream_hpp
-#define falling_memorystream_hpp
+#ifndef grace_memorystream_hpp
+#define grace_memorystream_hpp
 
 #include "io/input_stream.hpp"
 #include "io/output_stream.hpp"
 
 #include "base/array_list.hpp"
 
-namespace falling {
+namespace grace {
 	class MemoryStream : public InputStream {
 	public:
 		MemoryStream(const byte* begin, const byte* end) : begin_(begin), end_(end), current_(begin) {}

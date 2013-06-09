@@ -1,13 +1,13 @@
 //
 //  formatters.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 30/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_formatters_hpp
-#define falling_formatters_hpp
+#ifndef grace_formatters_hpp
+#define grace_formatters_hpp
 
 #include "io/formatted_stream.hpp"
 #include "io/string_stream.hpp"
@@ -19,7 +19,7 @@
 #include "base/function.hpp"
 #include "base/time.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename T>
 	struct PrintfFormatter : Formatter {
 		String v;

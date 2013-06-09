@@ -1,17 +1,17 @@
 //
 //  stream.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 21/06/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_stream_hpp
-#define falling_stream_hpp
+#ifndef grace_stream_hpp
+#define grace_stream_hpp
 
 #include "base/basic.hpp"
 
-namespace falling {
+namespace grace {
 	class InputStream {
 	public:
 		virtual bool is_readable() const = 0;

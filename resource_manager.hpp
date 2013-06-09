@@ -1,13 +1,13 @@
 //
 //  resource_manager.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 27/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_resource_manager_hpp
-#define falling_resource_manager_hpp
+#ifndef grace_resource_manager_hpp
+#define grace_resource_manager_hpp
 
 #include "base/basic.hpp"
 #include "base/log.hpp"
@@ -15,7 +15,7 @@
 #include "io/resource_ptr.hpp"
 #include "io/resource_loader.hpp"
 
-namespace falling {
+namespace grace {
 	typedef uintptr_t ResourceLoaderID;
 	
 	template <typename ResourceType>

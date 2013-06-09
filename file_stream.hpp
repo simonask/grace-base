@@ -1,19 +1,19 @@
 //
 //  filestream.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 21/06/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_filestream_hpp
-#define falling_filestream_hpp
+#ifndef grace_filestream_hpp
+#define grace_filestream_hpp
 
 #include "io/input_stream.hpp"
 #include "io/output_stream.hpp"
 #include "base/string.hpp"
 
-namespace falling {
+namespace grace {
 	enum FileWriteMode : uint8 {
 		Truncate,
 		Append,

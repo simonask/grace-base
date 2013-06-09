@@ -1,18 +1,18 @@
 //
 //  util.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 25/11/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_util_hpp
-#define falling_util_hpp
+#ifndef grace_util_hpp
+#define grace_util_hpp
 
 #include "io/input_stream.hpp"
 #include "base/array.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename ContainerType>
 	inline size_t read_all(InputStream& is, ContainerType& buffer) {
 		if (is.has_length()) {

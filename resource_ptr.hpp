@@ -1,17 +1,17 @@
 //
 //  resource_ptr.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 28/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_resource_ptr_hpp
-#define falling_resource_ptr_hpp
+#ifndef grace_resource_ptr_hpp
+#define grace_resource_ptr_hpp
 
 #include "io/resource.hpp"
 
-namespace falling {
+namespace grace {
 	template <typename T>
 	class ResourcePtr {
 	public:

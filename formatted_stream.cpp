@@ -1,6 +1,6 @@
 //
 //  formatted_stream.cpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 29/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
@@ -11,7 +11,7 @@
 
 #include <string.h>
 
-namespace falling {
+namespace grace {
 	FormattedStream& operator<<(FormattedStream& stream, const char *cstr) {
 		stream.write((const byte*)cstr, strlen(cstr));
 		return stream;

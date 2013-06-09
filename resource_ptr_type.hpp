@@ -1,19 +1,19 @@
 //
 //  resource_ptr_type.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 29/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_resource_ptr_type_hpp
-#define falling_resource_ptr_type_hpp
+#ifndef grace_resource_ptr_type_hpp
+#define grace_resource_ptr_type_hpp
 
 #include "type/type.hpp"
 #include "io/resource_ptr.hpp"
 #include "io/resource_manager.hpp"
 
-namespace falling {
+namespace grace {
 	class ResourcePtrType : public Type {
 	public:
 		ResourcePtrType(const TypeInfo& ti) : Type(ti) {}

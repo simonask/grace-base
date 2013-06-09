@@ -1,13 +1,13 @@
 //
 //  formatted_stream.hpp
-//  falling
+//  grace
 //
 //  Created by Simon Ask Ulsnes on 29/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#ifndef falling_formatted_stream_hpp
-#define falling_formatted_stream_hpp
+#ifndef grace_formatted_stream_hpp
+#define grace_formatted_stream_hpp
 
 #include "base/basic.hpp"
 #include "io/output_stream.hpp"
@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include "base/string.hpp"
 
-namespace falling {
+namespace grace {
 	class FormattedStream;
 	
 	class FormattedStream : public OutputStream {
