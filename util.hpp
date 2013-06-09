@@ -33,6 +33,10 @@ namespace grace {
 		read_all(is, buffer);
 		return move(buffer);
 	}
+	
+	bool path_exists(StringRef path);
+	bool path_is_file(StringRef path);
+	bool path_is_directory(StringRef path);
 }
 
 
