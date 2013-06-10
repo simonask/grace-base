@@ -13,6 +13,7 @@
 #include "io/output_stream.hpp"
 #include "base/basic.hpp"
 #include "event/event_handle.hpp"
+#include "base/function.hpp"
 
 #include <algorithm>
 
