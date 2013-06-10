@@ -8,7 +8,7 @@
 
 #include "object/editor_universe.hpp"
 #include "type/structured_type.hpp"
-#include "base/priority_queue.hpp"
+#include "base/set.hpp"
 #include "base/parse.hpp"
 #include "io/formatters.hpp"
 #include "type/reference_type.hpp"
@@ -23,7 +23,7 @@ namespace grace {
 	struct EditorUniverse::Impl {
 		Map<StringRef, ObjectPtr<>> object_map_;
 		Map<ObjectPtr<>, StringRef> reverse_object_map_;
-		PriorityQueue<String> object_name_pool_;
+		Set<String> object_name_pool_;
 		ObjectPtr<> root_;
 		
 		Array<ObjectPtrRootBase*> external_object_roots_;

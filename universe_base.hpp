@@ -13,6 +13,7 @@
 #include "memory/unique_ptr.hpp"
 #include "object/aspect_cast.hpp"
 #include "base/priority_queue.hpp"
+#include "base/set.hpp"
 
 namespace grace {
 	struct CompositeType;
@@ -84,8 +85,7 @@ namespace grace {
 		IAllocator& allocator_;
 		Map<const StructuredType*, Map<size_t, VirtualAutoListBase*>> auto_lists;
 		IEventLoop* event_loop_ = nullptr;
-		// TODO: Use Set:
-		PriorityQueue<ObjectPtr<>> update_objects_;
+		Set<ObjectPtr<>> update_objects_;
 	};
 	
 	void error_category_already_initialized_with_different_type(StringRef name);
