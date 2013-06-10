@@ -46,12 +46,14 @@ namespace grace {
 		template <typename T>
 		Function<R(Args...)>& operator=(T function_object) { assign(move(function_object)); return *this; }
 		
-		ALWAYS_INLINE R invoke(Args... args) const {
-			return (this->*invoke_)(std::forward<Args>(args)...);
+		template <typename... A>
+		ALWAYS_INLINE R invoke(A&&... args) const {
+			return (this->*invoke_)(std::forward<A>(args)...);
 		}
 		
-		ALWAYS_INLINE R operator()(Args... args) const {
-			return invoke(args...);
+		template <typename... A>
+		ALWAYS_INLINE R operator()(A&&... args) const {
+			return invoke(std::forward<A>(args)...);
 		}
 		
 		explicit operator bool() const {
