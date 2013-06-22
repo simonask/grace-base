@@ -13,27 +13,20 @@
 #include "base/vector.hpp"
 
 namespace grace {
-	static const float32 E = M_E;
-	static const float32 Log2E = M_LOG2E;
-	static const float32 Log10E = M_LOG10E;
-	static const float32 Ln2 = M_LN2;
-	static const float32 Ln10 = M_LN10;
-	static const float32 Pi = M_PI;
-	static const float32 PiOver2 = M_PI_2;
-	static const float32 PiOver4 = M_PI_4;
-	static const float32 OneOverPi = M_1_PI;
-	static const float32 TwoOverPi = M_2_PI;
-	static const float32 TwoOverSqrtPi = M_2_SQRTPI;
-	static const float32 Sqrt2 = M_SQRT2;
-	static const float32 OneOverSqrt2 = M_SQRT1_2;
-	
-	inline float32 rad2deg(float32 rad) {
-		return rad * 180.f / Pi;
-	}
-	
-	inline float32 deg2rad(float32 deg) {
-		return deg * Pi / 180.f;
-	}
+	static constexpr const float32 E = M_E;
+	static constexpr const float32 Log2E = M_LOG2E;
+	static constexpr const float32 Log10E = M_LOG10E;
+	static constexpr const float32 Ln2 = M_LN2;
+	static constexpr const float32 Ln10 = M_LN10;
+	static constexpr const float32 Pi = M_PI;
+	static constexpr const float32 Tau = Pi * 2;
+	static constexpr const float32 PiOver2 = M_PI_2;
+	static constexpr const float32 PiOver4 = M_PI_4;
+	static constexpr const float32 OneOverPi = M_1_PI;
+	static constexpr const float32 TwoOverPi = M_2_PI;
+	static constexpr const float32 TwoOverSqrtPi = M_2_SQRTPI;
+	static constexpr const float32 Sqrt2 = M_SQRT2;
+	static constexpr const float32 OneOverSqrt2 = M_SQRT1_2;
 
 	template <typename T, size_t N>
 	TVector<T,N> sin_precise(TVector<T,N> vec) {
@@ -163,8 +156,44 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	constexpr auto max(A a, B b) -> typename std::common_type<A, B>::type {
+	inline constexpr auto max(A a, B b) -> typename std::common_type<A, B>::type {
 		return a > b ? a : b;
+	}
+	template <typename A, typename B>
+	inline constexpr auto min(A a, B b) -> typename std::common_type<A ,B>::type {
+		return a < b ? a : b;
+	}
+	
+	inline constexpr float32 floor(float32 f) {
+		return (float32)((int32)f-0.5f);
+	}
+	inline constexpr float32 ceil(float32 f) {
+		return (float32)((int32)f+0.5f);
+	}
+	
+	template <typename T>
+	constexpr T clamp_mod_down(T n, T min, T max) {
+		return grace::min(n - (max-min) * grace::floor((max-n) / -(max-min)), min);
+	}
+	
+	template <typename T>
+	constexpr T clamp_mod_up(T n, T min, T max) {
+		return grace::max(n + (max-min) * grace::ceil((min-n)/(max-min)), max);
+	}
+	
+	/*
+	 clamp_mod:
+	 - if n > min && n < max, returns n.
+	 - otherwise adds or subtracts (max-min) to n until the result is between min and max.
+	 */
+	template <typename T>
+	constexpr T clamp_mod(T n, T min, T max) {
+		return n > max ? clamp_mod_down(n, min, max) : (n < min ? clamp_mod_up(n, min, max) : n);
+	}
+	
+	template <typename T>
+	constexpr T clamp(T n, T min, T max) {
+		return n > max ? max : (n < min ? min : n);
 	}
 	
 	template <typename T>

@@ -12,6 +12,7 @@
 #include "base/vector.hpp"
 #include "base/matrix.hpp"
 #include "base/math.hpp"
+#include "base/units.hpp"
 #include "type/type.hpp"
 
 namespace grace {
@@ -127,10 +128,23 @@ namespace grace {
 		return trans;
 	}
 	
-	inline matrix33 make_2d_rotation_matrix33(float32 deg, vec2 around_offset) {
-		float32 rad = deg2rad(deg);
-		float32 cosv = cosf(rad);
-		float32 sinv = sinf(rad);
+	inline float32 cos(Radians rad) {
+		return ::cosf(rad);
+	}
+	inline float32 cos(Degrees deg) {
+		return cos(deg2rad(deg));
+	}
+	inline float32 sin(Radians rad) {
+		return ::sinf(rad);
+	}
+	inline float32 sin(Degrees deg) {
+		return sin(deg2rad(deg));
+	}
+	
+	inline matrix33 make_2d_rotation_matrix33(Degrees deg, vec2 around_offset) {
+		Radians rad = deg2rad(deg);
+		float32 cosv = cos(rad);
+		float32 sinv = sin(rad);
 		vec3 r1 = { cosv, sinv, 0.f };
 		vec3 r2 = { -sinv, cosv, 0.f };
 		vec3 r3 = { 0.f, 0.f, 1.f };
@@ -147,13 +161,13 @@ namespace grace {
 		return scale;
 	}
 	
-	inline matrix33 make_2d_transform_matrix(vec2 translation, vec2 scale, float32 rotation) {
+	inline matrix33 make_2d_transform_matrix(vec2 translation, vec2 scale, Degrees rotation) {
 		// TODO: Optimize
 		return make_2d_scaling_matrix(scale) * make_rotation_matrix33_z(rotation) * make_2d_translation_matrix33(translation);
 	}
 	
 	// Rotates around center
-	inline Rect bounds_of_rotated_rectangle(const Rect& r, float32 deg) {
+	inline Rect bounds_of_rotated_rectangle(const Rect& r, Degrees deg) {
 		const auto rad = deg2rad(deg);
 		const auto cosr = std::abs(std::cos(rad));
 		const auto sinr = std::abs(std::sin(rad));
