@@ -67,11 +67,11 @@ namespace grace {
 		scale_ = v2;
 	}
 	
-	float32 SpatialObject::rotation() const {
+	Degrees SpatialObject::rotation() const {
 		return rotation_;
 	}
 	
-	void SpatialObject::set_rotation(float32 rot) {
+	void SpatialObject::set_rotation(Degrees rot) {
 		rotation_ = rot;
 	}
 	

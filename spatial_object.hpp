@@ -29,8 +29,8 @@ namespace grace {
 		virtual void set_size(vec2);
 		virtual vec2 scale() const;
 		virtual void set_scale(vec2 v2);
-		virtual float32 rotation() const;
-		virtual void set_rotation(float32 rot);
+		virtual Degrees rotation() const;
+		virtual void set_rotation(Degrees rot);
 		virtual vec2 rotation_origin() const;
 		virtual void set_rotation_origin(vec2 offset);
 		
@@ -52,7 +52,7 @@ namespace grace {
 		vec2 position_ = vec2::zero();
 		vec2 size_ = vec2::replicate(100.f);
 		vec2 scale_ = vec2::one();
-		float32 rotation_ = 0.f;
+		Degrees rotation_ = 0_deg;
 		vec2 rotation_origin_ = vec2::zero();
 		
 		ObjectPtr<SpatialObject> transform_parent_;
