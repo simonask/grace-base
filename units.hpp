@@ -38,7 +38,7 @@
 		constexpr NEW_TYPE(const NEW_TYPE& other) : value(other.value) {} \
 		NEW_TYPE& operator=(const NEW_TYPE& other) { value = other.value; return *this; } \
 		constexpr operator const UNDERLYING_TYPE& () const { return value; } \
-		operator UNDERLYING_TYPE&() { return value; } \
+		operator UNDERLYING_TYPE() { return value; } \
 		constexpr bool operator==(const NEW_TYPE& other) const { return value == other.value; } \
 		constexpr bool operator!=(const NEW_TYPE& other) const { return value != other.value; } \
 		constexpr bool operator<(const NEW_TYPE& other) const { return value < other.value; } \
@@ -68,7 +68,7 @@
 		constexpr NEW_TYPE(const NEW_TYPE& other) : value(other.value) {} \
 		NEW_TYPE& operator=(const NEW_TYPE& other) { value = other.value; return *this; } \
 		constexpr operator const UNDERLYING_TYPE& () const { return value; } \
-		operator UNDERLYING_TYPE&() { return value; } \
+		operator UNDERLYING_TYPE() { return value; } \
 		constexpr bool operator==(const NEW_TYPE& other) const { return value == other.value; } \
 		constexpr bool operator!=(const NEW_TYPE& other) const { return value != other.value; } \
 		constexpr bool operator<(const NEW_TYPE& other) const { return value < other.value; } \
