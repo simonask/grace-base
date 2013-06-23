@@ -44,22 +44,22 @@ namespace grace {
 	template <typename V, typename Cmp>
 	struct MapTypeImpl<String, V, Cmp> : TypeFor<Map<String, V, Cmp>, MapTypeWithKeyValueType<String, V>> {
 		MapTypeImpl(IAllocator& alloc) : TypeFor<Map<String, V, Cmp>, MapTypeWithKeyValueType<String, V>>(alloc) {}
-		void deserialize(Map<String,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
-		void serialize(const Map<String,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
+		void deserialize(Map<String,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const override;
+		void serialize(const Map<String,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const override;
 	};
 	
 	template <typename V, typename Cmp>
 	struct MapTypeImpl<StringRef, V, Cmp> : TypeFor<Map<StringRef, V, Cmp>, MapTypeWithKeyValueType<StringRef, V>> {
 		MapTypeImpl(const TypeInfo& ti, IAllocator& alloc) : TypeFor<Map<StringRef, V, Cmp>, MapTypeWithKeyValueType<StringRef, V>>(alloc) {}
-		void deserialize(Map<StringRef,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
-		void serialize(const Map<StringRef,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
+		void deserialize(Map<StringRef,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const override;
+		void serialize(const Map<StringRef,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const override;
 	};
 	
 	template <typename K, typename V, typename Cmp>
 	struct MapTypeImpl : TypeFor<Map<K, V, Cmp>, MapTypeWithKeyValueType<K, V>> {
 		MapTypeImpl(IAllocator& alloc) : TypeFor<Map<K,V,Cmp>, MapTypeWithKeyValueType<K,V>>(alloc) {}
-		void deserialize(Map<K,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
-		void serialize(const Map<K,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
+		void deserialize(Map<K,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const override;
+		void serialize(const Map<K,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const override;
 	};
 	
 	template <typename K, typename V, typename Cmp>

@@ -16,9 +16,9 @@ namespace grace {
 	String build_dictionary_type_name(IAllocator& alloc, const Type* value_type);
 
 	template <typename Value, typename Cmp>
-	struct DictionaryTypeImpl : public TypeFor<Dictionary<Value,Cmp>, MapTypeImpl<StringRef, Value, Cmp>> {
+	struct DictionaryTypeImpl : public TypeFor<Dictionary<Value,Cmp>, MapTypeWithKeyValueType<StringRef, Value>> {
 	public:
-		DictionaryTypeImpl(IAllocator& alloc) : TypeFor<Dictionary<Value,Cmp>, MapTypeImpl<StringRef, Value, Cmp>>(alloc), name_(build_dictionary_type_name(alloc, get_type<Value>())) {}
+		DictionaryTypeImpl(IAllocator& alloc) : TypeFor<Dictionary<Value,Cmp>, MapTypeWithKeyValueType<StringRef, Value>>(alloc), name_(build_dictionary_type_name(alloc, get_type<Value>())) {}
 		
 		void deserialize(Dictionary<Value,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
 		void serialize(const Dictionary<Value,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
