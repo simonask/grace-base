@@ -23,11 +23,6 @@
 		operator UNDERLYING_TYPE&() { return value; } \
 		constexpr bool operator==(const NEW_TYPE& other) const { return value == other.value; } \
 		constexpr bool operator<(const NEW_TYPE& other) const { return value < other.value; } \
-	}; \
-	template <> struct BuildTypeInfo<NEW_TYPE> { \
-		static auto build() -> decltype(get_type<UNDERLYING_TYPE>()) { \
-			return get_type<UNDERLYING_TYPE>(); \
-		} \
 	}
 
 #define GRACE_STRONG_ARITHMETIC_TYPEDEF_WITH_MODULUS(NEW_TYPE, UNDERLYING_TYPE, MIN, MAX) \
@@ -47,17 +42,18 @@
 		constexpr bool operator>=(const NEW_TYPE& other) const { return value >= other.value; } \
 		constexpr NEW_TYPE operator+(const NEW_TYPE& other) const { return NEW_TYPE(value + other.value); } \
 		constexpr NEW_TYPE operator-(const NEW_TYPE& other) const { return NEW_TYPE(value - other.value); } \
-		constexpr NEW_TYPE operator*(const UNDERLYING_TYPE& scalar) const { return NEW_TYPE(value * scalar); } \
-		constexpr NEW_TYPE operator/(const UNDERLYING_TYPE& scalar) const { return NEW_TYPE(value / scalar); } \
 		NEW_TYPE operator+=(const NEW_TYPE& other) { value = grace::clamp_mod(value + other.value, MIN, MAX); return *this; } \
 		NEW_TYPE operator-=(const NEW_TYPE& other) { value = grace::clamp_mod(value - other.value, MIN, MAX); return *this; } \
 		NEW_TYPE operator*=(const UNDERLYING_TYPE& scalar) { value = grace::clamp_mod(value * scalar, MIN, MAX); return *this; } \
 		NEW_TYPE operator/=(const UNDERLYING_TYPE& scalar) { value = grace::clamp_mod(value / scalar, MIN, MAX); return *this; } \
-	}; \
-	template <> struct BuildTypeInfo<NEW_TYPE> { \
-		static auto build() -> decltype(get_type<UNDERLYING_TYPE>()) { \
-			return get_type<UNDERLYING_TYPE>(); \
-		} \
+	};\
+	template <typename S> \
+	constexpr NEW_TYPE operator*(NEW_TYPE v, S scalar) { \
+		return NEW_TYPE(v.value * scalar); \
+	} \
+	template <typename S> \
+	constexpr NEW_TYPE operator/(NEW_TYPE v, S scalar) { \
+		return NEW_TYPE(v.value / scalar); \
 	}
 
 #define GRACE_STRONG_ARITHMETIC_TYPEDEF_WITH_CLAMP(NEW_TYPE, UNDERLYING_TYPE, MIN, MAX) \
@@ -77,22 +73,39 @@
 		constexpr bool operator>=(const NEW_TYPE& other) const { return value >= other.value; } \
 		constexpr NEW_TYPE operator+(const NEW_TYPE& other) const { return NEW_TYPE(value + other.value); } \
 		constexpr NEW_TYPE operator-(const NEW_TYPE& other) const { return NEW_TYPE(value - other.value); } \
-		constexpr NEW_TYPE operator*(const UNDERLYING_TYPE& scalar) const { return NEW_TYPE(value * scalar); } \
-		constexpr NEW_TYPE operator/(const UNDERLYING_TYPE& scalar) const { return NEW_TYPE(value / scalar); } \
 		NEW_TYPE operator+=(const NEW_TYPE& other) { value = grace::clamp(value + other.value, MIN, MAX); return *this; } \
 		NEW_TYPE operator-=(const NEW_TYPE& other) { value = grace::clamp(value - other.value, MIN, MAX); return *this; } \
 		NEW_TYPE operator*=(const UNDERLYING_TYPE& scalar) { value = grace::clamp(value * scalar, MIN, MAX); return *this; } \
 		NEW_TYPE operator/=(const UNDERLYING_TYPE& scalar) { value = grace::clamp(value / scalar, MIN, MAX); return *this; } \
-	}; \
-	template <> struct BuildTypeInfo<NEW_TYPE> { \
-		static auto build() -> decltype(get_type<UNDERLYING_TYPE>()) { \
-			return get_type<UNDERLYING_TYPE>(); \
-		} \
+	};\
+	template <typename S> \
+	constexpr NEW_TYPE operator*(NEW_TYPE v, S scalar) { \
+		return NEW_TYPE(v.value * scalar); \
+	} \
+	template <typename S> \
+	constexpr NEW_TYPE operator/(NEW_TYPE v, S scalar) { \
+		return NEW_TYPE(v.value / scalar); \
 	}
 
 namespace grace {
 	GRACE_STRONG_ARITHMETIC_TYPEDEF_WITH_MODULUS(Degrees, float32, -180.f, 180.f);
 	GRACE_STRONG_ARITHMETIC_TYPEDEF_WITH_MODULUS(Radians, float32, -Tau, Tau);
+	
+	struct DegreesType : FloatType {
+		DegreesType(IAllocator& alloc);
+		void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
+	};
+	struct RadiansType : FloatType {
+		RadiansType(IAllocator& alloc);
+		void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
+	};
+	
+	template <> struct BuildTypeInfo<Degrees> {
+		static const DegreesType* build();
+	};
+	template <> struct BuildTypeInfo<Radians> {
+		static const RadiansType* build();
+	};
 	
 	inline constexpr Degrees operator"" _deg(long double d) {
 		return Degrees((float32)d);
