@@ -149,7 +149,12 @@ namespace grace {
 		if (impl().resource_path == "") {
 			Warning() << "No resource path has been set.";
 		}
-		return impl().resource_path + rid;
+		for (auto& archive: impl().archives) {
+			if (archive->contains(rid)) {
+				return archive->debug_path(rid);
+			}
+		}
+		return rid;
 	}
 	
 	void ResourceManager::add_loader(ResourceLoaderID lid, ResourceLoaderBase *loader) {
