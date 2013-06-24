@@ -7,11 +7,11 @@
 //
 
 #include "type/color_type.hpp"
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 
 namespace grace {
 	
-	void ColorType::deserialize(Color& color, const ArchiveNode& node, IUniverse&) const {
+	void ColorType::deserialize(Color& color, const DocumentNode& node, IUniverse&) const {
 		if (node.is_map()) {
 			node["r"] >> color.red();
 			node["g"] >> color.green();
@@ -24,7 +24,7 @@ namespace grace {
 		color = Color::Pink;
 	}
 	
-	void ColorType::serialize(const Color& color, ArchiveNode& node, IUniverse&) const {
+	void ColorType::serialize(const Color& color, DocumentNode& node, IUniverse&) const {
 		auto& r = node["r"];
 		auto& g = node["g"];
 		auto& b = node["b"];
@@ -43,13 +43,13 @@ namespace grace {
 		return "CompactColor";
 	}
 	
-	void CompactColorType::deserialize(CompactColor &place, const ArchiveNode & node, IUniverse & universe) const {
+	void CompactColorType::deserialize(CompactColor &place, const DocumentNode & node, IUniverse & universe) const {
 		Color c;
 		get_type<Color>()->deserialize(c, node, universe);
 		place = c;
 	}
 	
-	void CompactColorType::serialize(const CompactColor& place, ArchiveNode& node, IUniverse& universe) const {
+	void CompactColorType::serialize(const CompactColor& place, DocumentNode& node, IUniverse& universe) const {
 		Color c = place;
 		get_type<Color>()->serialize(c, node, universe);
 	}

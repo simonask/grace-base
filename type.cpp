@@ -1,5 +1,5 @@
 #include "type/type.hpp"
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 #include "base/map.hpp"
 
 namespace grace {
@@ -27,7 +27,7 @@ DEFINE_SIMPLE_TYPE(float32, true, true)
 DEFINE_SIMPLE_TYPE(float64, true, true)
 
 
-void IntegerType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const {
+void IntegerType::deserialize_raw(byte* place, const DocumentNode& node, IUniverse&) const {
 	if (is_signed_) {
 		switch (width_) {
 			case 1: node >> (*reinterpret_cast<int8* >(place)); return;
@@ -47,7 +47,7 @@ void IntegerType::deserialize_raw(byte* place, const ArchiveNode& node, IUnivers
 	}
 }
 
-void IntegerType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const {
+void IntegerType::serialize_raw(const byte* place, DocumentNode& node, IUniverse&) const {
 	if (is_signed_) {
 		switch (width_) {
 			case 1: return node << (*reinterpret_cast<const int8* >(place));
@@ -90,7 +90,7 @@ void* IntegerType::cast(const SimpleType* to, void* memory) const {
 	return nullptr;
 }
 
-void FloatType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const {
+void FloatType::deserialize_raw(byte* place, const DocumentNode& node, IUniverse&) const {
 	if (width_ == 4) {
 		node >> (*reinterpret_cast<float32*>(place));
 		return;
@@ -101,7 +101,7 @@ void FloatType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&
 	ASSERT(false); // FloatType with neither 32-bit nor 64-bit floats?
 }
 
-void FloatType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const {
+void FloatType::serialize_raw(const byte* place, DocumentNode& node, IUniverse&) const {
 	if (width_ == 4) {
 		node << (*reinterpret_cast<const float32*>(place));
 	} else if (width_ == 8) {
@@ -155,11 +155,11 @@ const VoidType* VoidType::get() {
 }
 
 
-void StringType::deserialize(String& place, const ArchiveNode& node, IUniverse&) const {
+void StringType::deserialize(String& place, const DocumentNode& node, IUniverse&) const {
 	node >> place;
 }
 
-void StringType::serialize(const String& place, ArchiveNode& node, IUniverse&) const {
+void StringType::serialize(const String& place, DocumentNode& node, IUniverse&) const {
 	node << place;
 }
 
@@ -177,11 +177,11 @@ const StringRefType* StringRefType::get() {
 	return &type;
 }
 	
-void StringRefType::deserialize(StringRef& place, const ArchiveNode& node, IUniverse&) const {
+void StringRefType::deserialize(StringRef& place, const DocumentNode& node, IUniverse&) const {
 	node >> place;
 }
 
-void StringRefType::serialize(const StringRef &place, ArchiveNode & node, IUniverse &) const {
+void StringRefType::serialize(const StringRef &place, DocumentNode & node, IUniverse &) const {
 	node << place;
 }
 

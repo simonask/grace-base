@@ -13,21 +13,21 @@
 #include "type/type.hpp"
 
 namespace grace {
-	struct ArchiveNode;
+	struct DocumentNode;
 	struct IUniverse;
 	
 	struct ColorType : TypeFor<Color> {
 		ColorType() {}
-		virtual void deserialize(Color& place, const ArchiveNode&, IUniverse&) const;
-		virtual void serialize(const Color& place, ArchiveNode&, IUniverse&) const;
+		virtual void deserialize(Color& place, const DocumentNode&, IUniverse&) const;
+		virtual void serialize(const Color& place, DocumentNode&, IUniverse&) const;
 		
 		StringRef name() const;
 	};
 	
 	struct CompactColorType : TypeFor<CompactColor> {
 		CompactColorType() {}
-		virtual void deserialize(CompactColor& place, const ArchiveNode&, IUniverse&) const;
-		virtual void serialize(const CompactColor& place, ArchiveNode&, IUniverse&) const;
+		virtual void deserialize(CompactColor& place, const DocumentNode&, IUniverse&) const;
+		virtual void serialize(const CompactColor& place, DocumentNode&, IUniverse&) const;
 		StringRef name() const;
 	};
 	

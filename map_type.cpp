@@ -8,7 +8,7 @@
 
 #include "type/map_type.hpp"
 #include "io/string_stream.hpp"
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 
 namespace grace {
 	void MapType::build_map_type_name() {
@@ -18,7 +18,7 @@ namespace grace {
 		name_ = ss.string(static_allocator());
 	}
 	
-	void MapType::deserialize_map(IMapWriter& w, const ArchiveNode& dict, IUniverse& universe) const {
+	void MapType::deserialize_map(IMapWriter& w, const DocumentNode& dict, IUniverse& universe) const {
 		auto kt = key_type();
 		auto vt = value_type();
 		size_t value_sz = vt->size();
@@ -26,7 +26,7 @@ namespace grace {
 		byte* value_data = value_data_storage;
 		
 		vt->construct(value_data, universe);
-		dict.when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
+		dict.when<DocumentNode::MapType>([&](const DocumentNode::MapType& map) {
 			for (auto pair: map) {
 				vt->deserialize_raw(value_data, *pair.second, universe);
 				if (kt == get_type<String>()) {
@@ -43,7 +43,7 @@ namespace grace {
 		vt->destruct(value_data, universe);
 	}
 	
-	void MapType::serialize_map(IMapReader& r, ArchiveNode& node, IUniverse& universe) const {
+	void MapType::serialize_map(IMapReader& r, DocumentNode& node, IUniverse& universe) const {
 		auto kt = key_type();
 		auto vt = value_type();
 		
@@ -60,12 +60,12 @@ namespace grace {
 				ASSERT(false); // Unsupported key type in non-array serialization.
 			}
 			
-			ArchiveNode& value = node[key];
+			DocumentNode& value = node[key];
 			vt->serialize_raw((const byte*)valuep, value, universe);
 		}
 	}
 	
-	void MapType::deserialize_map_from_array(IMapWriter& w, const ArchiveNode& node, IUniverse& universe) const {
+	void MapType::deserialize_map_from_array(IMapWriter& w, const DocumentNode& node, IUniverse& universe) const {
 		auto kt = key_type();
 		auto vt = value_type();
 		size_t key_sz = kt->size();
@@ -77,12 +77,12 @@ namespace grace {
 		
 		kt->construct(key_data, universe);
 		vt->construct(value_data, universe);
-		node.when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& array) {
+		node.when<DocumentNode::ArrayType>([&](const DocumentNode::ArrayType& array) {
 			for (auto child: array) {
-				child->when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& pair) {
+				child->when<DocumentNode::ArrayType>([&](const DocumentNode::ArrayType& pair) {
 					if (pair.size() < 2) return;
-					const ArchiveNode* key_node = pair[0];
-					const ArchiveNode* value_node = pair[1];
+					const DocumentNode* key_node = pair[0];
+					const DocumentNode* value_node = pair[1];
 					kt->deserialize_raw(key_data, *key_node, universe);
 					vt->deserialize_raw(value_data, *value_node, universe);
 					w.set_and_move(key_data, value_data);
@@ -93,7 +93,7 @@ namespace grace {
 		vt->destruct(value_data, universe);
 	}
 	
-	void MapType::serialize_map_to_array(IMapReader& r, ArchiveNode& node, IUniverse& universe) const {
+	void MapType::serialize_map_to_array(IMapReader& r, DocumentNode& node, IUniverse& universe) const {
 		auto kt = key_type();
 		auto vt = value_type();
 		
@@ -101,9 +101,9 @@ namespace grace {
 			void* keyp = r.current_key();
 			void* valuep = r.current_value();
 			
-			ArchiveNode& pair = node.array_push();
-			ArchiveNode& key_node = pair.array_push();
-			ArchiveNode& value_node = pair.array_push();
+			DocumentNode& pair = node.array_push();
+			DocumentNode& key_node = pair.array_push();
+			DocumentNode& value_node = pair.array_push();
 			kt->serialize_raw((const byte*)keyp, key_node, universe);
 			vt->serialize_raw((const byte*)valuep, value_node, universe);
 		}

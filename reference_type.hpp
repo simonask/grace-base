@@ -5,7 +5,7 @@
 #include "type/type.hpp"
 #include "type/attribute.hpp"
 #include "object/universe.hpp"
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 #include "object/aspect_cast.hpp"
 
 namespace grace {
@@ -36,15 +36,15 @@ struct ReferenceTypeImpl : TypeFor<T, ReferenceType> {
 	void set_attribute_as_plain(const IAttribute* attr, Object* owner, ObjectPtr<> new_value) const;
 	
 	// Type interface
-	void deserialize(T& ptr, const ArchiveNode& node, IUniverse&) const;
-	void serialize(const T& ptr, ArchiveNode& node, IUniverse&) const;
+	void deserialize(T& ptr, const DocumentNode& node, IUniverse&) const;
+	void serialize(const T& ptr, DocumentNode& node, IUniverse&) const;
 	StringRef name() const { return name_; }
 private:
 	String name_;
 };
 
 template <typename T>
-void ReferenceTypeImpl<T>::deserialize(T& ptr, const ArchiveNode& node, IUniverse& universe) const {
+void ReferenceTypeImpl<T>::deserialize(T& ptr, const DocumentNode& node, IUniverse& universe) const {
 	if (node.is_scalar()) {
 		StringRef object_name;
 		if (node >> object_name) {
@@ -54,7 +54,7 @@ void ReferenceTypeImpl<T>::deserialize(T& ptr, const ArchiveNode& node, IUnivers
 }
 
 template <typename T>
-void ReferenceTypeImpl<T>::serialize(const T& ptr, ArchiveNode& node, IUniverse& universe) const {
+void ReferenceTypeImpl<T>::serialize(const T& ptr, DocumentNode& node, IUniverse& universe) const {
 	if (ptr) {
 		node << ptr->object_id();
 	} else {

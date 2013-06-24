@@ -15,8 +15,8 @@
 namespace grace {
 	struct BooleanType : TypeFor<bool> {
 	public:
-		void deserialize(bool& place, const ArchiveNode&, IUniverse&) const;
-		void serialize(const bool& place, ArchiveNode&, IUniverse&) const;
+		void deserialize(bool& place, const DocumentNode&, IUniverse&) const;
+		void serialize(const bool& place, DocumentNode&, IUniverse&) const;
 		StringRef name() const { return "bool"; }
 	};
 	

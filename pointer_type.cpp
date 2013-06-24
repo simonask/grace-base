@@ -28,11 +28,11 @@ namespace grace {
 		name_ = ss.string(alloc);
 	}
 
-	void PointerType::deserialize_raw(byte *place, const grace::ArchiveNode &, grace::IUniverse &) const {
+	void PointerType::deserialize_raw(byte *place, const grace::DocumentNode &, grace::IUniverse &) const {
 		ASSERT(false); // Cannot deserialize pointer type.
 	}
 	
-	void PointerType::serialize_raw(const byte *place, grace::ArchiveNode &, grace::IUniverse &) const {
+	void PointerType::serialize_raw(const byte *place, grace::DocumentNode &, grace::IUniverse &) const {
 		ASSERT(false); // Cannot serialize pointer type.
 	}
 	

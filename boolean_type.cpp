@@ -7,7 +7,7 @@
 //
 
 #include "type/boolean_type.hpp"
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 
 namespace grace {
 	BooleanType* BuildTypeInfo<bool>::build() {
@@ -15,11 +15,11 @@ namespace grace {
 		return p;
 	}
 	
-	void BooleanType::deserialize(bool &place, const ArchiveNode& node, IUniverse &) const {
+	void BooleanType::deserialize(bool &place, const DocumentNode& node, IUniverse &) const {
 		node >> place;
 	}
 	
-	void BooleanType::serialize(const bool &place, ArchiveNode& node, IUniverse &) const {
+	void BooleanType::serialize(const bool &place, DocumentNode& node, IUniverse &) const {
 		node << place;
 	}
 }

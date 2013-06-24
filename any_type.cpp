@@ -7,12 +7,12 @@
 //
 
 #include "type/any_type.hpp"
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 
 namespace grace {
-	void AnyType::deserialize(Any &place, const ArchiveNode &n, IUniverse &u) const {
-		ArchiveNode::IntegerType inum;
-		ArchiveNode::FloatType fnum;
+	void AnyType::deserialize(Any &place, const DocumentNode &n, IUniverse &u) const {
+		DocumentNode::IntegerType inum;
+		DocumentNode::FloatType fnum;
 		if (n.is_empty()) {
 			place = Nothing;
 		} else if (n >> inum) {
@@ -30,7 +30,7 @@ namespace grace {
 			place = move(v);
 		} else if (n.is_map()) {
 			Map<String, Any> v;
-			n.map_each_pair([&](StringRef key, const ArchiveNode* value) {
+			n.map_each_pair([&](StringRef key, const DocumentNode* value) {
 				Any x;
 				deserialize(x, *value, u);
 				v[key] = move(x);
@@ -41,7 +41,7 @@ namespace grace {
 		}
 	}
 	
-	void AnyType::serialize(const Any& place, ArchiveNode& n, IUniverse& u) const {
+	void AnyType::serialize(const Any& place, DocumentNode& n, IUniverse& u) const {
 		if (!place.is_empty()) {
 			place.type()->serialize_raw(place.ptr(), n, u);
 		} else {

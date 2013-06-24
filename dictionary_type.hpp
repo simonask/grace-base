@@ -20,8 +20,8 @@ namespace grace {
 	public:
 		DictionaryTypeImpl(IAllocator& alloc) : TypeFor<Dictionary<Value,Cmp>, MapTypeWithKeyValueType<StringRef, Value>>(alloc), name_(build_dictionary_type_name(alloc, get_type<Value>())) {}
 		
-		void deserialize(Dictionary<Value,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const;
-		void serialize(const Dictionary<Value,Cmp>& place, ArchiveNode& node, IUniverse& universe) const;
+		void deserialize(Dictionary<Value,Cmp>& place, const DocumentNode& node, IUniverse& universe) const;
+		void serialize(const Dictionary<Value,Cmp>& place, DocumentNode& node, IUniverse& universe) const;
 		StringRef name() const { return name_; }
 	private:
 		String name_;
@@ -36,13 +36,13 @@ namespace grace {
 	};
 	
 	template <typename Value, typename Cmp>
-	void DictionaryTypeImpl<Value,Cmp>::deserialize(Dictionary<Value,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const {
+	void DictionaryTypeImpl<Value,Cmp>::deserialize(Dictionary<Value,Cmp>& place, const DocumentNode& node, IUniverse& universe) const {
 		MapWriter<Dictionary<Value,Cmp>> w(place);
 		this->deserialize_map(w, node, universe);
 	}
 	
 	template <typename Value, typename Cmp>
-	void DictionaryTypeImpl<Value,Cmp>::serialize(const Dictionary<Value,Cmp>& place, ArchiveNode& node, IUniverse& universe) const {
+	void DictionaryTypeImpl<Value,Cmp>::serialize(const Dictionary<Value,Cmp>& place, DocumentNode& node, IUniverse& universe) const {
 		MapReader<Dictionary<Value,Cmp>> r(place);
 		this->serialize_map(r, node, universe);
 	}

@@ -16,7 +16,7 @@ namespace grace {
 	struct EnumTypeImpl : TypeFor<T, EnumType> {
 		EnumTypeImpl(IAllocator& alloc, StringRef name, size_t width) : TypeFor<T, EnumType>(alloc, name, width) {}
 	
-		void deserialize(T& place, const ArchiveNode& node, IUniverse&) const {
+		void deserialize(T& place, const DocumentNode& node, IUniverse&) const {
 			StringRef name;
 			ssize_t value;
 			if (node >> name) {
@@ -34,7 +34,7 @@ namespace grace {
 			}
 		}
 		
-		void serialize(const T& place, ArchiveNode& node, IUniverse&) const {
+		void serialize(const T& place, DocumentNode& node, IUniverse&) const {
 			StringRef name;
 			ssize_t value = (ssize_t)place;
 			if (this->name_for_value(value, name)) {

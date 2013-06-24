@@ -29,8 +29,8 @@ namespace grace {
 		size_t num_columns() const { return N; }
 		size_t num_rows() const { return M; }
 		
-		virtual void deserialize(TMatrix<T,N,M>& place, const ArchiveNode&, IUniverse&) const;
-		virtual void serialize(const TMatrix<T,N,M>& place, ArchiveNode&, IUniverse&) const;
+		virtual void deserialize(TMatrix<T,N,M>& place, const DocumentNode&, IUniverse&) const;
+		virtual void serialize(const TMatrix<T,N,M>& place, DocumentNode&, IUniverse&) const;
 	};
 	
 	template <typename T, size_t N, size_t M>
@@ -42,13 +42,13 @@ namespace grace {
 	};
 	
 	template <typename T, size_t N, size_t M>
-	void MatrixTypeImpl<T,N,M>::deserialize(TMatrix<T, N, M> &place, const ArchiveNode& node, IUniverse&) const {
+	void MatrixTypeImpl<T,N,M>::deserialize(TMatrix<T, N, M> &place, const DocumentNode& node, IUniverse&) const {
 		if (node.is_array() && node.array_size() >= M) {
 			for (size_t r = 0; r < M; ++r) {
-				const ArchiveNode& row = node[r];
+				const DocumentNode& row = node[r];
 				if (row.is_array() && node.array_size() >= N) {
 					for (size_t c = 0; c < N; ++c) {
-						const ArchiveNode& element = row[c];
+						const DocumentNode& element = row[c];
 						T x;
 						if (element >> x) {
 							place.row_at(r)[c] = x;
@@ -66,11 +66,11 @@ namespace grace {
 	}
 	
 	template <typename T, size_t N, size_t M>
-	void MatrixTypeImpl<T,N,M>::serialize(const TMatrix<T, N, M>& place, ArchiveNode& node, IUniverse&) const {
+	void MatrixTypeImpl<T,N,M>::serialize(const TMatrix<T, N, M>& place, DocumentNode& node, IUniverse&) const {
 		for (size_t r = 0; r < M; ++r) {
-			ArchiveNode& row = node.array_push();
+			DocumentNode& row = node.array_push();
 			for (size_t c = 0; c < N; ++c) {
-				ArchiveNode& column = row.array_push();
+				DocumentNode& column = row.array_push();
 				column << place.row_at(r)[c];
 			}
 		}

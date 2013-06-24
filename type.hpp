@@ -15,12 +15,12 @@
 
 namespace grace {
 	
-struct ArchiveNode;
+struct DocumentNode;
 struct IUniverse;
 
 struct IType {
-	virtual void deserialize_raw(byte* place, const ArchiveNode&, IUniverse&) const = 0;
-	virtual void serialize_raw(const byte* place, ArchiveNode&, IUniverse&) const = 0;
+	virtual void deserialize_raw(byte* place, const DocumentNode&, IUniverse&) const = 0;
+	virtual void serialize_raw(const byte* place, DocumentNode&, IUniverse&) const = 0;
 	virtual void construct(byte* place, IUniverse&) const = 0;
 	virtual void copy_construct(byte* to, const byte* from) const = 0;
 	virtual void move_construct(byte* to, byte* from) const = 0;
@@ -60,14 +60,14 @@ struct TypeFor : TypeType {
 	TypeFor(Args&&... args) : TypeType(Info, std::forward<Args>(args)...) {}
 	
 	// Override interface.
-	virtual void deserialize(ObjectType& place, const ArchiveNode&, IUniverse&) const = 0;
-	virtual void serialize(const ObjectType& place, ArchiveNode&, IUniverse&) const = 0;
+	virtual void deserialize(ObjectType& place, const DocumentNode&, IUniverse&) const = 0;
+	virtual void serialize(const ObjectType& place, DocumentNode&, IUniverse&) const = 0;
 
 	// Do not override.
-	void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse& universe) const {
+	void deserialize_raw(byte* place, const DocumentNode& node, IUniverse& universe) const {
 		this->deserialize(*reinterpret_cast<ObjectType*>(place), node, universe);
 	}
-	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse& universe) const {
+	void serialize_raw(const byte* place, DocumentNode& node, IUniverse& universe) const {
 		this->serialize(*reinterpret_cast<const ObjectType*>(place), node, universe);
 	}
 };
@@ -78,8 +78,8 @@ constexpr const TypeInfo& TypeFor<ObjectType,TypeType>::Info;
 struct VoidType : Type {
 	static const VoidType* get();
 	
-	void deserialize_raw(byte* place, const ArchiveNode&, IUniverse&) const override {}
-	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override {}
+	void deserialize_raw(byte* place, const DocumentNode&, IUniverse&) const override {}
+	void serialize_raw(const byte*, DocumentNode&, IUniverse&) const override {}
 	virtual void construct(byte*, IUniverse&) const override {}
 	virtual void destruct(byte*, IUniverse&) const override {}
 	virtual void copy_construct(byte*, const byte*) const override {}
@@ -143,8 +143,8 @@ private:
 
 struct IntegerType : SimpleType {
 	IntegerType(IAllocator& alloc, const TypeInfo& type_info, StringRef name, size_t width, bool is_signed = true) : SimpleType(alloc, type_info, name, width, width, false, is_signed) {}
-	void deserialize_raw(byte*, const ArchiveNode&, IUniverse&) const override;
-	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
+	void deserialize_raw(byte*, const DocumentNode&, IUniverse&) const override;
+	void serialize_raw(const byte*, DocumentNode&, IUniverse&) const override;
 	void* cast(const SimpleType* to, void* o) const;
 	size_t max() const;
 	ssize_t min() const;
@@ -152,24 +152,24 @@ struct IntegerType : SimpleType {
 
 struct FloatType : SimpleType {
 	FloatType(IAllocator& alloc, const TypeInfo& type_info, String name, size_t width) : SimpleType(alloc, type_info, name, width, width, true, true) {}
-	void deserialize_raw(byte*, const ArchiveNode& node, IUniverse&) const override;
-	void serialize_raw(const byte*, ArchiveNode&, IUniverse&) const override;
+	void deserialize_raw(byte*, const DocumentNode& node, IUniverse&) const override;
+	void serialize_raw(const byte*, DocumentNode&, IUniverse&) const override;
 	void* cast(const SimpleType* to, void* o) const;
 };
 
 struct StringType : TypeFor<String> {
 	static const StringType* get();
 	
-	void deserialize(String& place, const ArchiveNode&, IUniverse&) const final;
-	void serialize(const String& place, ArchiveNode&, IUniverse&) const final;
+	void deserialize(String& place, const DocumentNode&, IUniverse&) const final;
+	void serialize(const String& place, DocumentNode&, IUniverse&) const final;
 	
 	StringRef name() const final;
 };
 	
 struct StringRefType : TypeFor<StringRef> {
 	static const StringRefType* get();
-	void deserialize(StringRef& place, const ArchiveNode&, IUniverse&) const final;
-	void serialize(const StringRef& place, ArchiveNode&, IUniverse&) const final;
+	void deserialize(StringRef& place, const DocumentNode&, IUniverse&) const final;
+	void serialize(const StringRef& place, DocumentNode&, IUniverse&) const final;
 	StringRef name() const final;
 };
 

@@ -25,10 +25,10 @@ namespace grace {
 		void build_map_type_name();
 		String name_;
 		
-		void deserialize_map_from_array(IMapWriter&, const ArchiveNode&, IUniverse&) const;
-		void serialize_map_to_array(IMapReader&, ArchiveNode&, IUniverse&) const;
-		void deserialize_map(IMapWriter&, const ArchiveNode&, IUniverse&) const;
-		void serialize_map(IMapReader&, ArchiveNode&, IUniverse&) const;
+		void deserialize_map_from_array(IMapWriter&, const DocumentNode&, IUniverse&) const;
+		void serialize_map_to_array(IMapReader&, DocumentNode&, IUniverse&) const;
+		void deserialize_map(IMapWriter&, const DocumentNode&, IUniverse&) const;
+		void serialize_map(IMapReader&, DocumentNode&, IUniverse&) const;
 	};
 	
 	template <typename K, typename V>
@@ -44,22 +44,22 @@ namespace grace {
 	template <typename V, typename Cmp>
 	struct MapTypeImpl<String, V, Cmp> : TypeFor<Map<String, V, Cmp>, MapTypeWithKeyValueType<String, V>> {
 		MapTypeImpl(IAllocator& alloc) : TypeFor<Map<String, V, Cmp>, MapTypeWithKeyValueType<String, V>>(alloc) {}
-		void deserialize(Map<String,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const override;
-		void serialize(const Map<String,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const override;
+		void deserialize(Map<String,V,Cmp>& place, const DocumentNode& node, IUniverse& universe) const override;
+		void serialize(const Map<String,V,Cmp>& place, DocumentNode& node, IUniverse& universe) const override;
 	};
 	
 	template <typename V, typename Cmp>
 	struct MapTypeImpl<StringRef, V, Cmp> : TypeFor<Map<StringRef, V, Cmp>, MapTypeWithKeyValueType<StringRef, V>> {
 		MapTypeImpl(const TypeInfo& ti, IAllocator& alloc) : TypeFor<Map<StringRef, V, Cmp>, MapTypeWithKeyValueType<StringRef, V>>(alloc) {}
-		void deserialize(Map<StringRef,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const override;
-		void serialize(const Map<StringRef,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const override;
+		void deserialize(Map<StringRef,V,Cmp>& place, const DocumentNode& node, IUniverse& universe) const override;
+		void serialize(const Map<StringRef,V,Cmp>& place, DocumentNode& node, IUniverse& universe) const override;
 	};
 	
 	template <typename K, typename V, typename Cmp>
 	struct MapTypeImpl : TypeFor<Map<K, V, Cmp>, MapTypeWithKeyValueType<K, V>> {
 		MapTypeImpl(IAllocator& alloc) : TypeFor<Map<K,V,Cmp>, MapTypeWithKeyValueType<K,V>>(alloc) {}
-		void deserialize(Map<K,V,Cmp>& place, const ArchiveNode& node, IUniverse& universe) const override;
-		void serialize(const Map<K,V,Cmp>& place, ArchiveNode& node, IUniverse& universe) const override;
+		void deserialize(Map<K,V,Cmp>& place, const DocumentNode& node, IUniverse& universe) const override;
+		void serialize(const Map<K,V,Cmp>& place, DocumentNode& node, IUniverse& universe) const override;
 	};
 	
 	template <typename K, typename V, typename Cmp>
@@ -122,36 +122,36 @@ namespace grace {
 	};
 	
 	template <typename K, typename V, typename Cmp>
-	void MapTypeImpl<K,V,Cmp>::deserialize(Map<K, V, Cmp> &place, const ArchiveNode &node, IUniverse &universe) const {
+	void MapTypeImpl<K,V,Cmp>::deserialize(Map<K, V, Cmp> &place, const DocumentNode &node, IUniverse &universe) const {
 		MapWriter<Map<K,V,Cmp>> w(place);
 		deserialize_map_from_array(w, node, universe);
 	}
 	
 	template <typename K, typename V, typename Cmp>
-	void MapTypeImpl<K,V,Cmp>::serialize(const Map<K, V, Cmp> &place, ArchiveNode &node, IUniverse &universe) const {
+	void MapTypeImpl<K,V,Cmp>::serialize(const Map<K, V, Cmp> &place, DocumentNode &node, IUniverse &universe) const {
 		MapReader<Map<K,V,Cmp>> e(place);
 		serialize_map_as_array(e, node, universe);
 	}
 	
 	template <typename V, typename Cmp>
-	void MapTypeImpl<String,V,Cmp>::deserialize(Map<String, V, Cmp> &place, const ArchiveNode &node, IUniverse &universe) const {
+	void MapTypeImpl<String,V,Cmp>::deserialize(Map<String, V, Cmp> &place, const DocumentNode &node, IUniverse &universe) const {
 		MapWriter<Map<String,V,Cmp>> w(place);
 		this->deserialize_map(w, node, universe);
 	}
 	
 	template <typename V, typename Cmp>
-	void MapTypeImpl<String,V,Cmp>::serialize(const Map<String, V, Cmp> &place, ArchiveNode &node, IUniverse &universe) const {
+	void MapTypeImpl<String,V,Cmp>::serialize(const Map<String, V, Cmp> &place, DocumentNode &node, IUniverse &universe) const {
 		MapReader<Map<String,V,Cmp>> e(place);
 		this->serialize_map(e, node, universe);
 	}
 	
 	template <typename V, typename Cmp>
-	void MapTypeImpl<StringRef,V,Cmp>::deserialize(Map<StringRef, V, Cmp> &place, const ArchiveNode &node, IUniverse &universe) const {
+	void MapTypeImpl<StringRef,V,Cmp>::deserialize(Map<StringRef, V, Cmp> &place, const DocumentNode &node, IUniverse &universe) const {
 		ASSERT(false); // Cannot deserialize StringRef!
 	}
 	
 	template <typename V, typename Cmp>
-	void MapTypeImpl<StringRef,V,Cmp>::serialize(const Map<StringRef, V, Cmp> &place, ArchiveNode &node, IUniverse &universe) const {
+	void MapTypeImpl<StringRef,V,Cmp>::serialize(const Map<StringRef, V, Cmp> &place, DocumentNode &node, IUniverse &universe) const {
 		MapReader<Map<StringRef,V,Cmp>> e(place);
 		this->serialize_map(e, node, universe);
 	}

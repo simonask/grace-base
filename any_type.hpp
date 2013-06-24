@@ -15,8 +15,8 @@
 namespace grace {
 	struct AnyType : Type {
 		AnyType() : Type(GetTypeInfo<Any>::Value) {}
-		void deserialize(Any& place, const ArchiveNode& n, IUniverse& u) const;
-		void serialize(const Any& place, ArchiveNode&, IUniverse&) const;
+		void deserialize(Any& place, const DocumentNode& n, IUniverse& u) const;
+		void serialize(const Any& place, DocumentNode&, IUniverse&) const;
 		StringRef name() const final { return "Any"; }
 		size_t size() const final { return sizeof(Any); }
 		
@@ -26,10 +26,10 @@ namespace grace {
 		// memory corruption.
 		byte padding_because_clang_is_buggy[16];
 		
-		void deserialize_raw(byte* place, const ArchiveNode& n, IUniverse& u) const final {
+		void deserialize_raw(byte* place, const DocumentNode& n, IUniverse& u) const final {
 			deserialize(*reinterpret_cast<Any*>(place), n, u);
 		}
-		void serialize_raw(const byte* place, ArchiveNode& n, IUniverse& u) const final {
+		void serialize_raw(const byte* place, DocumentNode& n, IUniverse& u) const final {
 			serialize(*reinterpret_cast<const Any*>(place), n, u);
 		}
 	};

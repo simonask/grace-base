@@ -28,8 +28,8 @@ namespace grace {
 		size_t alignment() const final { return alignof(void*); }
 		
 		// Type reflection
-		void deserialize_raw(byte* place, const ArchiveNode&, IUniverse&) const final;
-		void serialize_raw(const byte* place, ArchiveNode&, IUniverse&) const;
+		void deserialize_raw(byte* place, const DocumentNode&, IUniverse&) const final;
+		void serialize_raw(const byte* place, DocumentNode&, IUniverse&) const;
 		void construct(byte* place, IUniverse&) const;
 		void copy_construct(byte* to, const byte* from) const;
 		void move_construct(byte* to, byte* from) const;

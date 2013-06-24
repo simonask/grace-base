@@ -11,7 +11,7 @@
 
 #include "type/type.hpp"
 #include "base/vector.hpp"
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 
 namespace grace {
 	struct VectorType : public SimpleType {
@@ -22,8 +22,8 @@ namespace grace {
 	struct VectorTypeImpl : public TypeFor<TVector<T, N>, VectorType> {
 		VectorTypeImpl(IAllocator& alloc, StringRef name) : TypeFor<TVector<T,N>, VectorType>(alloc, std::move(name), sizeof(T)*N, sizeof(T), IsFloatingPoint<T>::Value, IsSigned<T>::Value) {}
 		
-		virtual void deserialize(TVector<T, N>&, const ArchiveNode&, IUniverse&) const override;
-		virtual void serialize(const TVector<T,N>&, ArchiveNode&, IUniverse&) const override;
+		virtual void deserialize(TVector<T, N>&, const DocumentNode&, IUniverse&) const override;
+		virtual void serialize(const TVector<T,N>&, DocumentNode&, IUniverse&) const override;
 		void* cast(const SimpleType* to, void* o) const {
 			if (to->size() == this->size() && to->num_components() == this->num_components()) {
 				return o;
@@ -33,15 +33,15 @@ namespace grace {
 	};
 	
 	template <typename T, size_t N>
-	void VectorTypeImpl<T,N>::deserialize(TVector<T, N>& vector, const ArchiveNode& node, IUniverse&) const {
+	void VectorTypeImpl<T,N>::deserialize(TVector<T, N>& vector, const DocumentNode& node, IUniverse&) const {
 		for (size_t i = 0; i < N; ++i) {
-			const ArchiveNode& component = node[VectorComponentNames[i]];
+			const DocumentNode& component = node[VectorComponentNames[i]];
 			component >> vector[i];
 		}
 	}
 	
 	template <typename T, size_t N>
-	void VectorTypeImpl<T,N>::serialize(const TVector<T, N>& vector, ArchiveNode& node, IUniverse&) const {
+	void VectorTypeImpl<T,N>::serialize(const TVector<T, N>& vector, DocumentNode& node, IUniverse&) const {
 		for (size_t i = 0; i < N; ++i) {
 			node[VectorComponentNames[i]] << vector[i];
 		}
@@ -70,7 +70,7 @@ namespace grace {
 	};
 	
 	template <typename ElementType, size_t N>
-	bool operator>>(const ArchiveNode& node, TVector<ElementType, N>& vec) {
+	bool operator>>(const DocumentNode& node, TVector<ElementType, N>& vec) {
 		bool success = true;
 		for (size_t i = 0; i < N; ++i) {
 			success = (node[VectorComponentNames[i]] >> vec[i]) && success;
@@ -79,7 +79,7 @@ namespace grace {
 	}
 	
 	template <typename ElementType, size_t N>
-	void operator<<(ArchiveNode& node, TVector<ElementType, N>& vec) {
+	void operator<<(DocumentNode& node, TVector<ElementType, N>& vec) {
 		for (size_t i = 0; i < N; ++i) {
 			node[VectorComponentNames[i]] << vec[i];
 		}

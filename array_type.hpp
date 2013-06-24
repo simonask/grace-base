@@ -17,8 +17,8 @@ public:
 protected:
 	ArrayType(const TypeInfo& ti) : DerivedType(ti) {}
 	
-	void deserialize_array(IArrayWriter&, const ArchiveNode&, IUniverse&) const;
-	void serialize_array(IArrayReader&, ArchiveNode&, IUniverse&) const;
+	void deserialize_array(IArrayWriter&, const DocumentNode&, IUniverse&) const;
+	void serialize_array(IArrayReader&, DocumentNode&, IUniverse&) const;
 };
 
 String build_variable_length_array_type_name(IAllocator& alloc, StringRef base_container_name, const Type* element_type);
@@ -31,8 +31,8 @@ public:
 	size_t num_elements() const { return SIZE_T_MAX; }
 	size_t offset_of_element(size_t idx) const { return idx * this->element_type_->size(); }
 	
-	void deserialize(Container& place, const ArchiveNode& node, IUniverse&) const;
-	void serialize(const Container& place, ArchiveNode& node, IUniverse&) const;
+	void deserialize(Container& place, const DocumentNode& node, IUniverse&) const;
+	void serialize(const Container& place, DocumentNode& node, IUniverse&) const;
 	
 	StringRef name() const { return name_; }
 	bool is_variable_length() const { return true; }
@@ -93,13 +93,13 @@ struct ArrayWriter : IArrayWriter {
 };
 
 template <typename T>
-void VariableLengthArrayType<T>::deserialize(T& obj, const ArchiveNode& node, IUniverse& universe) const {
+void VariableLengthArrayType<T>::deserialize(T& obj, const DocumentNode& node, IUniverse& universe) const {
 	ArrayWriter<T> w(obj);
 	this->deserialize_array(w, node, universe);
 }
 
 template <typename T>
-void VariableLengthArrayType<T>::serialize(const T& obj, ArchiveNode& node, IUniverse& universe) const {
+void VariableLengthArrayType<T>::serialize(const T& obj, DocumentNode& node, IUniverse& universe) const {
 	ArrayReader<T> r(obj);
 	this->serialize_array(r, node, universe);
 }
