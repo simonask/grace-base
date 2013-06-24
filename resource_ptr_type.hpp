@@ -25,8 +25,8 @@ namespace grace {
 	template <typename T>
 	class ResourcePtrTypeImpl : public TypeFor<ResourcePtr<T>, ResourcePtrType> {
 	public:
-		virtual void deserialize(ResourcePtr<T>& place, const ArchiveNode& node, IUniverse&) const final;
-		virtual void serialize(const ResourcePtr<T>& place, ArchiveNode& node, IUniverse&) const final;
+		virtual void deserialize(ResourcePtr<T>& place, const DocumentNode& node, IUniverse&) const final;
+		virtual void serialize(const ResourcePtr<T>& place, DocumentNode& node, IUniverse&) const final;
 	};
 	
 	template <typename T>
@@ -38,7 +38,7 @@ namespace grace {
 	};
 	
 	template <typename T>
-	void ResourcePtrTypeImpl<T>::deserialize(ResourcePtr<T>& place, const ArchiveNode& node, IUniverse&) const {
+	void ResourcePtrTypeImpl<T>::deserialize(ResourcePtr<T>& place, const DocumentNode& node, IUniverse&) const {
 		ResourceID rid;
 		if (node >> rid) {
 			place = load_resource<T>(rid);
@@ -46,7 +46,7 @@ namespace grace {
 	}
 	
 	template <typename T>
-	void ResourcePtrTypeImpl<T>::serialize(const ResourcePtr<T>& place, ArchiveNode& node, IUniverse&) const {
+	void ResourcePtrTypeImpl<T>::serialize(const ResourcePtr<T>& place, DocumentNode& node, IUniverse&) const {
 		if (place != nullptr) {
 			node << place->resource_id();
 		} else {
