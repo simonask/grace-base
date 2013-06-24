@@ -21,7 +21,7 @@ namespace grace {
 	struct DeferredAttributeDeserialization {
 		ObjectPtr<> object;
 		const IAttribute* attribute;
-		const ArchiveNode* node;
+		const DocumentNode* node;
 		
 		void perform(IUniverse& universe) const;
 	};
@@ -30,8 +30,8 @@ namespace grace {
 		virtual ~UniverseBase();
 		
 		// IUniverse interface (partial)
-		bool instantiate(const ArchiveNode& scene_definition, String& out_error) final;
-		void defer_attribute_deserialization(ObjectPtr<> obj, const IAttribute* attr, const ArchiveNode* serialized) final;
+		bool instantiate(const DocumentNode& scene_definition, String& out_error) final;
+		void defer_attribute_deserialization(ObjectPtr<> obj, const IAttribute* attr, const DocumentNode* serialized) final;
 		IAllocator& allocator() const final { return allocator_; }
 		void clear() override;
 		void update(GameTimeDelta delta) final;
@@ -130,13 +130,13 @@ namespace grace {
 		}
 		StringRef get_id(ObjectPtr<const Object> object) const final;
 		bool rename_object(ObjectPtr<> object, StringRef) final;
-		bool recreate_object_and_initialize(const ArchiveNode& node, StringRef object_id) final;
+		bool recreate_object_and_initialize(const DocumentNode& node, StringRef object_id) final;
 		ObjectPtr<> root() const final { return root_; }
 		void set_root(ObjectPtr<> r) final {
 			ASSERT(r != nullptr && this == r->universe());
 			root_ = r;
 		}
-		bool serialize_scene(ArchiveNode& root, String& out_error) final;
+		bool serialize_scene(DocumentNode& root, String& out_error) final;
 		void run_initializers() final;
 		void clear() final;
 		

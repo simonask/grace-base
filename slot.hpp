@@ -16,7 +16,7 @@
 #include "serialization/deserialize_tuple.hpp"
 
 namespace grace {
-	struct ArchiveNode;
+	struct DocumentNode;
 	struct IUniverse;
 	class Any;
 
@@ -30,7 +30,7 @@ namespace grace {
 		virtual bool invoke(ObjectPtr<> receiver, ArrayRef<Any> args) const = 0;
 		
 		// Deprecated:
-		virtual void invoke_with_serialized_arguments(ObjectPtr<> receiver, const ArchiveNode& arg_list, IUniverse& universe) const = 0;
+		virtual void invoke_with_serialized_arguments(ObjectPtr<> receiver, const DocumentNode& arg_list, IUniverse& universe) const = 0;
 		virtual String signature_description(IAllocator& alloc = default_allocator()) const = 0;
 	};
 	
@@ -101,7 +101,7 @@ namespace grace {
 			}
 		}
 		
-		void invoke_with_serialized_arguments(ObjectPtr<> object, const ArchiveNode& arg_list, IUniverse& universe) const {
+		void invoke_with_serialized_arguments(ObjectPtr<> object, const DocumentNode& arg_list, IUniverse& universe) const {
 			std::tuple<Args...> deserialized_args;
 			deserialize_list_into_tuple<0, 0>(arg_list, deserialized_args, universe);
 			T* ptr = this->get_object_polymorphic(object);

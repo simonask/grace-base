@@ -32,11 +32,11 @@ namespace grace {
 		
 		// Editor/dev-time API
 		bool rename_object(ObjectPtr<>, StringRef new_id) final;
-		bool recreate_object_and_initialize(const ArchiveNode& object_definition, StringRef object_id) final;
+		bool recreate_object_and_initialize(const DocumentNode& object_definition, StringRef object_id) final;
 		
 		// Serialization API
 		void run_initializers() final;
-		bool serialize_scene(ArchiveNode& out_scene, String& out_error) final;
+		bool serialize_scene(DocumentNode& out_scene, String& out_error) final;
 	private:
 		struct Impl;
 		Impl* impl_ = nullptr;

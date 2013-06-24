@@ -42,8 +42,8 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	const Type* type_of_element(size_t idx) const { return properties_[idx]->attribute_type(); }
 	size_t offset_of_element(size_t idx) const { return 0; /* TODO */ }
 	
-	void deserialize(T& object, const ArchiveNode&, IUniverse&) const;
-	void serialize(const T& object, ArchiveNode&, IUniverse&) const;
+	void deserialize(T& object, const DocumentNode&, IUniverse&) const;
+	void serialize(const T& object, DocumentNode&, IUniverse&) const;
 	
 	const ISlot* find_slot_by_name(StringRef name) const {
 		for (auto& it: slots_) {
@@ -64,13 +64,13 @@ struct AutoListRegistrarForObject {
 
 
 template <typename T>
-void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& universe) const {
+void ObjectType<T>::deserialize(T& object, const DocumentNode& node, IUniverse& universe) const {
 	auto s = this->super();
 	if (s) s->deserialize_raw(reinterpret_cast<byte*>(&object), node, universe);
 	
 	for (auto& property: properties_) {
 		ObjectPtr<> o = ObjectPtr<>(&object);
-		const ArchiveNode& serialized = node[property->name()];
+		const DocumentNode& serialized = node[property->name()];
 		if (property->is_read_only())
 			continue;
 		if (property->deferred_instantiation()) {
@@ -86,7 +86,7 @@ void ObjectType<T>::deserialize(T& object, const ArchiveNode& node, IUniverse& u
 }
 
 template <typename T>
-void ObjectType<T>::serialize(const T& object, ArchiveNode& node, IUniverse& universe) const {
+void ObjectType<T>::serialize(const T& object, DocumentNode& node, IUniverse& universe) const {
 	auto s = this->super();
 	if (s) s->serialize_raw(reinterpret_cast<const byte*>(&object), node, universe);
 	

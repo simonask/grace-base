@@ -11,7 +11,7 @@
 
 #include "base/basic.hpp"
 #include "object/objectptr.hpp"
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 #include "object/slot.hpp"
 #include "object/object.hpp"
 #include "object/object_type.hpp"

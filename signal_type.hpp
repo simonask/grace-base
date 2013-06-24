@@ -28,8 +28,8 @@ namespace grace {
 	
 	template <typename... Args>
 	struct SignalType : TypeFor<Signal<Args...>, SignalTypeBase> {
-		void deserialize(Signal<Args...>& place, const ArchiveNode&, IUniverse&) const;
-		void serialize(const Signal<Args...>& place, ArchiveNode&, IUniverse&) const;
+		void deserialize(Signal<Args...>& place, const DocumentNode&, IUniverse&) const;
+		void serialize(const Signal<Args...>& place, DocumentNode&, IUniverse&) const;
 		
 		SignalType() {
 			build_signature<Args...>(this->signature_);
@@ -46,10 +46,10 @@ namespace grace {
 	};
 	
 	template <typename... Args>
-	void SignalType<Args...>::deserialize(Signal<Args...>& signal, const ArchiveNode& node, IUniverse& universe) const {
+	void SignalType<Args...>::deserialize(Signal<Args...>& signal, const DocumentNode& node, IUniverse& universe) const {
 		if (node.is_array()) {
 			for (size_t i = 0; i < node.array_size(); ++i) {
-				const ArchiveNode& connection = node[i];
+				const DocumentNode& connection = node[i];
 				if (connection.is_map()) {
 					auto& receiver_node = connection["receiver"];
 					auto& slot_node = connection["slot"];
@@ -73,14 +73,14 @@ namespace grace {
 	}
 	
 	template <typename... Args>
-	void SignalType<Args...>::serialize(const Signal<Args...>& signal, ArchiveNode& node, IUniverse& universe) const {
+	void SignalType<Args...>::serialize(const Signal<Args...>& signal, DocumentNode& node, IUniverse& universe) const {
 		for (size_t i = 0; i < signal.num_connections(); ++i) {
 			const SignalInvoker<Args...>* invoker = signal.connection_at(i);
 			ObjectPtr<Object> receiver = invoker->receiver();
 			const ISlot* slot = invoker->slot();
 			if (receiver != nullptr && slot != nullptr) {
-				ArchiveNode& signal_connection = node.array_push();
-				ArchiveNode& receiver_node = signal_connection["receiver"];
+				DocumentNode& signal_connection = node.array_push();
+				DocumentNode& receiver_node = signal_connection["receiver"];
 				get_type(receiver)->serialize_raw(reinterpret_cast<byte*>(&receiver), receiver_node, universe);
 				signal_connection["slot"] << slot->name();
 			}

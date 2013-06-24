@@ -10,14 +10,14 @@
 #define __grace__object_template__
 
 #include "base/basic.hpp"
-#include "serialization/yaml_archive.hpp"
+#include "serialization/yaml_document.hpp"
 #include "io/resource.hpp"
 
 namespace grace {
 	struct ObjectTemplate : public Resource {
-		YAMLArchive archive;
+		YAMLDocument document;
 		
-		ObjectTemplate(IAllocator& alloc) : archive(alloc) {}
+		ObjectTemplate(IAllocator& alloc) : document(alloc) {}
 	};
 }
 

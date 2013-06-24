@@ -13,7 +13,7 @@
 #include "io/formatters.hpp"
 #include "type/reference_type.hpp"
 #include "type/attribute.hpp"
-#include "serialization/binary_archive.hpp"
+#include "serialization/binary_document.hpp"
 #include "serialization/serialize.hpp"
 #include "serialization/deserialize_object.hpp"
 #include "type/type_registry.hpp"
@@ -170,9 +170,9 @@ namespace grace {
 		return actually_got_the_requested_name;
 	}
 	
-	bool EditorUniverse::recreate_object_and_initialize(const ArchiveNode& object_definition_in, StringRef old_object_id) {
+	bool EditorUniverse::recreate_object_and_initialize(const DocumentNode& object_definition_in, StringRef old_object_id) {
 		ScratchAllocator scratch;
-		BinaryArchive merged(scratch);
+		BinaryDocument merged(scratch);
 		merge_object_templates(merged, object_definition_in);
 		auto& object_definition = merged.root();
 		
@@ -231,7 +231,7 @@ namespace grace {
 		}
 	}
 	
-	bool EditorUniverse::serialize_scene(ArchiveNode &out_scene, String &out_error) {
+	bool EditorUniverse::serialize_scene(DocumentNode &out_scene, String &out_error) {
 		Error() << "EditorUniverse cannot serialize scenes -- save the scene from the editor instead.";
 		return false;
 	}

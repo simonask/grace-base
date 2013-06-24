@@ -89,16 +89,16 @@ void CompositeType::destruct(byte* place, IUniverse& universe) const {
 	ASSERT(offset == size_);
 }
 
-void CompositeType::deserialize_raw(byte* place, const ArchiveNode& node, IUniverse& universe) const {
+void CompositeType::deserialize_raw(byte* place, const DocumentNode& node, IUniverse& universe) const {
 	ASSERT(frozen_);
 	base_type()->deserialize_raw(place, node, universe);
 	
-	const ArchiveNode& aspect_array = node["aspects"];
+	const DocumentNode& aspect_array = node["aspects"];
 	if (aspect_array.is_array()) {
 		size_t offset = base_type()->size();
 		size_t sz = aspect_array.array_size();
 		for (size_t i = 0; i < sz; ++i) {
-			const ArchiveNode& aspect_node = aspect_array[i];
+			const DocumentNode& aspect_node = aspect_array[i];
 			aspects_[i]->deserialize_raw(place + offset, aspect_node, universe);
 			Object* subobject = reinterpret_cast<Object*>(place + offset);
 			subobject->set_object_offset__((uint32)offset);
@@ -108,15 +108,15 @@ void CompositeType::deserialize_raw(byte* place, const ArchiveNode& node, IUnive
 	}
 }
 
-void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, IUniverse& universe) const {
+void CompositeType::serialize_raw(const byte* place, DocumentNode& node, IUniverse& universe) const {
 	ASSERT(frozen_);
 	base_type()->serialize_raw(place, node, universe);
 	node["class"] << base_type()->name();
 	
 	size_t offset = base_type()->size();
-	ArchiveNode& aspect_array = node["aspects"];
+	DocumentNode& aspect_array = node["aspects"];
 	for (auto aspect: aspects_) {
-		ArchiveNode& aspect_node = aspect_array.array_push();
+		DocumentNode& aspect_node = aspect_array.array_push();
 		aspect->serialize_raw(place + offset, aspect_node, universe);
 		offset += aspect->size();
 	}
@@ -202,11 +202,11 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, IUnivers
 		return attribute_->set_any(ct->get_aspect_in_object(object, aspect_idx_), value);
 	}
 	
-	void ExposedAttribute::deserialize_attribute(Object* object, const ArchiveNode &, IUniverse & u) const {
+	void ExposedAttribute::deserialize_attribute(Object* object, const DocumentNode &, IUniverse & u) const {
 		ASSERT(false); // Composite objects must be deserialized with the specialized algorithm.
 	}
 	
-	void ExposedAttribute::serialize_attribute(const Object *object, ArchiveNode &, IUniverse &) const {
+	void ExposedAttribute::serialize_attribute(const Object *object, DocumentNode &, IUniverse &) const {
 		ASSERT(false); // Composite objects must be serialized with the specialized algorithm.
 	}
 	
@@ -244,7 +244,7 @@ void CompositeType::serialize_raw(const byte* place, ArchiveNode& node, IUnivers
 		return slot_->invoke(ObjectPtr<>(o), args);
 	}
 	
-	void ExposedSlot::invoke_with_serialized_arguments(ObjectPtr<> receiver, const ArchiveNode &arg_list, IUniverse &universe) const {
+	void ExposedSlot::invoke_with_serialized_arguments(ObjectPtr<> receiver, const DocumentNode &arg_list, IUniverse &universe) const {
 		const StructuredType* ot = receiver->object_type();
 		const CompositeType* ct = dynamic_cast<const CompositeType*>(ot);
 		ASSERT(ct != nullptr);

@@ -30,13 +30,13 @@ namespace grace {
 		
 		// Editor/dev-time API
 		virtual bool rename_object(ObjectPtr<>, StringRef new_id) = 0;
-		virtual bool recreate_object_and_initialize(const ArchiveNode& node, StringRef object_id) = 0;
+		virtual bool recreate_object_and_initialize(const DocumentNode& node, StringRef object_id) = 0;
 		
 		// Serialization API
 		virtual void run_initializers() = 0;
-		virtual bool instantiate(const ArchiveNode& scene_root, String& out_error) = 0;
-		virtual bool serialize_scene(ArchiveNode& scene_definition, String& out_error) = 0;
-		virtual void defer_attribute_deserialization(ObjectPtr<> object, const IAttribute* attr, const ArchiveNode* serialized) = 0;
+		virtual bool instantiate(const DocumentNode& scene_root, String& out_error) = 0;
+		virtual bool serialize_scene(DocumentNode& scene_definition, String& out_error) = 0;
+		virtual void defer_attribute_deserialization(ObjectPtr<> object, const IAttribute* attr, const DocumentNode* serialized) = 0;
 		
 		// Event loop integration API
 		virtual void set_event_loop(IEventLoop* event_loop) = 0;

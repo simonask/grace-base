@@ -3,7 +3,7 @@
 #define COMPOSITE_TYPE_HPP_K5R3HGBW
 
 #include "type/structured_type.hpp"
-#include "serialization/archive.hpp"
+#include "serialization/document.hpp"
 #include "base/array.hpp"
 #include "object/object_type_base.hpp"
 #include "type/attribute.hpp"
@@ -19,8 +19,8 @@ struct ExposedAttribute : public IAttribute {
 	Any get_any(const Object* object) const final;
 	Any get_any(Object* object) const final;
 	bool set_any(Object* object, const Any& value) const final;
-	void deserialize_attribute(Object* object, const ArchiveNode&, IUniverse&) const final;
-	void serialize_attribute(const Object* object, ArchiveNode&, IUniverse&) const final;
+	void deserialize_attribute(Object* object, const DocumentNode&, IUniverse&) const final;
+	void serialize_attribute(const Object* object, DocumentNode&, IUniverse&) const final;
 	bool deferred_instantiation() const final { return attribute_->deferred_instantiation(); }
 	bool is_read_only() const final { return attribute_->is_read_only(); }
 	bool is_opaque() const final { return attribute_->is_opaque(); }
@@ -43,7 +43,7 @@ private:
 		bool invoke(ObjectPtr<> receiver, ArrayRef<Any> args) const final;
 		
 		// Deprecated:
-		void invoke_with_serialized_arguments(ObjectPtr<> receiver, const ArchiveNode& arg_list, IUniverse& universe) const final;
+		void invoke_with_serialized_arguments(ObjectPtr<> receiver, const DocumentNode& arg_list, IUniverse& universe) const final;
 		String signature_description(IAllocator& alloc) const final;
 		
 		// ExposedSlot interface
@@ -84,8 +84,8 @@ struct CompositeType : StructuredType {
 	void destruct(byte* place, IUniverse&) const override;
 	void copy_construct(byte* place, const byte* original) const override { ASSERT(false); }
 	void move_construct(byte* place, byte* original) const override { ASSERT(false); }
-	void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
-	void serialize_raw(const byte* place, ArchiveNode& node, IUniverse&) const override;
+	void deserialize_raw(byte* place, const DocumentNode& node, IUniverse&) const override;
+	void serialize_raw(const byte* place, DocumentNode& node, IUniverse&) const override;
 	StringRef name() const override { return name_; }
 	size_t size() const override { return size_; }
 	size_t alignment() const override { return alignof(Object); }

@@ -34,7 +34,7 @@ namespace grace {
 		return p;
 	}
 
-	bool UniverseBase::instantiate(const ArchiveNode &scene_definition, String &out_error) {
+	bool UniverseBase::instantiate(const DocumentNode &scene_definition, String &out_error) {
 		if (!scene_definition.is_map()) {
 			out_error = "Invalid scene definition.";
 			return false;
@@ -45,7 +45,7 @@ namespace grace {
 			// TODO: Check scene version
 		}
 		
-		scene_definition["objects"].array_each([&](const ArchiveNode& object_definition) {
+		scene_definition["objects"].array_each([&](const DocumentNode& object_definition) {
 			deserialize_object(object_definition, *this);
 		});
 		
@@ -57,7 +57,7 @@ namespace grace {
 		return true;
 	}
 	
-	bool BasicUniverse::serialize_scene(ArchiveNode &root_node, grace::String &out_error) {
+	bool BasicUniverse::serialize_scene(DocumentNode &root_node, grace::String &out_error) {
 		root_node["format"] << 1;
 		auto& objects = root_node["objects"];
 		for (auto ptr: object_map_.values()) {
@@ -66,11 +66,11 @@ namespace grace {
 		return true; // XXX: Report errors
 	}
 	
-	void UniverseBase::defer_attribute_deserialization(ObjectPtr<> obj, const IAttribute *attr, const ArchiveNode *serialized) {
+	void UniverseBase::defer_attribute_deserialization(ObjectPtr<> obj, const IAttribute *attr, const DocumentNode *serialized) {
 		deferred_.push_back(DeferredAttributeDeserialization{obj, attr, serialized});
 	}
 	
-	bool BasicUniverse::recreate_object_and_initialize(const ArchiveNode &node, StringRef object_id) {
+	bool BasicUniverse::recreate_object_and_initialize(const DocumentNode &node, StringRef object_id) {
 		ASSERT(false); // Cannot recreate object in non-editor universe
 	}
 	void error_category_already_initialized_with_different_type(StringRef name) {
