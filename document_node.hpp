@@ -13,7 +13,7 @@
 
 namespace grace {
 
-struct Archive;
+struct Document;
 struct DeserializeReferenceBase;
 struct SerializeReferenceBase;
 struct DeserializeSignalBase;
@@ -22,7 +22,7 @@ struct ISlot;
 struct DerivedType;
 struct Object;
 
-struct ArchiveNode {
+struct DocumentNode {
 	bool is_empty() const;
 	bool is_array() const;
 	bool is_map() const;
@@ -78,24 +78,24 @@ struct ArchiveNode {
 	void clear() { (*this) << Nothing; }
 	
 	// Querying arrays/dictionaries directly
-	const ArchiveNode& operator[](size_t idx) const;
-	const ArchiveNode& operator[](StringRef key) const;
+	const DocumentNode& operator[](size_t idx) const;
+	const DocumentNode& operator[](StringRef key) const;
 	template <typename F>
 	void array_each(F f) const;
 	template <typename F>
 	void map_each_pair(F f) const;
 	
 	// Constructing arrays/dictionaries directly
-	ArchiveNode& operator[](size_t idx);
-	ArchiveNode& operator[](StringRef key);
-	ArchiveNode& array_push(); // in-place array construction
+	DocumentNode& operator[](size_t idx);
+	DocumentNode& operator[](StringRef key);
+	DocumentNode& array_push(); // in-place array construction
 	size_t array_size() const;
 	
-	Archive& archive() const { return archive_; }
+	Document& document() const { return document_; }
 	IAllocator& allocator() const;
 	
-	using MapType     = Dictionary<ArchiveNode*>;
-	using ArrayType   = Array<ArchiveNode*>;
+	using MapType     = Dictionary<DocumentNode*>;
+	using ArrayType   = Array<DocumentNode*>;
 	using StringType  = String;
 	using IntegerType = int64;
 	using FloatType   = float64;
@@ -121,43 +121,43 @@ struct ArchiveNode {
 	InternalValueType& internal_value() { return value_; }
 	const InternalValueType& internal_value() const { return value_; }
 	
-	explicit ArchiveNode(Archive& archive) : archive_(archive) {}
+	explicit DocumentNode(Document& document) : document_(document) {}
 protected:
 	void dump(FormattedStream& os, int indent) const;
 protected:
-	friend struct Archive;
-	Archive& archive_;
+	friend struct Document;
+	Document& document_;
 	InternalValueType value_ = InternalValueType(Nothing);
 	
-	ArchiveNode* make_child();
+	DocumentNode* make_child();
 };
 
 // This type is provided as a way to defer deserialization of serialized
 // subtrees, for instance when loading scenes via serialized RPC calls.
 // 'Deserialize' merely converts the reference to a pointer and assigns
 // it to the place.
-struct ArchiveNodeConstPtrType : TypeFor<const ArchiveNode*> {
-	using T = const ArchiveNode*;
-	void deserialize(T& place, const ArchiveNode&, IUniverse&) const final;
-	void serialize(const T& place, ArchiveNode&, IUniverse&) const final;
+struct DocumentNodeConstPtrType : TypeFor<const DocumentNode*> {
+	using T = const DocumentNode*;
+	void deserialize(T& place, const DocumentNode&, IUniverse&) const final;
+	void serialize(const T& place, DocumentNode&, IUniverse&) const final;
 	StringRef name() const final;
 };
 template <>
-struct BuildTypeInfo<const ArchiveNode*> {
-	static const ArchiveNodeConstPtrType* build();
+struct BuildTypeInfo<const DocumentNode*> {
+	static const DocumentNodeConstPtrType* build();
 };
-struct ArchiveNodePtrType : TypeFor<ArchiveNode*> {
-	using T = ArchiveNode*;
-	void deserialize(T& place, const ArchiveNode&, IUniverse&) const final;
-	void serialize(const T& place, ArchiveNode&, IUniverse&) const final;
+struct DocumentNodePtrType : TypeFor<DocumentNode*> {
+	using T = DocumentNode*;
+	void deserialize(T& place, const DocumentNode&, IUniverse&) const final;
+	void serialize(const T& place, DocumentNode&, IUniverse&) const final;
 	StringRef name() const final;
 };
 template <>
-struct BuildTypeInfo<ArchiveNode*> {
-	static const ArchiveNodePtrType* build();
+struct BuildTypeInfo<DocumentNode*> {
+	static const DocumentNodePtrType* build();
 };
 
-	inline bool ArchiveNode::operator>>(bool& out_bool) const {
+	inline bool DocumentNode::operator>>(bool& out_bool) const {
 		StringRef str;
 		if (*this >> str) {
 			out_bool = str != "false";
@@ -168,7 +168,7 @@ struct BuildTypeInfo<ArchiveNode*> {
 	
 	template <typename T>
 	typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, bool>::type
-	ArchiveNode::operator>>(T& out_integer) const {
+	DocumentNode::operator>>(T& out_integer) const {
 		bool result = false;
 		value_.when<IntegerType>([&](IntegerType n) {
 			// TODO: Warn if integer is out of range of T.
@@ -184,7 +184,7 @@ struct BuildTypeInfo<ArchiveNode*> {
 	
 	template <typename T>
 	typename std::enable_if<std::is_floating_point<T>::value, bool>::type
-	ArchiveNode::operator>>(T& out_float) const {
+	DocumentNode::operator>>(T& out_float) const {
 		bool result = false;
 		value_.when<FloatType>([&](FloatType f) {
 			out_float = f;
@@ -197,7 +197,7 @@ struct BuildTypeInfo<ArchiveNode*> {
 		return result;
 	}
 	
-	inline bool ArchiveNode::operator>>(String& out_str) const {
+	inline bool DocumentNode::operator>>(String& out_str) const {
 		bool result = false;
 		value_.when<StringType>([&](const StringType& str) {
 			out_str = str;
@@ -206,7 +206,7 @@ struct BuildTypeInfo<ArchiveNode*> {
 		return result;
 	}
 	
-	inline bool ArchiveNode::operator>>(StringRef& out_str) const {
+	inline bool DocumentNode::operator>>(StringRef& out_str) const {
 		bool result = false;
 		value_.when<StringType>([&](const StringType& str) {
 			out_str = str;
@@ -216,12 +216,12 @@ struct BuildTypeInfo<ArchiveNode*> {
 	}
 	
 	template <typename T>
-	bool ArchiveNode::operator>>(Array<T>& array) const {
+	bool DocumentNode::operator>>(Array<T>& array) const {
 		bool result = false;
 		value_.when<ArrayType>([&](const ArrayType& arr) {
 			result = true;
 			array.reserve(arr.size());
-			for (const ArchiveNode* node: arr) {
+			for (const DocumentNode* node: arr) {
 				T element;
 				result = ((*node) >> element) && result;
 				array.push_back(move(element));
@@ -231,7 +231,7 @@ struct BuildTypeInfo<ArchiveNode*> {
 	}
 	
 	template <typename T>
-	bool ArchiveNode::operator>>(Dictionary<T>& dictionary) const {
+	bool DocumentNode::operator>>(Dictionary<T>& dictionary) const {
 		bool result = false;
 		value_.when<MapType>([&](const MapType& dict) {
 			result = true;
@@ -245,33 +245,33 @@ struct BuildTypeInfo<ArchiveNode*> {
 		return result;
 	}
 	
-	inline void ArchiveNode::operator<<(bool in_bool) {
+	inline void DocumentNode::operator<<(bool in_bool) {
 		value_ = StringType(in_bool ? "true" : "false");
 	}
 	
 	template <typename T>
 	typename std::enable_if<std::is_integral<T>::value, void>::type
-	ArchiveNode::operator<<(T in_integer) {
+	DocumentNode::operator<<(T in_integer) {
 		IntegerType n = (IntegerType)in_integer; // XXX: Potential information loss
 		value_ = n;
 	}
 	
 	template <typename T>
 	typename std::enable_if<std::is_floating_point<T>::value, void>::type
-	ArchiveNode::operator<<(T in_float) {
+	DocumentNode::operator<<(T in_float) {
 		FloatType f = (FloatType)in_float; // XXX: Potential information loss
 		value_ = f;
 	}
 	
-	inline void ArchiveNode::operator<<(const String& in_str) {
+	inline void DocumentNode::operator<<(const String& in_str) {
 		value_ = StringType(in_str, allocator());
 	}
 	
-	inline void ArchiveNode::operator<<(StringRef in_str) {
+	inline void DocumentNode::operator<<(StringRef in_str) {
 		value_ = StringType(in_str, allocator());
 	}
 	
-	inline void ArchiveNode::operator<<(const Any& in_any) {
+	inline void DocumentNode::operator<<(const Any& in_any) {
 		if (in_any.is_empty()) {
 			clear();
 		} else {
@@ -280,11 +280,11 @@ struct BuildTypeInfo<ArchiveNode*> {
 	}
 	
 	template <typename T>
-	void ArchiveNode::operator<<(const Array<T>& array) {
+	void DocumentNode::operator<<(const Array<T>& array) {
 		ArrayType arr(allocator());
 		arr.reserve(array.size());
 		for (auto& x: array) {
-			ArchiveNode* node = make_child();
+			DocumentNode* node = make_child();
 			(*node) << x;
 			arr.push_back(node);
 		}
@@ -292,23 +292,23 @@ struct BuildTypeInfo<ArchiveNode*> {
 	}
 	
 	template <typename T>
-	void ArchiveNode::operator<<(const Dictionary<T>& dictionary) {
+	void DocumentNode::operator<<(const Dictionary<T>& dictionary) {
 		MapType m(allocator());
 		//m.reserve(dictionary.size());
 		for (auto pair: dictionary) {
-			ArchiveNode* node = make_child();
+			DocumentNode* node = make_child();
 			(*node) << pair.second;
 			m[pair.first] = node;
 		}
 		value_ = move(m);
 	}
 	
-	inline void ArchiveNode::operator<<(NothingType) {
+	inline void DocumentNode::operator<<(NothingType) {
 		value_ = Nothing;
 	}
 
 	template <typename F>
-	void ArchiveNode::map_each_pair(F f) const {
+	void DocumentNode::map_each_pair(F f) const {
 		value_.when<MapType>([&](const MapType& map) {
 			for (auto pair: map) {
 				f(pair.first, pair.second);
@@ -317,7 +317,7 @@ struct BuildTypeInfo<ArchiveNode*> {
 	}
 	
 	template <typename F>
-	void ArchiveNode::array_each(F f) const {
+	void DocumentNode::array_each(F f) const {
 		value_.when<ArrayType>([&](const ArrayType& array) {
 			for (auto& element: array) {
 				f(*element);
@@ -326,17 +326,17 @@ struct BuildTypeInfo<ArchiveNode*> {
 	}
 	
 	template <typename F>
-	void ArchiveNode::walk(F callback) {
+	void DocumentNode::walk(F callback) {
 		value_.visit(callback);
 	}
 	
 	template <typename F>
-	void ArchiveNode::walk(F callback) const {
+	void DocumentNode::walk(F callback) const {
 		value_.visit(callback);
 	}
 	
-	void dump_archive_node_to_stdout(const ArchiveNode& node);
-	void dump_archive_to_stdout(const Archive& archive);
+	void dump_document_node_to_stdout(const DocumentNode& node);
+	void dump_document_to_stdout(const Document& document);
 }
 
 #endif /* end of include guard: ARCHIVE_NODE_HPP_EP8GSONT */

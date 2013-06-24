@@ -1,4 +1,4 @@
-#include "serialization/archive.hpp"
+#include "serialization/document.hpp"
 #include "object/objectptr.hpp"
 #include "serialization/serialize.hpp"
 #include "type/type_registry.hpp"
@@ -7,19 +7,19 @@
 #include "serialization/deserialize_object.hpp"
 
 namespace grace {
-	ArchiveNode& Archive::operator[](StringRef key) {
+	DocumentNode& Document::operator[](StringRef key) {
 		return root()[key];
 	}
 	
-	const ArchiveNode& Archive::operator[](StringRef key) const {
+	const DocumentNode& Document::operator[](StringRef key) const {
 		return root()[key];
 	}
 	
-	ArchiveNode* Archive::make() {
+	DocumentNode* Document::make() {
 		return nodes_.allocate(*this);
 	}
 	
-	void Archive::clear() {
+	void Document::clear() {
 		nodes_.clear();
 		root_.clear();
 	}

@@ -1,5 +1,5 @@
-#include "serialization/archive_node.hpp"
-#include "serialization/archive.hpp"
+#include "serialization/document_node.hpp"
+#include "serialization/document.hpp"
 #include "object/universe.hpp"
 #include "object/objectptr.hpp"
 #include "type/structured_type.hpp"
@@ -9,52 +9,52 @@
 namespace grace {
 class IUniverse;
 
-bool ArchiveNode::is_integer() const {
+bool DocumentNode::is_integer() const {
 	return value_.is_a<IntegerType>();
 }
 
-bool ArchiveNode::is_float() const {
+bool DocumentNode::is_float() const {
 	return value_.is_a<FloatType>();
 }
 
-bool ArchiveNode::is_array() const {
+bool DocumentNode::is_array() const {
 	return value_.is_a<ArrayType>();
 }
 
-bool ArchiveNode::is_map() const {
+bool DocumentNode::is_map() const {
 	return value_.is_a<MapType>();
 }
 
-bool ArchiveNode::is_string() const {
+bool DocumentNode::is_string() const {
 	return value_.is_a<StringType>();
 }
 
-bool ArchiveNode::is_scalar() const {
+bool DocumentNode::is_scalar() const {
 	return !is_array() && !is_map();
 }
 
-bool ArchiveNode::is_empty() const {
+bool DocumentNode::is_empty() const {
 	return value_.is_nothing();
 }
 
-IAllocator& ArchiveNode::allocator() const {
-	return archive().allocator();
+IAllocator& DocumentNode::allocator() const {
+	return document().allocator();
 }
 
-ArchiveNode& ArchiveNode::array_push() {
+DocumentNode& DocumentNode::array_push() {
 	if (!is_array()) {
 		value_ = ArrayType(allocator());
 	}
-	ArchiveNode* n = archive_.make();
+	DocumentNode* n = document_.make();
 	value_.when<ArrayType>([&](ArrayType& array) {
 		array.push_back(n);
 	});
 	return *n;
 }
 
-const ArchiveNode& ArchiveNode::operator[](size_t idx) const {
-	if (!is_array()) return archive_.empty();
-	const ArchiveNode* result = &archive_.empty();
+const DocumentNode& DocumentNode::operator[](size_t idx) const {
+	if (!is_array()) return document_.empty();
+	const DocumentNode* result = &document_.empty();
 	value_.when<ArrayType>([&](const ArrayType& array) {
 		if (idx < array.size()) {
 			result = array[idx];
@@ -63,12 +63,12 @@ const ArchiveNode& ArchiveNode::operator[](size_t idx) const {
 	return *result;
 }
 
-ArchiveNode& ArchiveNode::operator[](size_t idx) {
+DocumentNode& DocumentNode::operator[](size_t idx) {
 	if (!is_array()) {
 		value_ = ArrayType(allocator());
 	}
 	
-	ArchiveNode* result;
+	DocumentNode* result;
 	value_.when<ArrayType>([&](ArrayType& array) {
 		if (idx < array.size()) {
 			result = array[idx];
@@ -81,21 +81,21 @@ ArchiveNode& ArchiveNode::operator[](size_t idx) {
 	return *result;
 }
 
-const ArchiveNode& ArchiveNode::operator[](StringRef key) const {
-	const ArchiveNode* result;
+const DocumentNode& DocumentNode::operator[](StringRef key) const {
+	const DocumentNode* result;
 	value_.when<MapType>([&](const MapType& map) {
-		result = find_or(map, key, &archive_.empty());
+		result = find_or(map, key, &document_.empty());
 	}).otherwise([&]() {
-		result = &archive_.empty();
+		result = &document_.empty();
 	});
 	return *result;
 }
 
-ArchiveNode& ArchiveNode::operator[](StringRef key) {
+DocumentNode& DocumentNode::operator[](StringRef key) {
 	if (!is_map()) {
 		value_ = MapType(allocator());
 	}
-	ArchiveNode* result;
+	DocumentNode* result;
 	value_.when<MapType>([&](MapType& map) {
 		auto it = map.find(key);
 		if (it == map.end()) {
@@ -108,11 +108,11 @@ ArchiveNode& ArchiveNode::operator[](StringRef key) {
 	return *result;
 }
 
-ArchiveNode* ArchiveNode::make_child() {
-	return archive_.make();
+DocumentNode* DocumentNode::make_child() {
+	return document_.make();
 }
 
-size_t ArchiveNode::array_size() const {
+size_t DocumentNode::array_size() const {
 	size_t sz = 0;
 	value_.when<ArrayType>([&](const ArrayType& array) {
 		sz = array.size();
@@ -120,11 +120,11 @@ size_t ArchiveNode::array_size() const {
 	return sz;
 }
 	
-	void ArchiveNode::dump(FormattedStream &os) const {
+	void DocumentNode::dump(FormattedStream &os) const {
 		dump(os, 0);
 	}
 	
-	void ArchiveNode::dump(FormattedStream& os, int indent) const {
+	void DocumentNode::dump(FormattedStream& os, int indent) const {
 		value_.when<NothingType>([&](NothingType) {
 			os << "(none)";
 		}).when<StringType>([&](StringRef str) {
@@ -199,45 +199,45 @@ size_t ArchiveNode::array_size() const {
 		});
 	}
 	
-	const ArchiveNodeConstPtrType* BuildTypeInfo<const ArchiveNode*>::build() {
-		static const ArchiveNodeConstPtrType type = ArchiveNodeConstPtrType();
+	const DocumentNodeConstPtrType* BuildTypeInfo<const DocumentNode*>::build() {
+		static const DocumentNodeConstPtrType type = DocumentNodeConstPtrType();
 		return &type;
 	}
 	
-	void ArchiveNodeConstPtrType::deserialize(ArchiveNodeConstPtrType::T &place, const grace::ArchiveNode & node, grace::IUniverse &) const {
+	void DocumentNodeConstPtrType::deserialize(DocumentNodeConstPtrType::T &place, const grace::DocumentNode & node, grace::IUniverse &) const {
 		place = &node;
 	}
 	
-	void ArchiveNodeConstPtrType::serialize(const ArchiveNodeConstPtrType::T &place, grace::ArchiveNode &, grace::IUniverse &) const {
+	void DocumentNodeConstPtrType::serialize(const DocumentNodeConstPtrType::T &place, grace::DocumentNode &, grace::IUniverse &) const {
 		ASSERT(false); // Cannot serialize a reference into another serialized tree.
 	}
 
-	StringRef ArchiveNodeConstPtrType::name() const {
-		return "const ArchiveNode*";
+	StringRef DocumentNodeConstPtrType::name() const {
+		return "const DocumentNode*";
 	}
 	
-	const ArchiveNodePtrType* BuildTypeInfo<ArchiveNode*>::build() {
-		static const ArchiveNodePtrType type = ArchiveNodePtrType();
+	const DocumentNodePtrType* BuildTypeInfo<DocumentNode*>::build() {
+		static const DocumentNodePtrType type = DocumentNodePtrType();
 		return &type;
 	}
 	
-	void ArchiveNodePtrType::deserialize(ArchiveNodePtrType::T &place, const grace::ArchiveNode & node, grace::IUniverse &) const {
-		ASSERT(false); // Cannot deserialize a non-const pointer to an ArchiveNode.
+	void DocumentNodePtrType::deserialize(DocumentNodePtrType::T &place, const grace::DocumentNode & node, grace::IUniverse &) const {
+		ASSERT(false); // Cannot deserialize a non-const pointer to an DocumentNode.
 	}
 	
-	void ArchiveNodePtrType::serialize(const ArchiveNodePtrType::T &place, grace::ArchiveNode &, grace::IUniverse &) const {
+	void DocumentNodePtrType::serialize(const DocumentNodePtrType::T &place, grace::DocumentNode &, grace::IUniverse &) const {
 		ASSERT(false); // Cannot serialize a reference into another serialized tree.
 	}
 	
-	StringRef ArchiveNodePtrType::name() const {
-		return "ArchiveNode*";
+	StringRef DocumentNodePtrType::name() const {
+		return "DocumentNode*";
 	}
 	
-	void dump_archive_node_to_stdout(const ArchiveNode& node) {
+	void dump_document_node_to_stdout(const DocumentNode& node) {
 		node.dump(StandardOutput);
 	}
 	
-	void dump_archive_to_stdout(const Archive& archive) {
-		dump_archive_node_to_stdout(archive.root());
+	void dump_document_to_stdout(const Document& document) {
+		dump_document_node_to_stdout(document.root());
 	}
 }

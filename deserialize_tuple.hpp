@@ -9,7 +9,7 @@
 #ifndef grace_slot_invoke_hpp
 #define grace_slot_invoke_hpp
 
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 #include "base/basic.hpp"
 #include "base/any.hpp"
 
@@ -18,14 +18,14 @@ namespace grace {
 	
 	template <size_t SourceIdx, size_t TupleIdx, typename... TupleTypes>
 	typename std::enable_if<(TupleIdx >= sizeof...(TupleTypes)), void>::type
-	deserialize_list_into_tuple(const ArchiveNode&, std::tuple<TupleTypes...>&, IUniverse&) {
+	deserialize_list_into_tuple(const DocumentNode&, std::tuple<TupleTypes...>&, IUniverse&) {
 		// Recursion base.
 	}
 
 	template <size_t SourceIdx, size_t TupleIdx, typename... TupleTypes>
 	typename std::enable_if<(TupleIdx < sizeof...(TupleTypes)), void>::type
-	deserialize_list_into_tuple(const ArchiveNode& arg_list, std::tuple<TupleTypes...>& tuple, IUniverse& universe) {
-		const ArchiveNode& node = arg_list[SourceIdx];
+	deserialize_list_into_tuple(const DocumentNode& arg_list, std::tuple<TupleTypes...>& tuple, IUniverse& universe) {
+		const DocumentNode& node = arg_list[SourceIdx];
 		auto& target = std::get<TupleIdx>(tuple);
 		const Type* t = get_type<typename RemoveConstRef<decltype(target)>::Type>();
 		t->deserialize_raw((byte*)&target, node, universe);

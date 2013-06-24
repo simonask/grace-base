@@ -1,5 +1,5 @@
 #include "serialization/deserialize_object.hpp"
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 #include "type/type_registry.hpp"
 #include "object/composite_type.hpp"
 #include "object/object_type.hpp"
@@ -13,11 +13,11 @@
 namespace grace {
 
 namespace {
-	const StructuredType* get_type_from_map(const ArchiveNode& node, String& out_error);
+	const StructuredType* get_type_from_map(const DocumentNode& node, String& out_error);
 	
-	const ObjectTypeBase* get_class_from_map(const ArchiveNode& node, String& out_error) {
+	const ObjectTypeBase* get_class_from_map(const DocumentNode& node, String& out_error) {
 		String clsname;
-		const ArchiveNode& cls_node = node["class"];
+		const DocumentNode& cls_node = node["class"];
 		if (!(cls_node >> clsname)) {
 			out_error = "Class not specified.";
 			return nullptr;
@@ -30,14 +30,14 @@ namespace {
 		return struct_type;
 	}
 	
-	const StructuredType* transform_if_composite_type(const ArchiveNode& node, const ObjectTypeBase* base_type, String& out_error) {
-		const ArchiveNode& aspects = node["aspects"];
+	const StructuredType* transform_if_composite_type(const DocumentNode& node, const ObjectTypeBase* base_type, String& out_error) {
+		const DocumentNode& aspects = node["aspects"];
 		if (!aspects.is_array()) return base_type;
 		if (aspects.array_size() == 0) return base_type;
 		
 		CompositeType* type = new CompositeType(default_allocator(), "Composite", base_type); // TODO: Use universe allocator
 		for (size_t i = 0; i < aspects.array_size(); ++i) {
-			const ArchiveNode& aspect = aspects[i];
+			const DocumentNode& aspect = aspects[i];
 			const StructuredType* aspect_type = get_type_from_map(aspect, out_error);
 			if (aspect_type == nullptr) {
 				return nullptr;
@@ -48,7 +48,7 @@ namespace {
 		return type;
 	}
 	
-	const StructuredType* get_type_from_map(const ArchiveNode& node, String& out_error) {
+	const StructuredType* get_type_from_map(const DocumentNode& node, String& out_error) {
 		const ObjectTypeBase* struct_type = get_class_from_map(node, out_error);
 		if (struct_type != nullptr) {
 			return transform_if_composite_type(node, struct_type, out_error);
@@ -57,17 +57,17 @@ namespace {
 	}
 	
 	
-	struct MergedArchiveNode : public ArchiveNode {
+	struct MergedDocumentNode : public DocumentNode {
 	public:
-		MergedArchiveNode(Archive& archive) : ArchiveNode(archive) {}
+		MergedDocumentNode(Document& document) : DocumentNode(document) {}
 	};
 	
-	void merge_archive_node_map(ArchiveNode& into, const ArchiveNode& from) {
-		from.when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& from_map) {
+	void merge_document_node_map(DocumentNode& into, const DocumentNode& from) {
+		from.when<DocumentNode::MapType>([&](const DocumentNode::MapType& from_map) {
 			if (!into.is_map()) {
-				into.internal_value() = ArchiveNode::MapType(into.allocator());
+				into.internal_value() = DocumentNode::MapType(into.allocator());
 			}
-			into.when<ArchiveNode::MapType>([&](ArchiveNode::MapType& into_map) {
+			into.when<DocumentNode::MapType>([&](DocumentNode::MapType& into_map) {
 				for (auto pair: from_map) {
 					into_map[pair.first] = pair.second;
 				}
@@ -75,39 +75,39 @@ namespace {
 		});
 	}
 	
-	void copy_archive_node(ArchiveNode& to, const ArchiveNode& from) {
+	void copy_document_node(DocumentNode& to, const DocumentNode& from) {
 		if (from.is_scalar()) {
 			to.internal_value() = from.internal_value();
 		} else if (from.is_array()) {
 			for (size_t i = 0; i < from.array_size(); ++i) {
-				ArchiveNode& n = to.array_push();
-				copy_archive_node(n, from[i]);
+				DocumentNode& n = to.array_push();
+				copy_document_node(n, from[i]);
 			}
 		} else if (from.is_map()) {
-			from.map_each_pair([&](StringRef key, const ArchiveNode* child) {
-				ArchiveNode& n = to[key];
-				copy_archive_node(n, *child);
+			from.map_each_pair([&](StringRef key, const DocumentNode* child) {
+				DocumentNode& n = to[key];
+				copy_document_node(n, *child);
 			});
 		}
 	}
 	
-	void load_and_merge_templates_r(BinaryArchive& archive, ArchiveNode& target, const ArchiveNode& def) {
+	void load_and_merge_templates_r(BinaryDocument& document, DocumentNode& target, const DocumentNode& def) {
 		ResourceID template_rid;
 		if ((def["template"] >> template_rid)) {
 			ResourcePtr<ObjectTemplate> templ = load_resource<ObjectTemplate>(template_rid);
 			if (templ != nullptr) {
-				load_and_merge_templates_r(archive, target, templ->archive.root());
+				load_and_merge_templates_r(document, target, templ->document.root());
 			}
 		}
-		copy_archive_node(target, def);
+		copy_document_node(target, def);
 	}
 }
 
-void merge_object_templates(BinaryArchive& merged, const ArchiveNode& object_definition) {
+void merge_object_templates(BinaryDocument& merged, const DocumentNode& object_definition) {
 	load_and_merge_templates_r(merged, merged.root(), object_definition);
 }
 
-const StructuredType* get_or_create_object_type(const ArchiveNode& object_definition, UniverseBase* universe) {
+const StructuredType* get_or_create_object_type(const DocumentNode& object_definition, UniverseBase* universe) {
 	const ObjectTypeBase* base;
 	StringRef cls_name;
 	if (object_definition["class"] >> cls_name) {
@@ -123,7 +123,7 @@ const StructuredType* get_or_create_object_type(const ArchiveNode& object_defini
 	if (aspects.is_array() && aspects.array_size() > 0) {
 		CompositeType* ct = universe->create_composite_type(base);
 		StringRef aspect_type_name;
-		aspects.array_each([&](const ArchiveNode& aspect) {
+		aspects.array_each([&](const DocumentNode& aspect) {
 			if (aspect["class"] >> cls_name) {
 				auto aspect_type = TypeRegistry::get(cls_name);
 				if (aspect_type != nullptr) {
@@ -157,21 +157,21 @@ const StructuredType* get_or_create_object_type(const ArchiveNode& object_defini
 	return base;
 }
 
-ObjectPtr<> deserialize_object(const ArchiveNode& node, IUniverse& universe) {
+ObjectPtr<> deserialize_object(const DocumentNode& node, IUniverse& universe) {
 	if (!node.is_map()) {
 		Error() << "Expected object, got non-map.";
 		return nullptr;
 	}
 	
-	MergedArchiveNode merged_node(node.archive());
+	MergedDocumentNode merged_node(node.document());
 	ResourceID template_rid;
 	if (node["template"] >> template_rid) {
 		ResourcePtr<ObjectTemplate> templ = load_resource<ObjectTemplate>(template_rid);
 		if (templ != nullptr) {
-			copy_archive_node(merged_node, templ->archive.root());
+			copy_document_node(merged_node, templ->document.root());
 		}
 	}
-	merge_archive_node_map(merged_node, node);
+	merge_document_node_map(merged_node, node);
 	
 	String error;
 	const StructuredType* type = get_type_from_map(merged_node, error);

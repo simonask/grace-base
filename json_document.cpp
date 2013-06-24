@@ -1,8 +1,8 @@
-#include "serialization/json_archive.hpp"
+#include "serialization/json_document.hpp"
 
 namespace grace {
 
-void JSONArchive::write(OutputStream& oss) const {
+void JSONDocument::write(OutputStream& oss) const {
 	FormattedStream os(oss);
 	os << "{ \"root\": ";
 	write_node(root(), os, false, 1);
@@ -24,11 +24,11 @@ static void print_string(OutputStream& oss, StringRef str) {
 	os << '"';
 }
 
-void JSONArchive::write_node(const ArchiveNode& n, OutputStream& oss, bool print_inline, int indent) const {
+void JSONDocument::write_node(const DocumentNode& n, OutputStream& oss, bool print_inline, int indent) const {
 	FormattedStream os(oss);
 	n.when<NothingType>([&](NothingType) {
 		os << "null";
-	}).when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& arr) {
+	}).when<DocumentNode::ArrayType>([&](const DocumentNode::ArrayType& arr) {
 		os << '[';
 		if (print_inline) {
 			for (size_t i = 0; i < n.array_size(); ++i) {
@@ -50,7 +50,7 @@ void JSONArchive::write_node(const ArchiveNode& n, OutputStream& oss, bool print
 			print_indentation(os, indent);
 		}
 		os << ']';
-	}).when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
+	}).when<DocumentNode::MapType>([&](const DocumentNode::MapType& map) {
 		os << '{';
 		if (print_inline) {
 			for (auto it = map.begin(); it != map.end();) {
@@ -78,22 +78,22 @@ void JSONArchive::write_node(const ArchiveNode& n, OutputStream& oss, bool print
 			print_indentation(os, indent);
 		}
 		os << '}';
-	}).when<ArchiveNode::IntegerType>([&](const ArchiveNode::IntegerType& n) {
+	}).when<DocumentNode::IntegerType>([&](const DocumentNode::IntegerType& n) {
 		os << n;
-	}).when<ArchiveNode::FloatType>([&](const ArchiveNode::FloatType& f) {
+	}).when<DocumentNode::FloatType>([&](const DocumentNode::FloatType& f) {
 		os << f;
-	}).when<ArchiveNode::StringType>([&](const ArchiveNode::StringType& str) {
+	}).when<DocumentNode::StringType>([&](const DocumentNode::StringType& str) {
 		print_string(os, str);
 	});
 }
 	
-bool JSONArchive::read_node(ArchiveNode& n, const byte *&p, const byte *end, String &out_error) {
-	out_error = "JSONArchive::read not implemented yet.";
+bool JSONDocument::read_node(DocumentNode& n, const byte *&p, const byte *end, String &out_error) {
+	out_error = "JSONDocument::read not implemented yet.";
 	return false;
 }
 	
-size_t JSONArchive::read(InputStream&, String& out_error) {
-	out_error = "JSONArchive::read not implemented.";
+size_t JSONDocument::read(InputStream&, String& out_error) {
+	out_error = "JSONDocument::read not implemented.";
 	return 0;
 }
 

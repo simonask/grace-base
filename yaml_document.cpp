@@ -1,12 +1,12 @@
 //
-//  yaml_archive.cpp
+//  yaml_document.cpp
 //  grace
 //
 //  Created by Simon Ask Ulsnes on 27/07/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#include "serialization/yaml_archive.hpp"
+#include "serialization/yaml_document.hpp"
 #include "io/util.hpp"
 #include "base/parse.hpp"
 #include "base/pair.hpp"
@@ -22,7 +22,7 @@ namespace grace {
 		};
 		
 		struct YAMLParserState {
-			YAMLArchive& archive;
+			YAMLDocument& document;
 			enum StateType {
 				TopLevel,
 				MappingExpectingKey,
@@ -30,13 +30,13 @@ namespace grace {
 				Sequence,
 			};
 			
-			ArrayList<Pair<ArchiveNode*, String>> stack; // node and non-empty string if node is a mapping waiting for a value
-			Array<ArchiveNode*> roots;
-			Map<String, ArchiveNode*> anchors;
-			YAMLParserState(YAMLArchive& archive) : archive(archive) {}
+			ArrayList<Pair<DocumentNode*, String>> stack; // node and non-empty string if node is a mapping waiting for a value
+			Array<DocumentNode*> roots;
+			Map<String, DocumentNode*> anchors;
+			YAMLParserState(YAMLDocument& document) : document(document) {}
 			
-			ArchiveNode* root() const { return roots.size() ? roots[0] : nullptr; }
-			ArchiveNode* top() const { return stack.back().first; }
+			DocumentNode* root() const { return roots.size() ? roots[0] : nullptr; }
+			DocumentNode* top() const { return stack.back().first; }
 			StringRef top_key() const { return stack.back().second; }
 			String& top_key() { return stack.back().second; }
 			
@@ -49,28 +49,28 @@ namespace grace {
 				return TopLevel;
 			}
 			
-			ArchiveNode* make() {
-				return archive.make();
+			DocumentNode* make() {
+				return document.make();
 			}
 			
-			void push(ArchiveNode* node) {
+			void push(DocumentNode* node) {
 				if (node->is_array() || node->is_map()) {
-					stack.push_back(Pair<ArchiveNode*,String>{node, String("")});
+					stack.push_back(Pair<DocumentNode*,String>{node, String("")});
 				} else {
 					throw YAMLParserError("Invalid node type for parser stack.");
 				}
 			}
 			
-			void add_value_to_top(ArchiveNode* node) {
+			void add_value_to_top(DocumentNode* node) {
 				switch (state()) {
 					case TopLevel:
 						roots.push_back(node);
 						break;
 					case Sequence:
 						if (!top()->is_array()) {
-							top()->internal_value() = ArchiveNode::ArrayType(top()->allocator());
+							top()->internal_value() = DocumentNode::ArrayType(top()->allocator());
 						}
-						top()->when<ArchiveNode::ArrayType>([&](ArchiveNode::ArrayType& array) {
+						top()->when<DocumentNode::ArrayType>([&](DocumentNode::ArrayType& array) {
 							array.push_back(node);
 						});
 						break;
@@ -84,9 +84,9 @@ namespace grace {
 					case MappingExpectingValue: {
 						// Insert value in top mapping.
 						if (!top()->is_map()) {
-							top()->internal_value() = ArchiveNode::MapType(top()->allocator());
+							top()->internal_value() = DocumentNode::MapType(top()->allocator());
 						}
-						top()->when<ArchiveNode::MapType>([&](ArchiveNode::MapType& map) {
+						top()->when<DocumentNode::MapType>([&](DocumentNode::MapType& map) {
 							map[top_key()] = node;
 						});
 						top_key() = "";
@@ -95,15 +95,15 @@ namespace grace {
 				}
 			}
 			
-			ArchiveNode* pop() {
-				ArchiveNode* t = top();
+			DocumentNode* pop() {
+				DocumentNode* t = top();
 				stack.pop_back();
 				return t;
 			}
 			
 			void begin_sequence(const char* anchor) {
 				auto n = make();
-				n->internal_value() = ArchiveNode::ArrayType(n->allocator());
+				n->internal_value() = DocumentNode::ArrayType(n->allocator());
 				push(n);
 				if (anchor != nullptr) anchors[anchor] = top();
 			}
@@ -112,13 +112,13 @@ namespace grace {
 				if (state() != Sequence) {
 					throw YAMLParserError("Got end of sequence event, but wasn't parsing a sequence.");
 				}
-				ArchiveNode* seq = pop();
+				DocumentNode* seq = pop();
 				add_value_to_top(seq);
 			}
 			
 			void begin_mapping(const char* anchor) {
 				auto n = make();
-				n->internal_value() = ArchiveNode::MapType(n->allocator());
+				n->internal_value() = DocumentNode::MapType(n->allocator());
 				push(n);
 				if (anchor != nullptr) anchors[anchor] = top();
 			}
@@ -130,7 +130,7 @@ namespace grace {
 				if (state() != MappingExpectingKey) {
 					throw YAMLParserError("Got end of mapping event, but wasn't parsing a map.");
 				}
-				ArchiveNode* map = pop();
+				DocumentNode* map = pop();
 				add_value_to_top(map);
 			}
 			
@@ -144,7 +144,7 @@ namespace grace {
 			}
 			
 			void scalar(const char* value_as_string, size_t len) {
-				ArchiveNode* node = make();
+				DocumentNode* node = make();
 				String input(value_as_string, len);
 				if (input == "~") { // Ruby convention for representing nil
 					add_value_to_top(node);
@@ -183,41 +183,41 @@ namespace grace {
 		};
 		
 		struct YAMLEmitterState {
-			const YAMLArchive& archive;
+			const YAMLDocument& document;
 			OutputStream& os;
 			yaml_emitter_t* emitter;
-			YAMLEmitterState(const YAMLArchive& archive, OutputStream& os, yaml_emitter_t* emitter) : archive(archive), os(os), emitter(emitter) {}
+			YAMLEmitterState(const YAMLDocument& document, OutputStream& os, yaml_emitter_t* emitter) : document(document), os(os), emitter(emitter) {}
 			
 			int emit(const byte* buffer, size_t sz) {
 				os.write(buffer, sz);
 				return 1;
 			}
 			
-			void serialize(const ArchiveNode* node) {
+			void serialize(const DocumentNode* node) {
 				node->when<NothingType>([&](NothingType) {
 					emit_nil();
-				}).when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& array) {
+				}).when<DocumentNode::ArrayType>([&](const DocumentNode::ArrayType& array) {
 					emit_begin_sequence();
 					for (auto it: array) {
 						serialize(it);
 					}
 					emit_end_sequence();
-				}).when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
+				}).when<DocumentNode::MapType>([&](const DocumentNode::MapType& map) {
 					emit_begin_mapping();
 					for (auto pair: map) {
 						emit_string(pair.first);
 						serialize(pair.second);
 					}
 					emit_end_mapping();
-				}).when<ArchiveNode::FloatType>([&](ArchiveNode::FloatType f) {
+				}).when<DocumentNode::FloatType>([&](DocumentNode::FloatType f) {
 					StringStream ss;
 					ss << f;
 					emit_string(ss.str());
-				}).when<ArchiveNode::IntegerType>([&](ArchiveNode::IntegerType n) {
+				}).when<DocumentNode::IntegerType>([&](DocumentNode::IntegerType n) {
 					StringStream ss;
 					ss << n;
 					emit_string(ss.str());
-				}).when<ArchiveNode::StringType>([&](StringRef str) {
+				}).when<DocumentNode::StringType>([&](StringRef str) {
 					if (str == "~") {
 						emit_string("\\~");
 					} else {
@@ -271,7 +271,7 @@ namespace grace {
 		int yaml_write_handler_t(void *data, unsigned char *buffer, size_t size);
 	}
 	
-	void YAMLArchive::write(OutputStream& os) const {
+	void YAMLDocument::write(OutputStream& os) const {
 		yaml_emitter_t emitter;
 		yaml_emitter_initialize(&emitter);
 		YAMLEmitterState emitter_state(*this, os, &emitter);
@@ -295,7 +295,7 @@ namespace grace {
 		yaml_emitter_delete(&emitter);
 	}
 	
-	size_t YAMLArchive::read(InputStream& is, String& out_error) {
+	size_t YAMLDocument::read(InputStream& is, String& out_error) {
 		Array<byte> buffer = read_all<Array<byte>>(is);
 		const byte* begin = buffer.data();
 		const byte* end = begin + buffer.size();
@@ -355,7 +355,7 @@ namespace grace {
 		
 		if (state.root() != nullptr) {
 			if (!state.root()->is_map()) {
-				root().internal_value() = Dictionary<ArchiveNode*>({{"yaml_document", state.root()}}, root().allocator());
+				root().internal_value() = Dictionary<DocumentNode*>({{"yaml_document", state.root()}}, root().allocator());
 			} else {
 				root().internal_value() = move(state.root()->internal_value());
 			}
@@ -367,9 +367,9 @@ namespace grace {
 		return end - begin;
 	}
 	
-	bool YAMLArchive::can_parse(const byte* begin, const byte* end) const {
+	bool YAMLDocument::can_parse(const byte* begin, const byte* end) const {
 		// There's no way to check but to actually parse it.
-		YAMLArchive other;
+		YAMLDocument other;
 		String error;
 		auto stream = MemoryStream(begin, end);
 		if (other.read(stream, error) > 0 && error == "") {

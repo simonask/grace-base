@@ -1,12 +1,12 @@
 //
-//  binary_archive.cpp
+//  binary_document.cpp
 //  grace
 //
 //  Created by Simon Ask Ulsnes on 02/06/12.
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#include "serialization/binary_archive.hpp"
+#include "serialization/binary_document.hpp"
 #include "base/log.hpp"
 #include "io/util.hpp"
 
@@ -53,20 +53,20 @@ namespace grace {
 		}
 	}
 	
-	void BinaryArchive::write_node(const ArchiveNode& n, OutputStream& os) const {
-		n.when<ArchiveNode::StringType>([&](const ArchiveNode::StringType& str) {
+	void BinaryDocument::write_node(const DocumentNode& n, OutputStream& os) const {
+		n.when<DocumentNode::StringType>([&](const DocumentNode::StringType& str) {
 			write_byte(os, (byte)NodeType::String);
 			uint32 string_length = (uint32)str.size();
 			write_bytes(os, &string_length);
 			write_bytes(os, str.data(), string_length);
-		}).when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& arr) {
+		}).when<DocumentNode::ArrayType>([&](const DocumentNode::ArrayType& arr) {
 			write_byte(os, (byte)NodeType::Array);
 			uint32 array_length = arr.size();
 			write_bytes(os, &array_length);
 			for (auto it: arr) {
 				write_node(*it, os);
 			}
-		}).when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
+		}).when<DocumentNode::MapType>([&](const DocumentNode::MapType& map) {
 			write_byte(os, (byte)NodeType::Map);
 			uint32 map_length = (uint32)map.size();
 			write_bytes(os, &map_length);
@@ -76,10 +76,10 @@ namespace grace {
 				write_bytes(os, it.first.data(), string_length);
 				write_node(*it.second, os);
 			}
-		}).when<ArchiveNode::IntegerType>([&](ArchiveNode::IntegerType n) {
+		}).when<DocumentNode::IntegerType>([&](DocumentNode::IntegerType n) {
 			write_byte(os, (byte)NodeType::Integer);
 			write_bytes(os, &n);
-		}).when<ArchiveNode::FloatType>([&](ArchiveNode::FloatType f) {
+		}).when<DocumentNode::FloatType>([&](DocumentNode::FloatType f) {
 			write_byte(os, (byte)NodeType::Float);
 			write_bytes(os, &f);
 		}).otherwise([&]() {
@@ -88,7 +88,7 @@ namespace grace {
 		});
 	}
 	
-	bool BinaryArchive::read_node(ArchiveNode& n, const byte*& p, const byte *end, String &out_error) {
+	bool BinaryDocument::read_node(DocumentNode& n, const byte*& p, const byte *end, String &out_error) {
 		byte t;
 		if (!read_bytes(p, end, &t)) {
 			out_error = "Unexpected end of stream.";
@@ -119,11 +119,11 @@ namespace grace {
 					out_error = "Invalid array length (corrupt stream).";
 					return false;
 				}
-				ArchiveNode::ArrayType tmp(allocator());
+				DocumentNode::ArrayType tmp(allocator());
 				tmp.reserve(array_length);
 				n.internal_value() = move(tmp);
 				for (uint32 i = 0; i < array_length; ++i) {
-					ArchiveNode& node = n.array_push();
+					DocumentNode& node = n.array_push();
 					if (!read_node(node, p, end, out_error)) {
 						return false;
 					}
@@ -144,7 +144,7 @@ namespace grace {
 					}
 					StringRef key = StringRef(reinterpret_cast<const char*>(p), string_length);
 					p += string_length;
-					ArchiveNode& value = n[key];
+					DocumentNode& value = n[key];
 					if (!read_node(value, p, end, out_error)) {
 						return false;
 					}
@@ -152,7 +152,7 @@ namespace grace {
 				return true;
 			}
 			case NodeType::Integer: {
-				ArchiveNode::IntegerType integer_value;
+				DocumentNode::IntegerType integer_value;
 				if (!read_bytes(p, end, &integer_value)) {
 					out_error = "Invalid integer value (corrupt stream).";
 					return false;
@@ -161,7 +161,7 @@ namespace grace {
 				return true;
 			}
 			case NodeType::Float: {
-				ArchiveNode::FloatType float_value;
+				DocumentNode::FloatType float_value;
 				if (!read_bytes(p, end, &float_value)) {
 					out_error = "Invalid float value (corrupt stream).";
 					return false;
@@ -175,7 +175,7 @@ namespace grace {
 		}
 	}
 	
-	void BinaryArchive::write(OutputStream &os) const {
+	void BinaryDocument::write(OutputStream &os) const {
 		StringStream ss;
 		write_node(root(), os);
 		String data = ss.str();
@@ -184,7 +184,7 @@ namespace grace {
 		FormattedStream(os) << data;
 	}
 	
-	size_t BinaryArchive::read(InputStream& is, grace::String& out_error) {
+	size_t BinaryDocument::read(InputStream& is, grace::String& out_error) {
 		clear();
 		if (is.has_length()) {
 			size_t stream_length = is.length();
@@ -207,7 +207,7 @@ namespace grace {
 		return 0;
 	}
 	
-	bool BinaryArchive::can_parse(const byte* begin, const byte* end) const {
+	bool BinaryDocument::can_parse(const byte* begin, const byte* end) const {
 		uint32 stream_length;
 		const byte* p = begin;
 		if (!read_bytes(p, end, &stream_length)) {
