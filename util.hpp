@@ -37,6 +37,8 @@ namespace grace {
 	bool path_exists(StringRef path);
 	bool path_is_file(StringRef path);
 	bool path_is_directory(StringRef path);
+	String path_join(ArrayRef<const StringRef> components, IAllocator& alloc = default_allocator());
+	StringRef path_chomp(StringRef path);
 }
 
 

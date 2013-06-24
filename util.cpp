@@ -9,10 +9,12 @@
 #include "io/util.hpp"
 #include "base/string.hpp"
 #include "base/stack_array.hpp"
+#include "string_stream.hpp"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <limits.h>
 
 namespace grace {
 	bool path_is_directory(StringRef path) {
@@ -38,5 +40,29 @@ namespace grace {
 		COPY_STRING_REF_TO_CSTR_BUFFER(path_cstr, path);
 		int r = stat(path_cstr.data(), &s);
 		return r == 0;
+	}
+	
+#if defined(WIN32)
+	static const char PathSeparator = '\\';
+#else
+	static const char PathSeparator = '/';
+#endif
+	
+	String path_join(ArrayRef<const StringRef> components, IAllocator& alloc) {
+		StringStream ss(alloc);
+		for (size_t i = 0; i < components.size(); ++i) {
+			ss << path_chomp(components[i]);
+			if (i+1 != components.size()) {
+				ss << PathSeparator;
+			}
+		}
+		return ss.string(alloc);
+	}
+	
+	StringRef path_chomp(StringRef path) {
+		if (path.size() && path[path.size()-1] == PathSeparator) {
+			return substr(path, 0, -1);
+		}
+		return path;
 	}
 }
