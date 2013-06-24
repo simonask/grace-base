@@ -18,7 +18,7 @@ namespace grace {
 	bool path_is_directory(StringRef path) {
 		struct stat s;
 		COPY_STRING_REF_TO_CSTR_BUFFER(path_cstr, path);
-		int r = stat(path.data(), &s);
+		int r = stat(path_cstr.data(), &s);
 		if (r == 0)
 			return S_ISDIR(s.st_mode);
 		return false;
@@ -27,7 +27,7 @@ namespace grace {
 	bool path_is_file(StringRef path) {
 		struct stat s;
 		COPY_STRING_REF_TO_CSTR_BUFFER(path_cstr, path);
-		int r = stat(path.data(), &s);
+		int r = stat(path_cstr.data(), &s);
 		if (r == 0)
 			return !S_ISDIR(s.st_mode);
 		return false;
@@ -36,7 +36,7 @@ namespace grace {
 	bool path_exists(StringRef path) {
 		struct stat s;
 		COPY_STRING_REF_TO_CSTR_BUFFER(path_cstr, path);
-		int r = stat(path.data(), &s);
+		int r = stat(path_cstr.data(), &s);
 		return r == 0;
 	}
 }
