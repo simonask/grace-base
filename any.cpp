@@ -7,7 +7,7 @@
 //
 
 #include "base/any.hpp"
-#include "serialization/archive_node.hpp"
+#include "serialization/document_node.hpp"
 #include "type/array_type.hpp"
 #include "type/map_type.hpp"
 

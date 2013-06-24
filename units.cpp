@@ -11,7 +11,7 @@
 namespace grace {
 	DegreesType::DegreesType(IAllocator& alloc) : FloatType(alloc, GetTypeInfo<Degrees>::Value, "Degrees", sizeof(Degrees)) {}
 	
-	void DegreesType::deserialize_raw(byte *place, const ArchiveNode &node, IUniverse& u) const {
+	void DegreesType::deserialize_raw(byte *place, const DocumentNode &node, IUniverse& u) const {
 		float32 fval;
 		FloatType::deserialize_raw(reinterpret_cast<byte*>(&fval), node, u);
 		Degrees* d = reinterpret_cast<Degrees*>(place);
@@ -25,7 +25,7 @@ namespace grace {
 	
 	RadiansType::RadiansType(IAllocator& alloc) : FloatType(alloc, GetTypeInfo<Radians>::Value, "Radians", sizeof(Radians)) {}
 	
-	void RadiansType::deserialize_raw(byte *place, const ArchiveNode &node, IUniverse& u) const {
+	void RadiansType::deserialize_raw(byte *place, const DocumentNode &node, IUniverse& u) const {
 		float32 fval;
 		FloatType::deserialize_raw(reinterpret_cast<byte*>(&fval), node, u);
 		Radians* d = reinterpret_cast<Radians*>(place);

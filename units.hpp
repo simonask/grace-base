@@ -93,11 +93,11 @@ namespace grace {
 	
 	struct DegreesType : FloatType {
 		DegreesType(IAllocator& alloc);
-		void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
+		void deserialize_raw(byte* place, const DocumentNode& node, IUniverse&) const override;
 	};
 	struct RadiansType : FloatType {
 		RadiansType(IAllocator& alloc);
-		void deserialize_raw(byte* place, const ArchiveNode& node, IUniverse&) const override;
+		void deserialize_raw(byte* place, const DocumentNode& node, IUniverse&) const override;
 	};
 	
 	template <> struct BuildTypeInfo<Degrees> {
