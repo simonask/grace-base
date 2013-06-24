@@ -12,7 +12,7 @@
 
 namespace grace {
 	namespace {
-		enum NodeType : uint8 {
+		enum class NodeType : uint8 {
 			Empty,
 			Array,
 			Map,
@@ -53,83 +53,51 @@ namespace grace {
 		}
 	}
 	
-	void BinaryArchiveNode::write(OutputStream& os) const {
-		NodeType t;
-		if (is_empty()) {
-			t = NodeType::Empty;
-		} else if (is_string()) {
-			t = NodeType::String;
-		} else if (is_array()) {
-			t = NodeType::Array;
-		} else if (is_map()) {
-			t = NodeType::Map;
-		} else if (is_integer()) {
-			t = NodeType::Integer;
-		} else if (is_float()) {
-			t = NodeType::Float;
-		} else {
-			ASSERT(false); // Invalid node!
-		}
-		
-		ASSERT(t <= UINT8_MAX);
-		write_byte(os, (byte)t);
-		switch (t) {
-			case NodeType::Empty: { break; }
-			case NodeType::String: {
-				value_.when<StringType>([&](const StringType& string_value) {
-					uint32 string_length = (uint32)string_value.size();
-					write_bytes(os, &string_length);
-					write_bytes(os, string_value.data(), string_length);
-				});
-				break;
+	void BinaryArchive::write_node(const ArchiveNode& n, OutputStream& os) const {
+		n.when<ArchiveNode::StringType>([&](const ArchiveNode::StringType& str) {
+			write_byte(os, (byte)NodeType::String);
+			uint32 string_length = (uint32)str.size();
+			write_bytes(os, &string_length);
+			write_bytes(os, str.data(), string_length);
+		}).when<ArchiveNode::ArrayType>([&](const ArchiveNode::ArrayType& arr) {
+			write_byte(os, (byte)NodeType::Array);
+			uint32 array_length = arr.size();
+			write_bytes(os, &array_length);
+			for (auto it: arr) {
+				write_node(*it, os);
 			}
-			case NodeType::Array: {
-				value_.when<ArrayType>([&](const ArrayType& array) {
-					uint32 array_length = array.size();
-					write_bytes(os, &array_length);
-					for (auto it: array) {
-						((BinaryArchiveNode*)it)->write(os);
-					}
-				});
-				break;
+		}).when<ArchiveNode::MapType>([&](const ArchiveNode::MapType& map) {
+			write_byte(os, (byte)NodeType::Map);
+			uint32 map_length = (uint32)map.size();
+			write_bytes(os, &map_length);
+			for (auto it: map) {
+				uint32_t string_length = (uint32)it.first.size();
+				write_bytes(os, &string_length);
+				write_bytes(os, it.first.data(), string_length);
+				write_node(*it.second, os);
 			}
-			case NodeType::Map: {
-				value_.when<MapType>([&](const MapType& map) {
-					uint32 map_length = (uint32)map.size();
-					write_bytes(os, &map_length);
-					for (auto it: map) {
-						uint32_t string_length = (uint32)it.first.size();
-						write_bytes(os, &string_length);
-						write_bytes(os, it.first.data(), string_length);
-						((BinaryArchiveNode*)it.second)->write(os);
-					}
-				});
-				break;
-			}
-			case NodeType::Integer: {
-				value_.when<IntegerType>([&](const IntegerType& n) {
-					write_bytes(os, &n);
-				});
-				break;
-			}
-			case NodeType::Float: {
-				value_.when<FloatType>([&](const FloatType& f) {
-					write_bytes(os, &f);
-				});
-				break;
-			}
-		}
+		}).when<ArchiveNode::IntegerType>([&](ArchiveNode::IntegerType n) {
+			write_byte(os, (byte)NodeType::Integer);
+			write_bytes(os, &n);
+		}).when<ArchiveNode::FloatType>([&](ArchiveNode::FloatType f) {
+			write_byte(os, (byte)NodeType::Float);
+			write_bytes(os, &f);
+		}).otherwise([&]() {
+			ASSERT(n.is_empty()); // Invalid node type!
+			write_byte(os, (byte)NodeType::Empty);
+		});
 	}
 	
-	bool BinaryArchiveNode::read(const byte*& p, const byte *end, grace::String &out_error) {
-		byte type;
-		if (!read_bytes(p, end, &type)) {
+	bool BinaryArchive::read_node(ArchiveNode& n, const byte*& p, const byte *end, String &out_error) {
+		byte t;
+		if (!read_bytes(p, end, &t)) {
 			out_error = "Unexpected end of stream.";
 			return false;
 		}
+		NodeType type = (NodeType)t;
 		
 		switch (type) {
-			case NodeType::Empty: { clear(); return true; }
+			case NodeType::Empty: { n.clear(); return true; }
 			case NodeType::String: {
 				uint32 string_length;
 				if (!read_bytes(p, end, &string_length)) {
@@ -140,7 +108,8 @@ namespace grace {
 					out_error = "Unexpected end of stream (corrupt string length).";
 					return false;
 				}
-				value_ = StringType(reinterpret_cast<const char*>(p), string_length, allocator());
+				StringRef str(reinterpret_cast<const char*>(p), string_length);
+				n << str;
 				p += string_length;
 				return true;
 			}
@@ -150,12 +119,12 @@ namespace grace {
 					out_error = "Invalid array length (corrupt stream).";
 					return false;
 				}
-				ArrayType tmp(allocator());
+				ArchiveNode::ArrayType tmp(allocator());
 				tmp.reserve(array_length);
-				value_ = move(tmp);
+				n.internal_value() = move(tmp);
 				for (uint32 i = 0; i < array_length; ++i) {
-					BinaryArchiveNode& node = static_cast<BinaryArchiveNode&>(array_push());
-					if (!node.read(p, end, out_error)) {
+					ArchiveNode& node = n.array_push();
+					if (!read_node(node, p, end, out_error)) {
 						return false;
 					}
 				}
@@ -175,29 +144,29 @@ namespace grace {
 					}
 					StringRef key = StringRef(reinterpret_cast<const char*>(p), string_length);
 					p += string_length;
-					BinaryArchiveNode& value = static_cast<BinaryArchiveNode&>((*this)[key]);
-					if (!value.read(p, end, out_error)) {
+					ArchiveNode& value = n[key];
+					if (!read_node(value, p, end, out_error)) {
 						return false;
 					}
 				}
 				return true;
 			}
 			case NodeType::Integer: {
-				IntegerType integer_value;
+				ArchiveNode::IntegerType integer_value;
 				if (!read_bytes(p, end, &integer_value)) {
 					out_error = "Invalid integer value (corrupt stream).";
 					return false;
 				}
-				*this << integer_value;
+				n << integer_value;
 				return true;
 			}
 			case NodeType::Float: {
-				FloatType float_value;
+				ArchiveNode::FloatType float_value;
 				if (!read_bytes(p, end, &float_value)) {
 					out_error = "Invalid float value (corrupt stream).";
 					return false;
 				}
-				*this << float_value;
+				n << float_value;
 				return true;
 			}
 			default:
@@ -206,14 +175,10 @@ namespace grace {
 		}
 	}
 	
-	BinaryArchive::BinaryArchive(IAllocator& alloc) : Archive(alloc), root_(*this), empty_(*this), nodes_(alloc) {
-		clear();
-	}
-	
 	void BinaryArchive::write(OutputStream &os) const {
 		StringStream ss;
-		root_.write(ss);
-		grace::String data = ss.str();
+		write_node(root(), os);
+		String data = ss.str();
 		uint32 stream_length = (uint32)data.size();
 		write_bytes(os, &stream_length);
 		FormattedStream(os) << data;
@@ -232,7 +197,7 @@ namespace grace {
 				return 0;
 			}
 			
-			if (!root_.read(p, end, out_error)) {
+			if (!read_node(root(), p, end, out_error)) {
 				clear();
 				return 0;
 			}
@@ -250,16 +215,4 @@ namespace grace {
 		}
 		return (end - p) >= stream_length;
 	}
-	
-	void BinaryArchive::clear() {
-		nodes_.clear();
-		root_.clear();
-	}
-	
-	BinaryArchiveNode* BinaryArchive::make_internal() {
-		BinaryArchiveNode* node = nodes_.allocate(*this);
-		return node;
-	}
-	
-	
 }

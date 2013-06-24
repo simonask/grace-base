@@ -91,8 +91,6 @@ struct ArchiveNode {
 	ArchiveNode& array_push(); // in-place array construction
 	size_t array_size() const;
 	
-	
-	virtual ~ArchiveNode() {}
 	Archive& archive() const { return archive_; }
 	IAllocator& allocator() const;
 	
@@ -115,13 +113,19 @@ struct ArchiveNode {
 		return value_.when<T>(std::forward<Args>(args)...);
 	}
 	
+	template <typename F>
+	void walk(F callback);
+	template <typename F>
+	void walk(F callback) const;
+	
 	InternalValueType& internal_value() { return value_; }
 	const InternalValueType& internal_value() const { return value_; }
-protected:
-	explicit ArchiveNode(Archive& archive) : archive_(archive) {}
 	
+	explicit ArchiveNode(Archive& archive) : archive_(archive) {}
+protected:
 	void dump(FormattedStream& os, int indent) const;
 protected:
+	friend struct Archive;
 	Archive& archive_;
 	InternalValueType value_ = InternalValueType(Nothing);
 	
@@ -319,6 +323,16 @@ struct BuildTypeInfo<ArchiveNode*> {
 				f(*element);
 			}
 		});
+	}
+	
+	template <typename F>
+	void ArchiveNode::walk(F callback) {
+		value_.visit(callback);
+	}
+	
+	template <typename F>
+	void ArchiveNode::walk(F callback) const {
+		value_.visit(callback);
 	}
 	
 	void dump_archive_node_to_stdout(const ArchiveNode& node);

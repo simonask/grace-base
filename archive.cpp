@@ -14,4 +14,13 @@ namespace grace {
 	const ArchiveNode& Archive::operator[](StringRef key) const {
 		return root()[key];
 	}
+	
+	ArchiveNode* Archive::make() {
+		return nodes_.allocate(*this);
+	}
+	
+	void Archive::clear() {
+		nodes_.clear();
+		root_.clear();
+	}
 }

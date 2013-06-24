@@ -271,10 +271,6 @@ namespace grace {
 		int yaml_write_handler_t(void *data, unsigned char *buffer, size_t size);
 	}
 	
-	YAMLArchive::YAMLArchive(IAllocator& alloc) : Archive(alloc), root_(nullptr), empty_(*this), nodes_(alloc) {
-		clear();
-	}
-	
 	void YAMLArchive::write(OutputStream& os) const {
 		yaml_emitter_t emitter;
 		yaml_emitter_initialize(&emitter);
@@ -288,7 +284,7 @@ namespace grace {
 		yaml_document_start_event_initialize(&event, nullptr, nullptr, nullptr, true);
 		yaml_emitter_emit(&emitter, &event);
 		
-		emitter_state.serialize(root_ ? root_ : &empty_);
+		emitter_state.serialize(&root());
 		
 		yaml_document_end_event_initialize(&event, true);
 		yaml_emitter_emit(&emitter, &event);
@@ -361,7 +357,7 @@ namespace grace {
 			if (!state.root()->is_map()) {
 				root().internal_value() = Dictionary<ArchiveNode*>({{"yaml_document", state.root()}}, root().allocator());
 			} else {
-				root_ = (YAMLArchiveNode*)state.root();
+				root().internal_value() = move(state.root()->internal_value());
 			}
 		} else {
 			out_error = "YAML: Unknown error occurred during parsing.";
@@ -380,14 +376,5 @@ namespace grace {
 			return true;
 		}
 		return false;
-	}
-	
-	void YAMLArchive::clear() {
-		nodes_.clear();
-		root_ = nullptr;
-	}
-	
-	YAMLArchiveNode* YAMLArchive::make_internal() {
-		return nodes_.allocate(*this);
 	}
 }
