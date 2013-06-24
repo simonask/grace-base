@@ -10,6 +10,7 @@
 #include "base/log.hpp"
 #include "io/resource_loader.hpp"
 #include "base/fiber.hpp"
+#include "io/archive.hpp"
 
 #include "base/string.hpp"
 
@@ -52,6 +53,7 @@ namespace grace {
 	
 	struct ResourceManager::Impl {
 		String resource_path;
+		Array<UniquePtr<IArchive>> archives;
 		Map<ResourceID, Resource*> resource_cache;
 		Map<ResourceLoaderID, ResourceLoaderBase*> resource_loaders;
 		bool is_in_resource_loader_fiber = false;
@@ -71,10 +73,7 @@ namespace grace {
 			Warning() << "Resource path already initialized!";
 		}
 		impl().resource_path = path_to_resources;
-		
-		if (impl().resource_path.back() != '/') { // TODO: Win32?
-			impl().resource_path = impl().resource_path + '/';
-		}
+		impl().archives.push_back(make_unique<PathArchive>(default_allocator(), path_to_resources));
 	}
 	
 	Resource* ResourceManager::load_resource_in_fiber(ResourceLoaderID lid, ResourceID rid) {
@@ -121,19 +120,27 @@ namespace grace {
 		
 		// TODO: Consider derived resources.
 		
-		String path = path_for_resource(rid);
-		InputFileStream f = InputFileStream::open(path);
-		if (f.is_open()) {
+		String archive_debug_path;
+		UniquePtr<InputStream> is;
+		for (auto& archive: impl().archives) {
+			if (archive->contains(rid)) {
+				archive_debug_path = archive->debug_path(rid);
+				is = archive->open(rid);
+				break;
+			}
+		}
+		
+		if (is) {
 			Resource* resource = loader->allocate();
 			resource->id_ = rid;
-			if (loader->load_resource(resource, f)) {
+			if (loader->load_resource(resource, *is)) {
 				impl().resource_cache[rid] = resource;
 				Debug() << "Loaded resource: " << rid;
 				return resource;
 			}
 			loader->free(resource);
 		} else {
-			Error() << "Could not open file: " << path;
+			Error() << "Could not open file: " << archive_debug_path;
 		}
 		return nullptr;
 	}
