@@ -39,6 +39,7 @@ namespace grace {
 	bool path_is_directory(StringRef path);
 	String path_join(ArrayRef<const StringRef> components, IAllocator& alloc = default_allocator());
 	StringRef path_chomp(StringRef path);
+	String path_absolute(StringRef relpath, IAllocator& alloc = default_allocator());
 }
 
 

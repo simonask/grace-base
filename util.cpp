@@ -65,4 +65,11 @@ namespace grace {
 		}
 		return path;
 	}
+	
+	String path_absolute(StringRef relpath, IAllocator& alloc) {
+		char buffer[PATH_MAX];
+		COPY_STRING_REF_TO_CSTR_BUFFER(relpath_cstr, relpath);
+		char* str = realpath(relpath_cstr.data(), buffer);
+		return String(str, alloc);
+	}
 }

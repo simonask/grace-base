@@ -73,7 +73,7 @@ namespace grace {
 			Warning() << "Resource path already initialized!";
 		}
 		impl().resource_path = path_to_resources;
-		impl().archives.push_back(make_unique<PathArchive>(default_allocator(), path_to_resources));
+		add_archive(make_unique<PathArchive>(static_allocator(), path_to_resources));
 	}
 	
 	Resource* ResourceManager::load_resource_in_fiber(ResourceLoaderID lid, ResourceID rid) {
@@ -140,7 +140,7 @@ namespace grace {
 			}
 			loader->free(resource);
 		} else {
-			Error() << "Could not open file: " << archive_debug_path;
+			Error() << "Could not open file: " << rid;
 		}
 		return nullptr;
 	}
@@ -165,6 +165,10 @@ namespace grace {
 		}
 #endif
 		impl().resource_loaders[lid] = loader;
+	}
+	
+	void ResourceManager::add_archive(UniquePtr<IArchive> archive) {
+		impl().archives.push_back(move(archive));
 	}
 	
 	InputStream* ResourceManager::create_reader_for_resource_id(IAllocator& alloc, ResourceID rid) {

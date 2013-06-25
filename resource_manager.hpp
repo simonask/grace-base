@@ -17,6 +17,7 @@
 
 namespace grace {
 	typedef uintptr_t ResourceLoaderID;
+	struct IArchive;
 	
 	template <typename ResourceType>
 	struct ResourceLoaderIDHolder {
@@ -45,6 +46,8 @@ namespace grace {
 			ResourceLoaderID lid = get_loader_id_for_type<ResourceType>();
 			add_loader(lid, new_static ResourceLoaderType);
 		}
+		
+		static void add_archive(UniquePtr<IArchive> archive);
 		
 		static void garbage_collect();
 		static void clear();
