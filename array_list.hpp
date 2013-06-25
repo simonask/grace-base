@@ -31,6 +31,7 @@ namespace grace {
         IAllocator& allocator() const;
         
         size_t size() const;
+		void reserve(size_t) {}
 		bool operator==(const ArrayList<T>& other) const;
 		bool operator!=(const ArrayList<T>& other) const;
         
