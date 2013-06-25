@@ -20,7 +20,7 @@
 #include <mach/mach_time.h>
 #endif
 
-#define USE_HIGH_PRECISION_CLOCK 1
+#define USE_HIGH_PRECISION_CLOCK 0
 
 namespace grace {
 	template struct Time<Timeline::System>;
@@ -59,7 +59,7 @@ namespace grace {
 	}
 	
 	SystemTime system_now() {
-#if defined(USE_HIGH_PRECISION_CLOCK)
+#if USE_HIGH_PRECISION_CLOCK
 		struct timespec ts;
 #  if defined(__MACH__)
 		clock_serv_t cclock;
