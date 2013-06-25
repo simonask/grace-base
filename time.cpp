@@ -58,6 +58,15 @@ namespace grace {
 		stream << pad_or_truncate(tm.tm_sec, 2, '0', true);
 	}
 	
+	void write_date_to_stream(FormattedStream& stream, SystemTime time) {
+		struct tm tm;
+		time_t seconds = (time_t)time.seconds_since_epoch();
+		localtime_r(&seconds, &tm);
+		char buffer[128];
+		strftime(buffer, 128, "%F %T", &tm);
+		stream << buffer;
+	}
+	
 	SystemTime system_now() {
 #if USE_HIGH_PRECISION_CLOCK
 		struct timespec ts;
