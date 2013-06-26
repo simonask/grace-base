@@ -177,7 +177,7 @@ namespace grace {
 	
 	void BinaryDocument::write(OutputStream &os) const {
 		StringStream ss;
-		write_node(root(), os);
+		write_node(root(), ss);
 		String data = ss.str();
 		uint32 stream_length = (uint32)data.size();
 		write_bytes(os, &stream_length);
