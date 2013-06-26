@@ -12,7 +12,7 @@ namespace grace {
 	struct VertexType;
 	struct EnumType;
 
-class TypeRegistry {
+class DLL_PUBLIC TypeRegistry {
 public:
 	template <typename T>
 	static void add();
@@ -31,7 +31,7 @@ public:
 private:
 	TypeRegistry();
 	struct Impl;
-	static Impl* impl();
+	static DLL_PUBLIC Impl* impl();
 };
 
 template <typename T>

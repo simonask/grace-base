@@ -13,8 +13,8 @@ struct TypeRegistry::Impl {
 };
 
 TypeRegistry::Impl* TypeRegistry::impl() {
-	static Impl* i = new_static Impl;
-	return i;
+	static Impl* ptr = new_static Impl;
+	return ptr;
 }
 
 void TypeRegistry::clear() {
