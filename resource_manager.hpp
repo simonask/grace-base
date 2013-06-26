@@ -20,7 +20,7 @@ namespace grace {
 	struct IArchive;
 	
 	template <typename ResourceType>
-	struct ResourceLoaderIDHolder {
+	struct DLL_PUBLIC ResourceLoaderIDHolder {
 	};
 	
 	template <typename ResourceType>
@@ -29,7 +29,7 @@ namespace grace {
 		return reinterpret_cast<ResourceLoaderID>(holder);
 	}
 	
-	class ResourceManager {
+	class DLL_PUBLIC ResourceManager {
 	public:
 		static void initialize_with_path(StringRef path_to_resources);
 		static IAllocator& allocator();
