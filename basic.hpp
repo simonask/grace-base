@@ -282,10 +282,21 @@ auto linear_search(Container& container, const ComparableValue& value)
 //#endif
 
 #if defined(__GNUC__)
-#define DLL_PUBLIC __attribute__((visibility("default")))
-#define DLL_LOCAL __attribute__((visibility("hidden")))
-#else
-#error Compiler unsupported.
+#  if defined(SHARED_LIBRARY)
+#    define DLL_PUBLIC __attribute__((visibility("default")))
+#    define DLL_LOCAL  __attribute__((visibility("hidden")))
+#  else
+#    define DLL_PUBLIC 
+#    define DLL_LOCAL  __attribute__((visibility("default")))
+#  endif
+#elif defined(_MSC_VER)
+#  if defined(SHARED_LIBRARY)
+#    define DLL_PUBLIC __declspec((dllexport))
+#    define DLL_LOCAL
+#  else
+#    define DLL_PUBLIC __declspec((dllimport))
+#    define DLL_LOCAL
+#  endif
 #endif
 
 
