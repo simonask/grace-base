@@ -23,7 +23,7 @@ namespace grace {
 		template <size_t N>
 		constexpr StringRef(const char(&data)[N]) : begin_(data), end_(data + N - 1) { }
 		constexpr StringRef(const char* begin, const char* end) : begin_(begin), end_(end) { /*ASSERT(begin_ <= end_);*/ }
-		StringRef(const char* utf8) : begin_(utf8), end_(utf8 + strlen(utf8)) {}
+		StringRef(const char* utf8) : begin_(utf8), end_(utf8 ? utf8 + strlen(utf8) : utf8) {}
 		StringRef(const char* utf8, size_t len) : begin_(utf8), end_(utf8 + len) {}
 		constexpr StringRef(const ArrayRef<char>& array) : begin_(array.data()), end_(array.data() + array.size()) {}
 		StringRef(const StringRef& other) = default;
