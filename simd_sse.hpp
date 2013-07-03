@@ -68,46 +68,46 @@ namespace grace {
 #pragma mark Unaligned Load
 		template <typename M> struct UnalignedLoad;
 		template <> struct UnalignedLoad<M128<float32,__m128>> {
-			void operator()(__m128& dst, const float32* p) {
+			ALWAYS_INLINE void operator()(__m128& dst, const float32* p) {
 				dst = _mm_loadu_ps(p);
 			}
 		};
 		
 		template <typename T>
 		struct UnalignedLoad<M128<T,__m128i>> {
-			void operator()(__m128i& dst, const T* p) {
+			ALWAYS_INLINE void operator()(__m128i& dst, const T* p) {
 				dst = _mm_loadu_si128(reinterpret_cast<const __m128i*>(p));
 			}
 		};
 		template <> struct UnalignedLoad<M128<float64,__m128d>> {
-			void operator()(__m128d& dst, const float64* p) {
+			ALWAYS_INLINE void operator()(__m128d& dst, const float64* p) {
 				dst = _mm_loadu_pd(p);
 			}
 		};
 		template <typename M>
-		void unaligned_load(M& dst, const typename M::ElementType* p) {
+		ALWAYS_INLINE void unaligned_load(M& dst, const typename M::ElementType* p) {
 			UnalignedLoad<M>()(dst, p);
 		}
 		
 #pragma mark Aligned Load
 		template <typename M> struct AlignedLoad;
 		template <> struct AlignedLoad<M128<float32, __m128>> {
-			void operator()(__m128& dst, const float32* p) {
+			ALWAYS_INLINE void operator()(__m128& dst, const float32* p) {
 				dst = _mm_load_ps(p);
 			}
 		};
 		template <typename T> struct AlignedLoad<M128<T, __m128i>> {
-			void operator()(__m128i& dst, const T* p) {
+			ALWAYS_INLINE void operator()(__m128i& dst, const T* p) {
 				dst = _mm_load_si128(reinterpret_cast<const __m128i*>(p));
 			}
 		};
 		template <> struct AlignedLoad<M128<float64, __m128d>> {
-			void operator()(__m128d& dst, const float64* p) {
+			ALWAYS_INLINE void operator()(__m128d& dst, const float64* p) {
 				dst = _mm_load_pd(p);
 			}
 		};
 		template <typename M>
-		void aligned_load(M& dst, const typename M::ElementType* p) {
+		ALWAYS_INLINE void aligned_load(M& dst, const typename M::ElementType* p) {
 			AlignedLoad<M>()(dst.v, p);
 		}
 
