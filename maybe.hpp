@@ -62,15 +62,16 @@ public:
 		return MaybeIfImpl<const Maybe<T>, decltype(functor(infer_value_type()))>::maybe_if(*this, functor);
 	}
 #endif
+	
+	T& operator*() { ASSERT(is_set()); return *get(); }
+	const T& operator*() const { ASSERT(is_set()); return *get(); }
+	T* operator->() { ASSERT(is_set()); return get(); }
+	const T* operator->() const { ASSERT(is_set()); return get(); }
 private:
 	template <typename M, typename ReturnType> friend struct MaybeIfImpl;
 	
 	const T* get() const { return is_set() ? memory() : nullptr; }
 	T* get() { return is_set() ? memory() : nullptr; }
-	T* operator->() { return get(); }
-	const T* operator->() const { return get(); }
-	T& operator*() { return *get(); }
-	const T& operator*() const { return *get(); }
 	
 	static const size_t StorageSize = sizeof(T) + 1; // T + is_set byte
 	static const size_t Alignment = std::alignment_of<T>::value;
@@ -276,14 +277,6 @@ struct MaybeIfImpl {
 		return ResultType();
 	}
 };
-
-
-template <typename M, typename Functor>
-auto maybe_if(M& m, Functor function)
--> typename MaybeIfImpl<M, decltype(function(m.infer_value_type()))>::ResultType
-{
-	return MaybeIfImpl<M, decltype(function(m.infer_value_type()))>::maybe_if(m, function);
-}
 
 template <typename M, typename Functor>
 auto maybe_if(M& m, Functor function)
