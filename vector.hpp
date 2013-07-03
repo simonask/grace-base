@@ -676,6 +676,17 @@ namespace grace {
 		return simd::max(a.m, b.m);
 #endif
 	}
+	
+	template <typename T> struct Unaligned;
+	template <typename T, size_t N> struct ALIGNED(alignof(T)) Unaligned<TVector<T, N>> {
+		using V = TVector<T,N>;
+		Unaligned() {}
+		ALWAYS_INLINE Unaligned(V v) { memcpy(data, v.v, sizeof(T)*N); }
+		ALWAYS_INLINE operator V() const { return V(data); }
+		ALWAYS_INLINE Unaligned<V>& operator=(V v) { memcpy(data, v.v, sizeof(T)*N); }
+	private:
+		T data[N];
+	};
 }
 
 
