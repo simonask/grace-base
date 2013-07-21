@@ -144,8 +144,10 @@ namespace grace {
 	// TODO: Use delegating constructor when available.
 	inline Any::Any(const Any& other) : allocator_(other.allocator_) {
 		assign(other);
-		allocate_storage();
-		stored_type_->copy_construct(ptr(), other.ptr());
+		if (stored_type_ != nullptr) {
+			allocate_storage();
+			stored_type_->copy_construct(ptr(), other.ptr());
+		}
 	}
 	
 	// TODO: Use delegating constructor when available.
