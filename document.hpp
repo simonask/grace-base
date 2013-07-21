@@ -42,7 +42,7 @@ namespace grace {
 		const DocumentNode& empty() const final { return empty_; }
 		DocumentNode* make() override;
 		void clear() override;
-	protected:
+		
 		Document(IAllocator& alloc) : allocator_(alloc), root_(*this), empty_(*this) {}
 		Document(Document&&) = delete;
 	private:
@@ -50,6 +50,14 @@ namespace grace {
 		DocumentNode root_;
 		const DocumentNode empty_;
 		ContainedBag<DocumentNode> nodes_;
+	};
+	
+	struct MemoryDocument : Document {
+	public:
+		MemoryDocument(IAllocator& alloc) : Document(alloc) {}
+		
+		void write(OutputStream& os) const final { ASSERT(false); }
+		size_t read(InputStream& is, String& out_error) final { ASSERT(false); }
 	};
 
 }
