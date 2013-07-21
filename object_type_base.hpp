@@ -20,6 +20,7 @@ namespace grace {
 		StringRef name() const override { return name_; }
 		StringRef description() const { return description_; }
 		const StructuredType* super() const final;
+		IAllocator& allocator() const { return name_.allocator(); }
 		
 		template <typename T, typename R, typename... Args>
 		const SlotForTypeWithSignature<T,R,Args...>* find_slot_for_method(typename GetMemberFunctionPointerType<T, R, Args...>::Type method) const {

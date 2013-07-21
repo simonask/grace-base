@@ -24,6 +24,8 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 		, lists_(alloc)
 		{}
 	
+	const ReferenceType* reference_type() const { return get_type<ObjectPtr<T>>(); }
+	
 	void construct(byte* place, IUniverse& universe) const {
 		TypeFor<T,ObjectTypeBase>::construct(place, universe);
 		Object* p = reinterpret_cast<Object*>(place);
