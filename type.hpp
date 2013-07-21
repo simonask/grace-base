@@ -33,6 +33,7 @@ struct IType {
 	virtual bool is_copy_constructible() const = 0;
 	virtual bool is_move_constructible() const = 0;
 	virtual bool deferred_instantiation() const = 0;
+	virtual const TypeInfo* type_info() const = 0;
 };
 
 struct Type : public IType {
@@ -47,6 +48,7 @@ public:
 	bool is_copy_constructible() const override { return type_info_.is_copy_constructible(); }
 	bool is_move_constructible() const override { return type_info_.is_move_constructible(); }
 	bool deferred_instantiation() const override { return false; }
+	const TypeInfo* type_info() const final { return &type_info_; }
 protected:
 	const TypeInfo& type_info_;
 	Type(const TypeInfo& type_info) : type_info_(type_info) {}
