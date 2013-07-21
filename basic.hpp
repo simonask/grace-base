@@ -33,6 +33,8 @@ static const struct NothingType { NothingType() {} } Nothing;
 using NullPtr = std::nullptr_t;
 
 using std::move;
+using std::begin;
+using std::end;
 
 template <typename T, typename NameGetter>
 struct HasMember {
