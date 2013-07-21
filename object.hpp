@@ -17,7 +17,7 @@ template <typename T> struct ObjectType;
 #define REFLECT \
 	public: \
 		static const bool has_reflection__ = true; \
-		typedef ObjectTypeBase TypeInfoType; \
+		using TypeInfoType = grace::ObjectTypeBase; \
 		static const TypeInfoType* build_type_info__()
 
 template <typename T> const Type* build_type_info(); // Only used for non-reflected types.
