@@ -20,28 +20,17 @@ namespace grace {
 	struct IUniverse;
 	struct InputStream;
 	struct OutputStream;
-	
-	struct IDocument {
-		virtual void write(OutputStream& os) const = 0;
-		virtual size_t read(InputStream& is, String& out_error) = 0;
-		virtual IAllocator& allocator() const = 0;
-		virtual DocumentNode& root() = 0;
-		virtual const DocumentNode& root() const = 0;
-		virtual const DocumentNode& empty() const = 0;
-		virtual DocumentNode* make() = 0;
-		virtual void clear() = 0;
-	};
 
-	struct Document : IDocument {
+	struct Document {
 		const DocumentNode& operator[](StringRef key) const;
 		DocumentNode& operator[](StringRef key);
 	
-		IAllocator& allocator() const final { return allocator_; }
-		DocumentNode& root() final { return root_; }
-		const DocumentNode& root() const final { return root_; }
-		const DocumentNode& empty() const final { return empty_; }
-		DocumentNode* make() override;
-		void clear() override;
+		IAllocator& allocator() const { return allocator_; }
+		DocumentNode& root() { return root_; }
+		const DocumentNode& root() const { return root_; }
+		const DocumentNode& empty() const { return empty_; }
+		DocumentNode* make();
+		void clear();
 		
 		Document(IAllocator& alloc) : allocator_(alloc), root_(*this), empty_(*this) {}
 		Document(Document&&) = delete;
@@ -56,8 +45,8 @@ namespace grace {
 	public:
 		MemoryDocument(IAllocator& alloc) : Document(alloc) {}
 		
-		void write(OutputStream& os) const final { ASSERT(false); }
-		size_t read(InputStream& is, String& out_error) final { ASSERT(false); }
+		void write(OutputStream& os) const { ASSERT(false); }
+		size_t read(InputStream& is, String& out_error) { ASSERT(false); }
 	};
 
 }

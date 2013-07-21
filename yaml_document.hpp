@@ -14,8 +14,8 @@
 namespace grace {
 	struct YAMLDocument : public Document {
 		explicit YAMLDocument(IAllocator& alloc = default_allocator()) : Document(alloc) {}
-		void write(OutputStream& os) const override;
-		size_t read(InputStream& is, String& out_error) override;
+		void write(OutputStream& os) const;
+		size_t read(InputStream& is, String& out_error);
 		bool can_parse(const byte* begin, const byte* end) const;
 	};
 }

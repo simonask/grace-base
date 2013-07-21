@@ -18,8 +18,8 @@ namespace grace {
 	struct BinaryDocument : Document {
 		explicit BinaryDocument(IAllocator& alloc = default_allocator()) : Document(alloc) {}
 		BinaryDocument(BinaryDocument&& other) = delete;
-		void write(OutputStream& os) const override;
-		size_t read(InputStream& is, String& out_error) override;
+		void write(OutputStream& os) const;
+		size_t read(InputStream& is, String& out_error);
 		bool can_parse(const byte* begin, const byte* end) const;
 	private:
 		void write_node(const DocumentNode&, OutputStream& os) const;

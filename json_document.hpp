@@ -10,8 +10,8 @@
 
 namespace grace {
 struct JSONDocument : Document {
-	void write(OutputStream& os) const override;
-	size_t read(InputStream& is, String& out_error) override;
+	void write(OutputStream& os) const;
+	size_t read(InputStream& is, String& out_error);
 private:
 	void write_node(const DocumentNode&, OutputStream& os, bool print_inline, int indent) const;
 	bool read_node(DocumentNode&, const byte*& p, const byte* end, String& out_error);
