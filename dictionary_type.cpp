@@ -10,7 +10,7 @@
 #include "io/string_stream.hpp"
 
 namespace grace {
-	String build_dictionary_type_name(IAllocator& alloc, const Type* value_type) {
+	String build_dictionary_type_name(IAllocator& alloc, const IType* value_type) {
 		StringStream ss;
 		ss << "Dictionary<" << value_type->name() << ">";
 		return ss.string(alloc);

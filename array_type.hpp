@@ -12,8 +12,8 @@ struct IArrayWriter;
 struct ArrayType : DerivedType {
 public:
 	virtual bool is_variable_length() const = 0;
-	virtual const Type* element_type() const = 0;
-	const Type* type_of_element(size_t idx) const { return element_type(); }
+	virtual const IType* element_type() const = 0;
+	const IType* type_of_element(size_t idx) const { return element_type(); }
 protected:
 	ArrayType(const TypeInfo& ti) : DerivedType(ti) {}
 	
@@ -21,7 +21,7 @@ protected:
 	void serialize_array(IArrayReader&, DocumentNode&, IUniverse&) const;
 };
 
-String build_variable_length_array_type_name(IAllocator& alloc, StringRef base_container_name, const Type* element_type);
+String build_variable_length_array_type_name(IAllocator& alloc, StringRef base_container_name, const IType* element_type);
 
 template <typename Container>
 struct VariableLengthArrayType : TypeFor<Container, ArrayType> {
@@ -36,7 +36,7 @@ public:
 	
 	StringRef name() const { return name_; }
 	bool is_variable_length() const { return true; }
-	const Type* element_type() const { return get_type<ElementType>(); }
+	const IType* element_type() const { return get_type<ElementType>(); }
 private:
 	String name_;
 };

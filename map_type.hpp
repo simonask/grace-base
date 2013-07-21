@@ -17,8 +17,8 @@ namespace grace {
 	struct IMapWriter;
 
 	struct MapType : public Type {
-		virtual const Type* key_type() const = 0;
-		virtual const Type* value_type() const = 0;
+		virtual const IType* key_type() const = 0;
+		virtual const IType* value_type() const = 0;
 		StringRef name() const override { return name_; }
 	protected:
 		MapType(const TypeInfo& ti, IAllocator& alloc) : Type(ti), name_(alloc) {}
@@ -34,8 +34,8 @@ namespace grace {
 	template <typename K, typename V>
 	struct MapTypeWithKeyValueType : public MapType {
 		MapTypeWithKeyValueType(const TypeInfo& ti, IAllocator& alloc) : MapType(ti, alloc) { build_map_type_name(); }
-		const Type* key_type() const final { return get_type<K>(); }
-		const Type* value_type() const final { return get_type<V>(); }
+		const IType* key_type() const final { return get_type<K>(); }
+		const IType* value_type() const final { return get_type<V>(); }
 	};
 	
 	template <typename K, typename V, typename Cmp>

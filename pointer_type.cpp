@@ -10,7 +10,7 @@
 #include "io/string_stream.hpp"
 
 namespace grace {
-	PointerType::PointerType(IAllocator& alloc, const Type* pointee_type, bool is_const) : name_(alloc), pointee_type_(pointee_type), is_const_(is_const) {
+	PointerType::PointerType(IAllocator& alloc, const IType* pointee_type, bool is_const) : name_(alloc), pointee_type_(pointee_type), is_const_(is_const) {
 		StringStream ss;
 		if (is_const) {
 			ss << "const ";

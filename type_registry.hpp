@@ -24,6 +24,7 @@ public:
 	static ArrayRef<const VertexType*> vertex_types();
 	static void add_missing_types(); // Search registered types for references to non-registered types and register them.
 	
+	static const IType* get_any(StringRef name);
 	static const ObjectTypeBase* get(StringRef name);
 	static const VertexType* get_vertex_type(StringRef name);
 	

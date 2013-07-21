@@ -8,7 +8,7 @@
 
 namespace grace {
 
-String build_maybe_type_name(const Type* inner_type);
+String build_maybe_type_name(const IType* inner_type);
 
 template <typename T>
 struct MaybeType : TypeFor<Maybe<T>> {
@@ -19,7 +19,7 @@ struct MaybeType : TypeFor<Maybe<T>> {
 	
 	StringRef name() const { return name_; }
 	
-	const Type* inner_type() const { return get_type<T>(); }
+	const IType* inner_type() const { return get_type<T>(); }
 private:
 	String name_;
 };
@@ -36,10 +36,10 @@ void MaybeType<T>::deserialize(Maybe<T>& m, const DocumentNode& node, IUniverse&
 template <typename T>
 void MaybeType<T>::serialize(const Maybe<T>& m, DocumentNode& node, IUniverse& universe) const {
 	/*struct Serialize {
-		const Type* inner_type;
+		const IType* inner_type;
 		DocumentNode& node;
 		IUniverse& universe;
-		Serialize(const Type* inner_type, DocumentNode& node, IUniverse& universe) : inner_type(inner_type), node(node), universe(universe) {}
+		Serialize(const IType* inner_type, DocumentNode& node, IUniverse& universe) : inner_type(inner_type), node(node), universe(universe) {}
 		void operator()(const T& it) {
 			inner_type->serialize(reinterpret_cast<const byte*>(&it), node, universe);
 		};

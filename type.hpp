@@ -239,7 +239,7 @@ get_type(const T& object) {
 	
 template <typename T>
 DLL_PUBLIC
-typename std::enable_if<!HasReflection<T>::Value, const Type*>::type
+typename std::enable_if<!HasReflection<T>::Value, const IType*>::type
 get_type(const T& value) {
 	return get_type<T>();
 }
@@ -256,13 +256,13 @@ struct CanGetType : public HasMember<T, CheckHasGetType> {};
 
 template <typename Last = void>
 void append_type_names(FormattedStream& os) {
-	const Type* t = get_type<Last>();
+	const IType* t = get_type<Last>();
 	os << t->name();
 }
 
 template <typename Head, typename Next, typename... Rest>
 void append_type_names(FormattedStream& os) {
-	const Type* t = get_type<Head>();
+	const IType* t = get_type<Head>();
 	os << t->name();
 	os << ", ";
 	append_type_names<Next, Rest...>(os);
@@ -279,11 +279,11 @@ String get_signature_description(IAllocator& alloc) {
 
 
 template <typename Head = void>
-void build_signature(Array<const Type*>& signature) {
+void build_signature(Array<const IType*>& signature) {
 	signature.push_back(get_type<Head>());
 }
 template <typename Head, typename Next, typename... Rest>
-void build_signature(Array<const Type*>& signature) {
+void build_signature(Array<const IType*>& signature) {
 	signature.push_back(get_type<Head>());
 	build_signature<Next, Rest...>(signature);
 }

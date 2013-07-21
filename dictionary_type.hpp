@@ -13,7 +13,7 @@
 #include "base/dictionary.hpp"
 
 namespace grace {
-	String build_dictionary_type_name(IAllocator& alloc, const Type* value_type);
+	String build_dictionary_type_name(IAllocator& alloc, const IType* value_type);
 
 	template <typename Value, typename Cmp>
 	struct DictionaryTypeImpl : public TypeFor<Dictionary<Value,Cmp>, MapTypeWithKeyValueType<StringRef, Value>> {

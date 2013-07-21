@@ -13,7 +13,7 @@ namespace grace {
 struct ReferenceType : Type {
 	ReferenceType(const TypeInfo& ti) : Type(ti) {}
 	
-	virtual const Type* pointee_type() const = 0;
+	virtual const IType* pointee_type() const = 0;
 	
 	bool deferred_instantiation() const final { return true; }
 	
@@ -21,7 +21,7 @@ struct ReferenceType : Type {
 	virtual ObjectPtr<> get_attribute_as_plain(const IAttribute* attr, Object* owner) const = 0;
 	virtual void set_attribute_as_plain(const IAttribute* attr, Object* owner, ObjectPtr<> new_value) const = 0;
 protected:
-	static String build_reference_type_name(IAllocator& alloc, StringRef base_name, const Type* pointee);
+	static String build_reference_type_name(IAllocator& alloc, StringRef base_name, const IType* pointee);
 };
 
 template <typename T>
@@ -31,7 +31,7 @@ struct ReferenceTypeImpl : TypeFor<T, ReferenceType> {
 	ReferenceTypeImpl(IAllocator& alloc, StringRef base_name) : name_(ReferenceType::build_reference_type_name(alloc, base_name, get_type<PointeeType>()), alloc) {}
 	
 	// ReferenceType interface
-	const Type* pointee_type() const { return get_type<PointeeType>(); }
+	const IType* pointee_type() const { return get_type<PointeeType>(); }
 	ObjectPtr<> get_attribute_as_plain(const IAttribute* attr, Object* owner) const;
 	void set_attribute_as_plain(const IAttribute* attr, Object* owner, ObjectPtr<> new_value) const;
 	

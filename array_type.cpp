@@ -4,7 +4,7 @@
 
 namespace grace {
 	
-String build_variable_length_array_type_name(IAllocator& alloc, StringRef base_name, const Type* element_type) {
+String build_variable_length_array_type_name(IAllocator& alloc, StringRef base_name, const IType* element_type) {
 	StringStream ss;
 	ss << element_type->name() << "[]";
 	return ss.string(alloc);

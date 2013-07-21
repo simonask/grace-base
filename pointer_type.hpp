@@ -15,11 +15,11 @@
 namespace grace {
 	class PointerType : public IType {
 	public:
-		PointerType(IAllocator& alloc, const Type* pointee_type, bool is_const);
+		PointerType(IAllocator& alloc, const IType* pointee_type, bool is_const);
 		PointerType(IAllocator& alloc, StringRef name, bool is_const);
 		
 		// PointerType interface
-		const Type* pointee_type() const { return pointee_type_; }
+		const IType* pointee_type() const { return pointee_type_; }
 		bool is_const() const { return is_const_; }
 		
 		// Type information
@@ -38,9 +38,10 @@ namespace grace {
 		bool is_copy_constructible() const final { return true; }
 		bool is_move_constructible() const final { return true; }
 		bool deferred_instantiation() const final { return false; }
+		const TypeInfo* type_info() const final { return nullptr; }
 	private:
 		String name_;
-		const Type* pointee_type_;
+		const IType* pointee_type_;
 		bool is_const_;
 	};
 	
