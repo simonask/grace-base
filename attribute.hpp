@@ -174,7 +174,7 @@ struct MethodAttribute : AttributeForObjectOfType<ObjectType, MemberType, Getter
 	SetterPointer setter_;
 };
 
-struct ReadOnlyAttributeError {
+struct ReadOnlyAttributeError : IException {
 	StringRef what() const { return "Read-only attributes cannot be written."; }
 };
 
@@ -200,7 +200,7 @@ struct ReadOnlyMethodAttribute : AttributeForObjectOfType<ObjectType, MemberType
 	GetterPointer getter_;
 };
 
-struct OpaqueAttributeError {
+struct OpaqueAttributeError : IException {
 	StringRef what() const { return "Opaque attributes can neither be read nor written."; }
 };
 
