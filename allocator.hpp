@@ -15,9 +15,6 @@
 
 namespace grace {
 	class FormattedStream;
-
-	struct BadAlignmentError {};
-	struct OutOfMemoryError {};
 	
 #if defined(DEBUG) && DEBUG
 	static const bool POISON_MEMORY = true;
