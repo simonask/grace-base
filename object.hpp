@@ -20,7 +20,7 @@ template <typename T> struct ObjectType;
 		using TypeInfoType = grace::ObjectTypeBase; \
 		static const TypeInfoType* build_type_info__()
 
-template <typename T> const Type* build_type_info(); // Only used for non-reflected types.
+template <typename T> const IType* build_type_info(); // Only used for non-reflected types.
 
 class Renderer;
 

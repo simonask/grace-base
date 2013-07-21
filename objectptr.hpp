@@ -47,7 +47,7 @@ struct ObjectPtr {
 	T* get() const { return ptr_; }
 	T* operator->() const { return ptr_; }
 	T& operator*() const { return *ptr_; }
-	const Type* type() const { return ptr_ ? get_type(*ptr_) : get_type<T>(); }
+	const IType* type() const { return ptr_ ? get_type(*ptr_) : get_type<T>(); }
 	
 	
 	template <typename U>

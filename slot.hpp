@@ -20,13 +20,13 @@ namespace grace {
 	struct IUniverse;
 	class Any;
 
-	void warn_signal_receiver_type_mismatch(ObjectPtr<> receiver, const Type* expected_type);
-	void warn_signal_receiver_argument_type_mismatch(ArrayRef<const Type*> signature);
+	void warn_signal_receiver_type_mismatch(ObjectPtr<> receiver, const IType* expected_type);
+	void warn_signal_receiver_argument_type_mismatch(ArrayRef<const IType*> signature);
 	
 	struct ISlot {
 		virtual StringRef name() const = 0;
 		virtual StringRef description() const = 0;
-		virtual Array<const Type*> signature(IAllocator& alloc = default_allocator()) const = 0;
+		virtual Array<const IType*> signature(IAllocator& alloc = default_allocator()) const = 0;
 		virtual bool invoke(ObjectPtr<> receiver, ArrayRef<Any> args) const = 0;
 		
 		// Deprecated:
@@ -68,8 +68,8 @@ namespace grace {
 		, member_(function)
 		{}
 		
-		Array<const Type*> signature(IAllocator& alloc) const {
-			Array<const Type*> s(alloc);
+		Array<const IType*> signature(IAllocator& alloc) const {
+			Array<const IType*> s(alloc);
 			s.reserve(sizeof...(Args));
 			build_signature<Args...>(s);
 			return move(s);

@@ -39,7 +39,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	}
 	
 	size_t num_elements() const { return properties_.size(); }
-	const Type* type_of_element(size_t idx) const { return properties_[idx]->attribute_type(); }
+	const IType* type_of_element(size_t idx) const { return properties_[idx]->attribute_type(); }
 	size_t offset_of_element(size_t idx) const { return 0; /* TODO */ }
 	
 	void deserialize(T& object, const DocumentNode&, IUniverse&) const;

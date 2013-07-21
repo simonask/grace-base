@@ -6,7 +6,7 @@
 
 namespace grace {
 
-String SignalTypeBase::build_signal_name(ArrayRef<const Type*> signature) {
+String SignalTypeBase::build_signal_name(ArrayRef<const IType*> signature) {
 	StringStream ss;
 	ss << "Signal<";
 	for (size_t i = 0; i < signature.size(); ++i) {

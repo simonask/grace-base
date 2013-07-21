@@ -17,13 +17,13 @@
 namespace grace {
 	struct SignalTypeBase : Type {
 	public:
-		ArrayRef<const Type*> signature() const { return signature_; }
+		ArrayRef<const IType*> signature() const { return signature_; }
 		StringRef name() const { return name_; }
 		bool deferred_instantiation() const final { return true; }
 	protected:
 		String name_;
-		Array<const Type*> signature_;
-		static String build_signal_name(ArrayRef<const Type*> signature);
+		Array<const IType*> signature_;
+		static String build_signal_name(ArrayRef<const IType*> signature);
 	};
 	
 	template <typename... Args>

@@ -232,7 +232,7 @@ void CompositeType::serialize_raw(const byte* place, DocumentNode& node, IUniver
 		return slot_->description();
 	}
 	
-	Array<const Type*> ExposedSlot::signature(IAllocator &alloc) const {
+	Array<const IType*> ExposedSlot::signature(IAllocator &alloc) const {
 		return slot_->signature(alloc);
 	}
 	

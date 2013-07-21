@@ -39,7 +39,7 @@ private:
 		// ISlot interface
 		StringRef name() const final;
 		StringRef description() const final;
-		Array<const Type*> signature(IAllocator& alloc) const final;
+		Array<const IType*> signature(IAllocator& alloc) const final;
 		bool invoke(ObjectPtr<> receiver, ArrayRef<Any> args) const final;
 		
 		// Deprecated:
@@ -93,7 +93,7 @@ struct CompositeType : StructuredType {
 	// DerivedType interface
 	size_t num_elements() const { return aspects_.size(); }
 	size_t offset_of_element(size_t idx) const;
-	const Type* type_of_element(size_t idx) const { return aspects_[idx]; }
+	const IType* type_of_element(size_t idx) const { return aspects_[idx]; }
 	
 	// StructuredType interface
 	ArrayRef<const IAttribute*> attributes() const override;
