@@ -307,7 +307,7 @@ namespace grace {
 	template <typename T> struct AnyWhenFunctionCaller {
 		template <typename Function>
 		static bool call(Any& any, Function f) {
-			const Type* t = get_type<typename RemoveConstRef<T>::Type>();
+			const IType* t = get_type<typename RemoveConstRef<T>::Type>();
 			if (any.type() == t) {
 				T& v = *reinterpret_cast<typename RemoveConstRef<T>::Type*>(any.ptr());
 				f(v);
@@ -317,7 +317,7 @@ namespace grace {
 		}
 		template <typename Function>
 		static bool call(const Any& any, Function f) {
-			const Type* t = get_type<typename RemoveConstRef<T>::Type>();
+			const IType* t = get_type<typename RemoveConstRef<T>::Type>();
 			if (any.type() == t) {
 				const T& v = *reinterpret_cast<const typename RemoveConstRef<T>::Type*>(any.ptr());
 				f(v);
@@ -378,7 +378,7 @@ namespace grace {
 	
 	template <typename T>
 	Maybe<T> Any::get() const {
-		if ((const Type*)get_type<T>() == stored_type_) {
+		if ((const IType*)get_type<T>() == stored_type_) {
 			return Maybe<T>(*reinterpret_cast<const T*>(ptr()));
 		}
 		return Nothing;
@@ -386,7 +386,7 @@ namespace grace {
 	
 	template <typename T>
 	T Any::unsafe_get() const {
-		//ASSERT((const Type*)get_type<T>() != (const Type*)get_type<Any>());
+		//ASSERT((const IType*)get_type<T>() != (const IType*)get_type<Any>());
 		ASSERT(get_type<T>() == stored_type_);
 		return *reinterpret_cast<const T*>(ptr());
 	}

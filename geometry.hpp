@@ -86,12 +86,12 @@ namespace grace {
 	using Rect = TRect<float32>;
 	
 	namespace detail {
-		const Type* build_rect_type();
+		const IType* build_rect_type();
 	}
 	
 	template <>
 	struct BuildTypeInfo<Rect> {
-		static const Type* build() { return detail::build_rect_type(); }
+		static const IType* build() { return detail::build_rect_type(); }
 	};
 	
 	inline matrix22 make_rotation_matrix22(float32 theta) {

@@ -19,7 +19,7 @@
 
 namespace grace {
 	struct ConfigOption {
-		const Type* type;
+		const IType* type;
 		StringRef description;
 	};
 

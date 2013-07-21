@@ -17,5 +17,5 @@ namespace grace {
 	template class Array<String>;
 	template class Array<IAttribute*>;
 	template class Array<ISlot*>;
-	template class Array<const Type*>;
+	template class Array<const IType*>;
 }

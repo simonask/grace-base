@@ -104,7 +104,7 @@ extern template class Array<StringRef>;
 extern template class Array<String>;
 extern template class Array<IAttribute*>;
 extern template class Array<ISlot*>;
-extern template class Array<const Type*>;
+extern template class Array<const IType*>;
 
 
 template <typename T>

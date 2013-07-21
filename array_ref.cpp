@@ -15,7 +15,7 @@ namespace grace {
 	template struct ArrayRef<float32>;
 	template struct ArrayRef<String>;
 	template struct ArrayRef<StringRef>;
-	template struct ArrayRef<const Type*>;
+	template struct ArrayRef<const IType*>;
 	template struct ArrayRef<const IAttribute*>;
 	template struct ArrayRef<const ISlot* const>;
 }

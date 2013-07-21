@@ -25,7 +25,7 @@ namespace grace {
 			}
 		};
 
-		const Type* build_rect_type() {
+		const IType* build_rect_type() {
 			static const RectType* t = new RectType;
 			return t;
 		}

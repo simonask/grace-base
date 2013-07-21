@@ -75,13 +75,13 @@ namespace grace {
 	struct ISlot;
 	class String;
 	struct StringRef;
-	struct Type;
+	struct IType;
 	extern template struct ArrayRef<byte>;
 	extern template struct ArrayRef<char>;
 	extern template struct ArrayRef<float32>;
 	extern template struct ArrayRef<String>;
 	extern template struct ArrayRef<StringRef>;
-	extern template struct ArrayRef<const Type*>;
+	extern template struct ArrayRef<const IType*>;
 	extern template struct ArrayRef<const IAttribute*>;
 	extern template struct ArrayRef<const ISlot* const>;
 }
