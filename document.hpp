@@ -24,6 +24,8 @@ namespace grace {
 	struct Document {
 		const DocumentNode& operator[](StringRef key) const;
 		DocumentNode& operator[](StringRef key);
+		operator const DocumentNode&() const { return root(); }
+		operator DocumentNode&() { return root(); }
 	
 		IAllocator& allocator() const { return allocator_; }
 		DocumentNode& root() { return root_; }
