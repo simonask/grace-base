@@ -93,6 +93,7 @@ namespace grace {
 		byte* ptr();
 		
 		static Any take_memory(IAllocator&, const IType* type, void* memory);
+		static Any copy_memory(IAllocator&, const IType* type, const void* memory);
 	private:
 		typedef typename std::aligned_storage<Size, Alignment>::type Storage;
 		Storage memory_;

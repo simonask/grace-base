@@ -28,5 +28,13 @@ namespace grace {
 		}
 		return move(result);
 	}
+	
+	Any Any::copy_memory(IAllocator& alloc, const IType *type, const void *memory) {
+		if (memory == nullptr) return Nothing;
+		Any result(alloc);
+		result.stored_type_ = type;
+		result.allocate_storage();
+		type->copy_construct(result.ptr(), (const byte*)memory);
+		return move(result);
 	}
 }
