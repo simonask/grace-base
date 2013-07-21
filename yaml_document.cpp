@@ -16,9 +16,10 @@
 
 namespace grace {
 	namespace {
-		struct YAMLParserError {
+		struct YAMLParserError : IException {
 			String message_;
 			YAMLParserError(StringRef message) : message_(message, default_allocator()) {}
+			StringRef what() const final { return message_; }
 		};
 		
 		struct YAMLParserState {
