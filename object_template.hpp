@@ -10,7 +10,7 @@
 #define __grace__object_template__
 
 #include "base/basic.hpp"
-#include "serialization/yaml_document.hpp"
+#include "serialization/document.hpp"
 #include "io/resource.hpp"
 
 namespace grace {

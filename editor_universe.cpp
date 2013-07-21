@@ -13,7 +13,7 @@
 #include "io/formatters.hpp"
 #include "type/reference_type.hpp"
 #include "type/attribute.hpp"
-#include "serialization/binary_document.hpp"
+#include "serialization/document.hpp"
 #include "serialization/serialize.hpp"
 #include "serialization/deserialize_object.hpp"
 #include "type/type_registry.hpp"
