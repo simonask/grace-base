@@ -15,7 +15,7 @@
 
 namespace grace {
 	struct ObjectTemplate : public Resource {
-		YAMLDocument document;
+		Document document;
 		
 		ObjectTemplate(IAllocator& alloc) : document(alloc) {}
 	};

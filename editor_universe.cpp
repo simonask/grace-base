@@ -172,7 +172,7 @@ namespace grace {
 	
 	bool EditorUniverse::recreate_object_and_initialize(const DocumentNode& object_definition_in, StringRef old_object_id) {
 		ScratchAllocator scratch;
-		BinaryDocument merged(scratch);
+		Document merged(scratch);
 		merge_object_templates(merged, object_definition_in);
 		auto& object_definition = merged.root();
 		
