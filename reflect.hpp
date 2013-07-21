@@ -121,8 +121,8 @@ struct ObjectTypeBuilder {
 #define REFLECT_AUTO_LIST(T, MEMBER) auto_list<T, offsetof(T, MEMBER)>(&T::MEMBER)
 
 #define BEGIN_TYPE_INFO(TYPE) \
-const ObjectTypeBase* TYPE::build_type_info__() { \
-	static struct ObjectTypeBuilderImpl__ : ObjectTypeBuilder<TYPE> { \
+const grace::ObjectTypeBase* TYPE::build_type_info__() { \
+	static struct ObjectTypeBuilderImpl__ : grace::ObjectTypeBuilder<TYPE> { \
 		void define__() override { name(#TYPE);
 			
 #define END_TYPE_INFO() \
