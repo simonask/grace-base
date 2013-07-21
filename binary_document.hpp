@@ -15,11 +15,9 @@
 #include "base/bag.hpp"
 
 namespace grace {
-	struct BinaryDocument : Document {
-		explicit BinaryDocument(IAllocator& alloc = default_allocator()) : Document(alloc) {}
-		BinaryDocument(BinaryDocument&& other) = delete;
-		void write(OutputStream& os) const;
-		size_t read(InputStream& is, String& out_error);
+	struct BinarySerializer : IDocumentReader, IDocumentWriter {
+		size_t read(Document& doc, InputStream& is, String& out_error) final;
+		void write(OutputStream& os, const Document& doc) final;
 		bool can_parse(const byte* begin, const byte* end) const;
 	private:
 		void write_node(const DocumentNode&, OutputStream& os) const;

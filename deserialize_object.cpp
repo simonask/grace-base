@@ -91,7 +91,7 @@ namespace {
 		}
 	}
 	
-	void load_and_merge_templates_r(BinaryDocument& document, DocumentNode& target, const DocumentNode& def) {
+	void load_and_merge_templates_r(Document& document, DocumentNode& target, const DocumentNode& def) {
 		ResourceID template_rid;
 		if ((def["template"] >> template_rid)) {
 			ResourcePtr<ObjectTemplate> templ = load_resource<ObjectTemplate>(template_rid);
@@ -103,7 +103,7 @@ namespace {
 	}
 }
 
-void merge_object_templates(BinaryDocument& merged, const DocumentNode& object_definition) {
+void merge_object_templates(Document& merged, const DocumentNode& object_definition) {
 	load_and_merge_templates_r(merged, merged.root(), object_definition);
 }
 

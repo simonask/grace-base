@@ -23,7 +23,7 @@ namespace grace {
 		};
 		
 		struct YAMLParserState {
-			YAMLDocument& document;
+			Document& document;
 			enum StateType {
 				TopLevel,
 				MappingExpectingKey,
@@ -34,7 +34,7 @@ namespace grace {
 			ArrayList<Pair<DocumentNode*, String>> stack; // node and non-empty string if node is a mapping waiting for a value
 			Array<DocumentNode*> roots;
 			Map<String, DocumentNode*> anchors;
-			YAMLParserState(YAMLDocument& document) : document(document) {}
+			YAMLParserState(Document& document) : document(document) {}
 			
 			DocumentNode* root() const { return roots.size() ? roots[0] : nullptr; }
 			DocumentNode* top() const { return stack.back().first; }
@@ -184,10 +184,10 @@ namespace grace {
 		};
 		
 		struct YAMLEmitterState {
-			const YAMLDocument& document;
+			const Document& document;
 			OutputStream& os;
 			yaml_emitter_t* emitter;
-			YAMLEmitterState(const YAMLDocument& document, OutputStream& os, yaml_emitter_t* emitter) : document(document), os(os), emitter(emitter) {}
+			YAMLEmitterState(const Document& document, OutputStream& os, yaml_emitter_t* emitter) : document(document), os(os), emitter(emitter) {}
 			
 			int emit(const byte* buffer, size_t sz) {
 				os.write(buffer, sz);
@@ -272,10 +272,10 @@ namespace grace {
 		int yaml_write_handler_t(void *data, unsigned char *buffer, size_t size);
 	}
 	
-	void YAMLDocument::write(OutputStream& os) const {
+	void YAML::write(OutputStream& os, const Document& doc) {
 		yaml_emitter_t emitter;
 		yaml_emitter_initialize(&emitter);
-		YAMLEmitterState emitter_state(*this, os, &emitter);
+		YAMLEmitterState emitter_state(doc, os, &emitter);
 		yaml_emitter_set_output(&emitter, emit_yaml, &emitter_state);
 		
 		yaml_event_t event;
@@ -285,7 +285,7 @@ namespace grace {
 		yaml_document_start_event_initialize(&event, nullptr, nullptr, nullptr, true);
 		yaml_emitter_emit(&emitter, &event);
 		
-		emitter_state.serialize(&root());
+		emitter_state.serialize(&doc.root());
 		
 		yaml_document_end_event_initialize(&event, true);
 		yaml_emitter_emit(&emitter, &event);
@@ -296,7 +296,7 @@ namespace grace {
 		yaml_emitter_delete(&emitter);
 	}
 	
-	size_t YAMLDocument::read(InputStream& is, String& out_error) {
+	size_t YAML::read(Document& doc, InputStream& is, String& out_error) {
 		Array<byte> buffer = read_all<Array<byte>>(is);
 		const byte* begin = buffer.data();
 		const byte* end = begin + buffer.size();
@@ -318,7 +318,7 @@ namespace grace {
 		
 		yaml_parser_set_input_string(&parser, begin, end - begin);
 		
-		YAMLParserState state(*this);
+		YAMLParserState state(doc);
 	
 		yaml_event_t event;
 		do {
@@ -356,9 +356,9 @@ namespace grace {
 		
 		if (state.root() != nullptr) {
 			if (!state.root()->is_map()) {
-				root().internal_value() = Dictionary<DocumentNode*>({{"yaml_document", state.root()}}, root().allocator());
+				doc.root().internal_value() = Dictionary<DocumentNode*>({{"yaml_document", state.root()}}, doc.allocator());
 			} else {
-				root().internal_value() = move(state.root()->internal_value());
+				doc.root().internal_value() = move(state.root()->internal_value());
 			}
 		} else {
 			out_error = "YAML: Unknown error occurred during parsing.";
@@ -368,12 +368,13 @@ namespace grace {
 		return end - begin;
 	}
 	
-	bool YAMLDocument::can_parse(const byte* begin, const byte* end) const {
+	bool YAML::can_parse(const byte* begin, const byte* end) const {
 		// There's no way to check but to actually parse it.
-		YAMLDocument other;
+		YAML other;
+		Document doc;
 		String error;
 		auto stream = MemoryStream(begin, end);
-		if (other.read(stream, error) > 0 && error == "") {
+		if (other.read(doc, stream, error) > 0 && error == "") {
 			return true;
 		}
 		return false;

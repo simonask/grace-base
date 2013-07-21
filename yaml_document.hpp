@@ -12,10 +12,9 @@
 #include "serialization/document.hpp"
 
 namespace grace {
-	struct YAMLDocument : public Document {
-		explicit YAMLDocument(IAllocator& alloc = default_allocator()) : Document(alloc) {}
-		void write(OutputStream& os) const;
-		size_t read(InputStream& is, String& out_error);
+	struct YAML : IDocumentReader, IDocumentWriter {
+		void write(OutputStream& os, const Document& doc) final;
+		size_t read(Document& doc, InputStream& is, String& out_error) final;
 		bool can_parse(const byte* begin, const byte* end) const;
 	};
 }

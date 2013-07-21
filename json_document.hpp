@@ -9,13 +9,13 @@
 #include "base/string.hpp"
 
 namespace grace {
-struct JSONDocument : Document {
-	void write(OutputStream& os) const;
-	size_t read(InputStream& is, String& out_error);
-private:
-	void write_node(const DocumentNode&, OutputStream& os, bool print_inline, int indent) const;
-	bool read_node(DocumentNode&, const byte*& p, const byte* end, String& out_error);
-};
+	struct JSON : IDocumentReader, IDocumentWriter {
+		size_t read(Document& doc, InputStream& is, String& out_error) final;
+		void write(OutputStream& os, const Document& doc) final;
+	private:
+		void write_node(const DocumentNode&, OutputStream& os, bool print_inline, int indent) const;
+		bool read_node(DocumentNode&, const byte*& p, const byte* end, String& out_error);
+	};
 }
 
 #endif /* end of include guard: JSON_ARCHIVE_HPP_4OX35IUJ */

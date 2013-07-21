@@ -14,7 +14,7 @@ ObjectPtr<> deserialize_object(const DocumentNode& representation, IUniverse& un
 void deserialize_object(ObjectPtr<> place, const DocumentNode& representation, IUniverse& universe);
 
 
-void merge_object_templates(BinaryDocument& out_target, const DocumentNode& object_definition);
+void merge_object_templates(Document& out_target, const DocumentNode& object_definition);
 const StructuredType* get_or_create_object_type(const DocumentNode& object_definition, UniverseBase* universe);
 
 }

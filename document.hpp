@@ -34,13 +34,21 @@ namespace grace {
 		DocumentNode* make();
 		void clear();
 		
-		Document(IAllocator& alloc) : allocator_(alloc), root_(*this), empty_(*this) {}
-		Document(Document&&) = delete;
+		explicit Document(IAllocator& alloc = default_allocator()) : allocator_(alloc), root_(*this), empty_(*this) {}
+		Document(Document&&) = delete; // deleted because the tree may contain pointers to root_ and empty_.
 	private:
 		IAllocator& allocator_;
 		DocumentNode root_;
 		const DocumentNode empty_;
 		ContainedBag<DocumentNode> nodes_;
+	};
+	
+	struct IDocumentReader {
+		virtual size_t read(Document& out_doc, InputStream& is, String& out_error) = 0;
+	};
+	
+	struct IDocumentWriter {
+		virtual void write(OutputStream& os, const Document& doc) = 0;
 	};
 }
 

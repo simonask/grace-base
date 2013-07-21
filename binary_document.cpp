@@ -53,7 +53,7 @@ namespace grace {
 		}
 	}
 	
-	void BinaryDocument::write_node(const DocumentNode& n, OutputStream& os) const {
+	void BinarySerializer::write_node(const DocumentNode& n, OutputStream& os) const {
 		n.when<DocumentNode::StringType>([&](const DocumentNode::StringType& str) {
 			write_byte(os, (byte)NodeType::String);
 			uint32 string_length = (uint32)str.size();
@@ -88,7 +88,7 @@ namespace grace {
 		});
 	}
 	
-	bool BinaryDocument::read_node(DocumentNode& n, const byte*& p, const byte *end, String &out_error) {
+	bool BinarySerializer::read_node(DocumentNode& n, const byte*& p, const byte *end, String &out_error) {
 		byte t;
 		if (!read_bytes(p, end, &t)) {
 			out_error = "Unexpected end of stream.";
@@ -119,7 +119,7 @@ namespace grace {
 					out_error = "Invalid array length (corrupt stream).";
 					return false;
 				}
-				DocumentNode::ArrayType tmp(allocator());
+				DocumentNode::ArrayType tmp(n.allocator());
 				tmp.reserve(array_length);
 				n.internal_value() = move(tmp);
 				for (uint32 i = 0; i < array_length; ++i) {
@@ -175,17 +175,17 @@ namespace grace {
 		}
 	}
 	
-	void BinaryDocument::write(OutputStream &os) const {
+	void BinarySerializer::write(OutputStream &os, const Document& doc) {
 		StringStream ss;
-		write_node(root(), ss);
+		write_node(doc, ss);
 		String data = ss.str();
 		uint32 stream_length = (uint32)data.size();
 		write_bytes(os, &stream_length);
 		FormattedStream(os) << data;
 	}
 	
-	size_t BinaryDocument::read(InputStream& is, grace::String& out_error) {
-		clear();
+	size_t BinarySerializer::read(Document& doc, InputStream& is, grace::String& out_error) {
+		doc.clear();
 		if (is.has_length()) {
 			size_t stream_length = is.length();
 			Array<byte> buffer = read_all<Array<byte>>(is);
@@ -197,8 +197,8 @@ namespace grace {
 				return 0;
 			}
 			
-			if (!read_node(root(), p, end, out_error)) {
-				clear();
+			if (!read_node(doc, p, end, out_error)) {
+				doc.clear();
 				return 0;
 			}
 			
@@ -207,7 +207,7 @@ namespace grace {
 		return 0;
 	}
 	
-	bool BinaryDocument::can_parse(const byte* begin, const byte* end) const {
+	bool BinarySerializer::can_parse(const byte* begin, const byte* end) const {
 		uint32 stream_length;
 		const byte* p = begin;
 		if (!read_bytes(p, end, &stream_length)) {

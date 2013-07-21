@@ -2,10 +2,10 @@
 
 namespace grace {
 
-void JSONDocument::write(OutputStream& oss) const {
+void JSON::write(OutputStream& oss, const Document& doc) {
 	FormattedStream os(oss);
 	os << "{ \"root\": ";
-	write_node(root(), os, false, 1);
+	write_node(doc, os, false, 1);
 	os << "\n}\n";
 }
 
@@ -24,7 +24,7 @@ static void print_string(OutputStream& oss, StringRef str) {
 	os << '"';
 }
 
-void JSONDocument::write_node(const DocumentNode& n, OutputStream& oss, bool print_inline, int indent) const {
+void JSON::write_node(const DocumentNode& n, OutputStream& oss, bool print_inline, int indent) const {
 	FormattedStream os(oss);
 	n.when<NothingType>([&](NothingType) {
 		os << "null";
@@ -87,12 +87,12 @@ void JSONDocument::write_node(const DocumentNode& n, OutputStream& oss, bool pri
 	});
 }
 	
-bool JSONDocument::read_node(DocumentNode& n, const byte *&p, const byte *end, String &out_error) {
+bool JSON::read_node(DocumentNode& n, const byte *&p, const byte *end, String &out_error) {
 	out_error = "JSONDocument::read not implemented yet.";
 	return false;
 }
 	
-size_t JSONDocument::read(InputStream&, String& out_error) {
+size_t JSON::read(Document& doc, InputStream&, String& out_error) {
 	out_error = "JSONDocument::read not implemented.";
 	return 0;
 }
