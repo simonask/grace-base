@@ -1,4 +1,4 @@
-#include "serialization/json_document.hpp"
+#include "serialization/json.hpp"
 
 namespace grace {
 

@@ -3,7 +3,7 @@
 #define DESERIALIZE_OBJECT_HPP_F2934JFR
 
 #include "object/objectptr.hpp"
-#include "serialization/binary_document.hpp"
+#include "serialization/document.hpp"
 
 namespace grace {
 struct IUniverse;

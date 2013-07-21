@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#include "serialization/yaml_document.hpp"
+#include "serialization/yaml.hpp"
 #include "io/util.hpp"
 #include "base/parse.hpp"
 #include "base/pair.hpp"

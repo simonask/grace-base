@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
 //
 
-#include "serialization/binary_document.hpp"
+#include "serialization/binary.hpp"
 #include "base/log.hpp"
 #include "io/util.hpp"
 
