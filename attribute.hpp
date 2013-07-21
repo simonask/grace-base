@@ -31,10 +31,6 @@ namespace grace {
 		const IType* type() const final { return get_type<T>(); }
 		bool deferred_instantiation() const final { return type()->deferred_instantiation(); }
 	};
-	
-	namespace detail {
-		void warn_set_any_wrong_type(StringRef property_name, const IType* expected, const IType* got);
-	}
 
 	template <typename ObjectType, typename MemberType, typename GetterType = MemberType>
 	struct AttributeForObjectOfType : AttributeOfType<MemberType> {
@@ -86,8 +82,6 @@ namespace grace {
 			value.when<MemberType>([&](const MemberType& v) {
 				set_polymorphic(object, v);
 				result = true;
-			}).otherwise([&]() {
-				detail::warn_set_any_wrong_type(name_, get_type<MemberType>(), value.type());
 			});
 			return result;
 		}
