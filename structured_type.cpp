@@ -9,6 +9,7 @@
 #include "type/structured_type.hpp"
 #include "object/slot.hpp"
 #include "type/attribute.hpp"
+#include "type/reference_type.hpp"
 
 namespace grace {
 	const ISlot* StructuredType::find_slot_by_name(StringRef name) const {
@@ -31,5 +32,9 @@ namespace grace {
 			t = t->super();
 		}
 		return nullptr;
+	}
+	
+	const ReferenceType* StructuredType::reference_type() const {
+		return get_type<ObjectPtr<>>();
 	}
 }

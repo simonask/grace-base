@@ -14,12 +14,14 @@
 namespace grace {
 	struct ISlot;
 	struct IAttribute;
+	struct ReferenceType;
 	
 	struct StructuredType : DerivedType {
 		StructuredType(const TypeInfo& ti) : DerivedType(ti) {}
 		virtual ArrayRef<const ISlot* const> slots() const = 0;
 		virtual ArrayRef<const IAttribute*> attributes() const = 0;
 		virtual const StructuredType* super() const = 0;
+		virtual const ReferenceType* reference_type() const;
 		
 		const ISlot* find_slot_by_name(StringRef name) const;
 		const IAttribute* find_attribute_by_name(StringRef name) const;
