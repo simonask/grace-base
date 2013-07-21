@@ -11,6 +11,7 @@
 
 #include "base/basic.hpp"
 #include "base/array_ref.hpp"
+#include "base/exceptions.hpp"
 #include "memory/allocator.hpp"
 #include "base/iterators.hpp"
 #include <algorithm> // for std::copy

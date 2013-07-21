@@ -21,7 +21,7 @@ namespace grace {
 	template <typename Signature>
 	class Function;
 	
-	struct EmptyFunctionCallError {
+	struct EmptyFunctionCallError : IException {
 		StringRef what() const { return "Called empty function object."; }
 	};
 	

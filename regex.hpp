@@ -21,7 +21,7 @@ namespace grace {
 		NewlineSensitive = 1 << ('m' - 'a'),
 	};
 		
-	struct RegexError {
+	struct RegexError : IException {
 		String message;
 		RegexError(String msg) : message(move(msg)) {}
 		StringRef what() const { return message; }

@@ -14,8 +14,8 @@
 #include <type_traits>
 
 namespace grace {
-	struct MaxArrayTooSmallError {
-		const char* what() const { return "The MaxArray capacity was too small to contain the attempted insertion."; }
+	struct MaxArrayTooSmallError : IException {
+		StringRef what() const { return "The MaxArray capacity was too small to contain the attempted insertion."; }
 	};
 
 	template <typename T, uint32 Max>

@@ -7,6 +7,7 @@
 #include "memory/allocator.hpp"
 #include "base/iterators.hpp"
 #include "base/array_utils.hpp"
+#include "base/exceptions.hpp"
 
 #if defined(USE_STD_VECTOR)
 #include <vector>

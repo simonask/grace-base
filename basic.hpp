@@ -34,10 +34,6 @@ using NullPtr = std::nullptr_t;
 
 using std::move;
 
-struct IndexOutOfBoundsException {
-	const char* what() { return "Index out of bounds."; }
-};
-
 template <typename T, typename NameGetter>
 struct HasMember {
 	typedef char MatchedReturnType;

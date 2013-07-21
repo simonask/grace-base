@@ -13,6 +13,7 @@
 #include "memory/allocator.hpp"
 #include "base/link_list.hpp"
 #include "base/iterators.hpp"
+#include "base/exceptions.hpp"
 #include <initializer_list>
 #include <algorithm>
 

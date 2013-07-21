@@ -15,10 +15,11 @@
 namespace grace {
 	struct TypeInfo;
 
-	struct UnsupportedTypeOperationError {
+	struct UnsupportedTypeOperationError : IException {
 		const TypeInfo& type;
-		const char* operation;
-		const char* what() const { return operation; }
+		StringRef operation;
+		UnsupportedTypeOperationError(const TypeInfo& type, StringRef op) : type(type), operation(op) {}
+		StringRef what() const { return operation; }
 	};
 
 	struct TypeInfo {
@@ -50,22 +51,22 @@ namespace grace {
 		bool is_abstract() const { return !is_constructible() && !is_move_or_copy_constructible(); }
 		
 		void construct(byte* self) const {
-			construct_ ? construct_(self) : unsupported("construct");
+			construct_ ? construct_(self) : unsupported("Unsupported: construct");
 		}
 		void destruct(byte* self) const {
-			destruct_ ? destruct_(self) : unsupported("destruct");
+			destruct_ ? destruct_(self) : unsupported("Unsupported: destruct");
 		}
 		void copy_assign(byte* self, const byte* other) const {
-			copy_assign_ ? copy_assign_(self, other) : unsupported("copy_assign");
+			copy_assign_ ? copy_assign_(self, other) : unsupported("Unsupported: copy_assign");
 		}
 		void copy_construct(byte* self, const byte* other) const {
-			copy_construct_ ? copy_construct_(self, other) : unsupported("copy_construct");
+			copy_construct_ ? copy_construct_(self, other) : unsupported("Unsupported: copy_construct");
 		}
 		void move_assign(byte* self, byte* other) const {
-			move_assign_ ? move_assign_(self, other) : unsupported("move_assign");
+			move_assign_ ? move_assign_(self, other) : unsupported("Unsupported: move_assign");
 		}
 		void move_construct(byte* self, byte* other) const {
-			move_construct_ ? move_construct_(self, other) : unsupported("move_construct");
+			move_construct_ ? move_construct_(self, other) : unsupported("Unsupported: move_construct");
 		}
 		
 		void move_or_copy_construct(byte* self, byte* other) const {
