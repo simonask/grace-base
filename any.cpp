@@ -16,14 +16,17 @@ namespace grace {
 		if (memory == nullptr) return Nothing;
 		Any result(alloc);
 		result.stored_type_ = type;
-		if (type->size() > Size) {
+		size_t sz = type->size();
+		if (sz > Size) {
 			byte** ptrptr = reinterpret_cast<byte**>(&result.memory_);
 			*ptrptr = (byte*)memory;
 		} else {
 			byte* ptr = reinterpret_cast<byte*>(&result.memory_);
 			type->copy_construct(ptr, (const byte*)memory);
 			type->destruct((byte*)memory, *(IUniverse*)nullptr);
+			alloc.free(memory, sz);
 		}
-		return result;
+		return move(result);
+	}
 	}
 }
