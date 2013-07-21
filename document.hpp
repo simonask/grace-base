@@ -40,15 +40,6 @@ namespace grace {
 		const DocumentNode empty_;
 		ContainedBag<DocumentNode> nodes_;
 	};
-	
-	struct MemoryDocument : Document {
-	public:
-		MemoryDocument(IAllocator& alloc) : Document(alloc) {}
-		
-		void write(OutputStream& os) const { ASSERT(false); }
-		size_t read(InputStream& is, String& out_error) { ASSERT(false); }
-	};
-
 }
 
 #endif /* end of include guard: ARCHIVE_HPP_A0L9H8RE */
