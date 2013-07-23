@@ -57,7 +57,7 @@ namespace grace {
 		}
 		
 		explicit operator bool() const {
-			return type_ == InvokerType::Empty;
+			return type_ != InvokerType::Empty;
 		}
 	private:
 		using InvokerPad = R(Function<R(Args...)>::*)(Args...) const;
