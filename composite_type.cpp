@@ -171,7 +171,7 @@ void CompositeType::serialize_raw(const byte* place, DocumentNode& node, IUniver
 		return exposed_attributes_.ref();
 	}
 	
-	ArrayRef<const ISlot* const> CompositeType::slots() const {
+	ArrayRef<const ISlot*> CompositeType::slots() const {
 		return exposed_slots_.ref();
 	}
 	

@@ -36,7 +36,7 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	ArrayRef<const IAttribute*> attributes() const {
 		return properties_.ref();
 	}
-	ArrayRef<const ISlot* const> slots() const {
+	ArrayRef<const ISlot*> slots() const {
 		return slots_.ref();
 	}
 	

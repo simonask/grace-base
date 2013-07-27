@@ -97,7 +97,7 @@ struct CompositeType : StructuredType {
 	
 	// StructuredType interface
 	ArrayRef<const IAttribute*> attributes() const override;
-	ArrayRef<const ISlot* const> slots() const override;
+	ArrayRef<const ISlot*> slots() const override;
 	const StructuredType* super() const final;
 private:
 	const ObjectTypeBase* base_type_;
