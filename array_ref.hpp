@@ -17,21 +17,12 @@ namespace grace {
 	struct Empty {};
 	
 	#define AREF(static_array) (ArrayRef<typename std::remove_reference<decltype(static_array[0])>::type>(static_array, static_array + sizeof(static_array)/sizeof(static_array[0])))
-
+	
 	template <typename T>
-	struct ArrayRef {
+	struct ArrayRefBase {
 	public:
-		constexpr ArrayRef() : begin_(nullptr), end_(nullptr) {}
-		constexpr ArrayRef(Empty e) : begin_(nullptr), end_(nullptr) {}
-		template <size_t N, typename C = T>
-		constexpr ArrayRef(const C(&data)[N]) : begin_(data), end_(data + N) { }
-		constexpr ArrayRef(T* begin, T* end) : begin_(begin), end_(end) { /*ASSERT(begin_ <= end_);*/ }
-		ArrayRef(const ArrayRef<T>& other) = default;
-		ArrayRef(ArrayRef<T>&& other) = default;
-		ArrayRef<T>& operator=(const ArrayRef<T>& other) = default;
-		ArrayRef<T>& operator=(ArrayRef<T>&& other) = default;
-		bool operator==(const ArrayRef<T>& other) const;
-		bool operator!=(const ArrayRef<T>& other) const;
+		bool operator==(const ArrayRefBase<T>& other) const;
+		bool operator!=(const ArrayRefBase<T>& other) const;
 		
 		size_t size() const { return end_ - begin_; }
 		
@@ -47,14 +38,85 @@ namespace grace {
 		const_iterator end() const { return end_; }
 		
 		T* data() { return begin_; }
-		const T* data() const { return begin_; }
-	private:
+		constexpr const T* data() const { return begin_; }
+	protected:
+		constexpr ArrayRefBase() {}
+		constexpr ArrayRefBase(T* begin, T* end) : begin_(begin), end_(end) {}
+		template <size_t N, typename C = T>
+		constexpr ArrayRefBase(const C(&data)[N]) : begin_(data), end_(data + N) {}
+		ArrayRefBase(const ArrayRefBase<T>& other) = default;
+		ArrayRefBase(ArrayRefBase<T>&& other) = default;
 		T* begin_;
 		T* end_;
 	};
 	
+	template <typename T> struct ArrayRef;
+	
 	template <typename T>
-	bool ArrayRef<T>::operator==(const ArrayRef<T> &other) const {
+	struct ArrayRef<const T> : ArrayRefBase<const T> {
+	public:
+		constexpr ArrayRef() {}
+		constexpr ArrayRef(Empty empty) {}
+		ArrayRef(NothingType nothing) {}
+		constexpr ArrayRef(const T* begin, const T* end) : ArrayRefBase<const T>(begin, end) {}
+		template <size_t N, typename C = T>
+		constexpr ArrayRef(const C(&data)[N]) : ArrayRefBase<const T>(data) {}
+		ArrayRef(const ArrayRef<const T>& other) = default;
+		ArrayRef(ArrayRef<const T>&& other) = default;
+		
+		// Create ArrayRef<const T> from ArrayRef<T>
+		ArrayRef(const ArrayRef<T>& other) : ArrayRefBase<const T>(other.data(), other.data() + other.size()) {}
+		
+		// Create ArrayRef<T*> from ArrayRef<U*>
+		template <typename U>
+		ArrayRef(const ArrayRef<U>& other, typename std::enable_if<std::is_pointer<U>::value && std::is_pointer<T>::value && std::is_convertible<U, T>::value, void>::type* dummy = nullptr)
+		: ArrayRefBase<const T>((const T*)other.data(), (const T*)other.data() + other.size())
+		{}
+		
+		ArrayRef<const T>& operator=(const ArrayRef<const T>& other) {
+			this->begin_ = other.begin_;
+			this->end_ = other.end_;
+			return *this;
+		}
+		ArrayRef<const T>& operator=(ArrayRef<const T>&& other) {
+			this->begin_ = other.begin_;
+			this->end_ = other.end_;
+			return *this;
+		}
+	};
+	
+	template <typename T>
+	struct ArrayRef : ArrayRefBase<T> {
+		constexpr ArrayRef() {}
+		constexpr ArrayRef(Empty empty) {}
+		ArrayRef(NothingType nothing) {}
+		constexpr ArrayRef(T* begin, T* end) : ArrayRefBase<T>(begin, end) {}
+		template <size_t N, typename C = T>
+		constexpr ArrayRef(const C(&data)[N]) : ArrayRefBase<T>(data) {}
+		ArrayRef(const ArrayRef<T>& other) = default;
+		ArrayRef(ArrayRef<T>&& other) = default;
+		
+		// Create ArrayRef<T*> from ArrayRef<U*>
+		template <typename U>
+		ArrayRef(const ArrayRef<U>& other, typename std::enable_if<std::is_pointer<U>::value && std::is_pointer<T>::value && std::is_convertible<U, T>::value, void>::type* dummy = nullptr)
+		: ArrayRefBase<T>((T*)other.data(), (T*)other.data() + other.size())
+		{}
+		
+		ArrayRef<T>& operator=(const ArrayRef<T>& other) {
+			this->begin_ = other.begin_;
+			this->end_ = other.end_;
+			return *this;
+		}
+		ArrayRef<T>& operator=(ArrayRef<T>&& other) {
+			this->begin_ = other.begin_;
+			this->end_ = other.end_;
+			return *this;
+		}
+	};
+
+	
+	template <typename T>
+	bool ArrayRefBase<T>::operator==(const ArrayRefBase<T>& other) const {
 		if (size() == other.size()) {
 			for (size_t i = 0; i < size(); ++i) {
 				if (begin_[i] != other.begin_[i]) {
@@ -67,7 +129,7 @@ namespace grace {
 	}
 	
 	template <typename T>
-	bool ArrayRef<T>::operator!=(const ArrayRef<T>& other) const {
+	bool ArrayRefBase<T>::operator!=(const ArrayRefBase<T>& other) const {
 		return !(*this == other);
 	}
 	
