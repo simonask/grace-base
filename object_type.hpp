@@ -34,10 +34,10 @@ struct ObjectType : TypeFor<T, ObjectTypeBase> {
 	}
 	
 	ArrayRef<const IAttribute*> attributes() const {
-		return ArrayRef<const IAttribute*>((IAttribute const **)properties_.data(), (IAttribute const **)properties_.data() + properties_.size());
+		return properties_.ref();
 	}
 	ArrayRef<const ISlot* const> slots() const {
-		return ArrayRef<const ISlot* const>((const ISlot* const*)slots_.data(), (const ISlot* const*)slots_.data() + slots_.size());
+		return slots_.ref();
 	}
 	
 	size_t num_elements() const { return properties_.size(); }

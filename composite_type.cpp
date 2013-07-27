@@ -168,13 +168,11 @@ void CompositeType::serialize_raw(const byte* place, DocumentNode& node, IUniver
 	}
 
 	ArrayRef<const IAttribute*> CompositeType::attributes() const {
-		auto p = (IAttribute const**)exposed_attributes_.data();
-		return ArrayRef<const IAttribute*>(p, p + exposed_attributes_.size());
+		return exposed_attributes_.ref();
 	}
 	
 	ArrayRef<const ISlot* const> CompositeType::slots() const {
-		auto p = (ISlot const**)exposed_slots_.data();
-		return ArrayRef<const ISlot* const>(p, p + exposed_slots_.size());
+		return exposed_slots_.ref();
 	}
 	
 	const StructuredType* CompositeType::super() const {
