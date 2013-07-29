@@ -66,7 +66,7 @@ namespace grace {
 		iterator insert(T element, iterator before);
 		
 		template <typename... Args>
-		void emplace_back(Args... args);
+		void emplace_back(Args&&... args);
 		
 		iterator begin() { return ptr(); }
 		iterator end() { return ptr() + size_; }
@@ -153,6 +153,16 @@ namespace grace {
 			throw MaxArrayTooSmallError();
 		}
 		new(ptr() + size_) T(move(value));
+		++size_;
+	}
+	
+	template <typename T, uint32 C>
+	template <typename... Args>
+	void MaxArray<T,C>::emplace_back(Args&&... args) {
+		if (size_+1 > C) {
+			throw MaxArrayTooSmallError();
+		}
+		new(ptr() + size_) T(std::forward<Args>(args)...);
 		++size_;
 	}
 	
