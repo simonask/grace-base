@@ -35,6 +35,7 @@ namespace grace {
 		// by using SFINAE and perfect forwarding.
 		
 		FORWARD_TO_MEMBER_CONST(size, data_, C)
+		FORWARD_TO_MEMBER_CONST(capacity, data_, C)
 		FORWARD_TO_MEMBER(push_back, data_, C)
 		FORWARD_TO_MEMBER(push_front, data_, C)
 		FORWARD_TO_MEMBER(reserve, data_, C)
