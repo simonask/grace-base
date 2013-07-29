@@ -9,8 +9,6 @@
 #include "event/keys.hpp"
 #include "io/formatted_stream.hpp"
 
-#include <SDL2/SDL_keyboard.h>
-
 namespace grace {
 	FormattedStream& operator<<(FormattedStream& os, Key key) {
 		SDL_Keycode code = (SDL_Keycode)key;
