@@ -176,7 +176,7 @@ namespace grace {
 		const auto new_width = (r.size * cossinv).sumv();
 		const auto new_height = (r.size * sincosv).sumv();
 		const auto new_size = shuffle2<0, X, 1, Y>(new_width, new_height);
-		const auto new_origin = r.origin - ((new_size-r.size) / vec2::two());
+		const auto new_origin = r.origin;
 		return Rect{new_origin, new_size};
 	}
 }
