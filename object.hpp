@@ -28,6 +28,7 @@ struct Object {
 	REFLECT;
 	
 	Object() : type_(nullptr), offset_(0), universe_(nullptr) {}
+	Object(const Object&) = delete;
 	virtual ~Object() {}
 	
 	virtual void initialize() {} // Called after all other objects have been instantiated and deserialized.
