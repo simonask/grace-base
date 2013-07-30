@@ -201,6 +201,24 @@ namespace grace {
 		return n > max ? clamp_mod_down(n, min, max) : (n < min ? clamp_mod_up(n, min, max) : n);
 	}
 	
+	/*
+	 clamp_mod_once:
+	 - if n > min && n < max, returns n.
+	 - otherwise adds or subtracts (max-min) to/from n just once.
+	*/
+	template <typename T>
+	constexpr T clamp_mod_once(T n, T min, T max) {
+		return n > max ? n-(max-min) : n+(max-min);
+	}
+	template <typename T, size_t N>
+	inline TVector<T, N> clamp_mod_once(TVector<T,N> v, TVector<T,N> min, TVector<T,N> max) {
+		const TVector<T,N> diff = max - min;
+		auto r = v;
+		r += select(v < min, diff, TVector<T,N>::zero());
+		r -= select(v > max, diff, TVector<T,N>::zero());
+		return r;
+	}
+	
 	template <typename T>
 	constexpr T clamp(T n, T min, T max) {
 		return n > max ? max : (n < min ? min : n);
