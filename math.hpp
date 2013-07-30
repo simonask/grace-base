@@ -170,6 +170,16 @@ namespace grace {
 	inline constexpr float32 ceil(float32 f) {
 		return (float32)((int32)f+0.5f);
 	}
+		
+	template <typename T, size_t N>
+	inline TVector<T,N> floor(TVector<T,N> v) {
+		return v.floor();
+	}
+		
+	template <typename T, size_t N>
+	inline TVector<T, N> ceil(TVector<T,N> v) {
+		return v.ceil();
+	}
 	
 	template <typename T>
 	constexpr T clamp_mod_down(T n, T min, T max) {
