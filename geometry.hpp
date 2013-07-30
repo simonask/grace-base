@@ -48,7 +48,7 @@ namespace grace {
 			V isize = intersection_area(other);
 			V iorigin = max(origin, other.origin);
 			// Return 0-rect if no intersection
-			iorigin = select(isize == V::zero(), V::zero(), iorigin);
+			iorigin = select(isize == approximately(V::zero(), 0), V::zero(), iorigin);
 			return Self(iorigin, size);
 		}
 		
