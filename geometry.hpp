@@ -60,6 +60,10 @@ namespace grace {
 			return bools.sum() == 2;
 		}
 		
+		bool intersects(const Self& other) const {
+			return intersection_area(other) != approximately(V::zero(), 0.00001f);
+		}
+		
 		Self join(Self other) const {
 			return *this + other;
 		}
