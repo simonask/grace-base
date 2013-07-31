@@ -206,7 +206,21 @@ namespace grace {
 		all_equal(const Self& other) const {
 			return simd::all_true<N>((*this == other).m);
 		}
-				
+		
+		template <typename T = ElementType>
+		ALWAYS_INLINE
+		typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
+		all_true() const {
+			return simd::all_true<N>(this->m);
+		}
+		
+		template <typename T = ElementType>
+		ALWAYS_INLINE
+		typename std::enable_if<!IsFloatingPoint<T>::Value, bool>::type
+		any_true() const {
+			return simd::any_true<N>(this->m);
+		}
+		
 		template <typename T = ElementType>
 		ALWAYS_INLINE typename std::enable_if<IsFloatingPoint<T>::Value, bool>::type
 		any_equal(const Self& other, MaskElementType ulps = 5) const {

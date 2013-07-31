@@ -60,6 +60,8 @@ namespace grace {
 			return bools.sum() == 2;
 		}
 		
+		Maybe<V> intersection_line(V p0, V p1) const;
+		
 		bool intersects(const Self& other) const {
 			return intersection_area(other) != approximately(V::zero(), 0.00001f);
 		}
@@ -88,6 +90,60 @@ namespace grace {
 	};
 	
 	using Rect = TRect<float32>;
+	
+	inline Maybe<vec2> line_intersection(vec2 p0, vec2 p1, vec2 q0, vec2 q1) {
+		vec2 s0 = p1 - p0;
+		vec2 s1 = q1 - q0;
+		
+		// divisor = replicate(-s1.x * s0.y + s0.x * s1.y)
+		vec2 div_a = shuffle2<0, X, 1, X>(-s1, s0);
+		vec2 div_b = shuffle2<0, Y, 1, Y>(s0, s1);
+		vec2 div_c = div_a * div_b;
+		vec2 divisor = div_c.sumv();
+		
+		//auto s = (-s0.y * (p0.x - q0.x) + s0.x * (p0.y - q0.y)) / (-s1.x * s0.y + s0.x * s1.y);
+		//auto t = ( s1.x * (p0.y - q0.y) - s1.y * (p0.x - q0.x)) / (-s1.x * s0.y + s0.x * s1.y);
+		vec2 a = shuffle2<0, Y, 1, X>(-s0, s1);
+		vec2 b = p0 - q0;
+		vec2 c = a * b;
+		vec2 d = shuffle2<0, X, 1, Y>(s0, -s1);
+		vec2 e = shuffle<Y, X>(b);
+		vec2 f = d * e;
+		vec2 st = (c + f) / divisor;
+
+		
+		// if s >= 0 && s <= 1 && t >= 0 && t <= 1
+		const auto zero = vec2::zero();
+		const auto one = vec2::one();
+		auto m = st >= zero & st <= one;
+		if (m.all_true()) {
+			vec2 scalar = shuffle<Y, Y>(st);
+			// return {p0.x + t * s0.x, p0.y + t * s0.y}
+			return p0 + scalar * s0;
+		}
+		return Nothing;
+	}
+	
+	
+	template <typename T>
+	Maybe<typename TRect<T>::V>
+	TRect<T>::intersection_line(V p0, V p1) const {
+		V corners[4] = {
+			origin,
+			origin + V{size.x, 0},
+			origin + V{0, size.y},
+			origin + size,
+		};
+		for (size_t i = 0; i < 4; ++i) {
+			vec2 q0 = corners[i];
+			vec2 q1 = corners[(i+1) % 4];
+			auto intersection = line_intersection(p0, p1, q0, q1);
+			if (intersection.is_set()) {
+				return intersection;
+			}
+		}
+		return Nothing;
+	}
 	
 	namespace detail {
 		const IType* build_rect_type();
