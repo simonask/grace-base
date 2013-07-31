@@ -91,10 +91,7 @@ namespace grace {
 					data_.erase(it);
 					return end();
 				} else {
-					using T = typename C::value_type;
-					T tmp = move(*it);
-					*it = move(*last);
-					*last = move(tmp);
+					std::swap(*it, *last);
 					data_.erase(last);
 					return it;
 				}
