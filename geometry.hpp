@@ -166,7 +166,7 @@ namespace grace {
 
 	
 	// TODO: Arbitrary rotation matrices for 3D-space
-	inline matrix33 make_rotation_matrix33_z(float32 theta) {
+	inline matrix33 make_rotation_matrix33_z(Radians theta) {
 		vec3 v = vec3::replicate(theta);
 		vec3 cosv = cos(v);
 		vec3 sinv = sin(v);
@@ -223,7 +223,10 @@ namespace grace {
 	
 	inline matrix33 make_2d_transform_matrix(vec2 translation, vec2 scale, Degrees rotation) {
 		// TODO: Optimize
-		return make_2d_scaling_matrix(scale) * make_rotation_matrix33_z(rotation) * make_2d_translation_matrix33(translation);
+		matrix33 m = make_2d_scaling_matrix(scale);
+		m = m * make_2d_translation_matrix33(translation);
+		m = m * make_rotation_matrix33_z(deg2rad(rotation));
+		return m;
 	}
 	
 	// Rotates around center
