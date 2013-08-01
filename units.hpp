@@ -42,6 +42,7 @@
 		constexpr bool operator>=(const NEW_TYPE& other) const { return value >= other.value; } \
 		constexpr NEW_TYPE operator+(const NEW_TYPE& other) const { return NEW_TYPE(value + other.value); } \
 		constexpr NEW_TYPE operator-(const NEW_TYPE& other) const { return NEW_TYPE(value - other.value); } \
+		constexpr NEW_TYPE operator-() const { return NEW_TYPE(-value); } \
 		NEW_TYPE operator+=(const NEW_TYPE& other) { value = grace::clamp_mod(value + other.value, MIN, MAX); return *this; } \
 		NEW_TYPE operator-=(const NEW_TYPE& other) { value = grace::clamp_mod(value - other.value, MIN, MAX); return *this; } \
 		NEW_TYPE operator*=(const UNDERLYING_TYPE& scalar) { value = grace::clamp_mod(value * scalar, MIN, MAX); return *this; } \
@@ -73,6 +74,7 @@
 		constexpr bool operator>=(const NEW_TYPE& other) const { return value >= other.value; } \
 		constexpr NEW_TYPE operator+(const NEW_TYPE& other) const { return NEW_TYPE(value + other.value); } \
 		constexpr NEW_TYPE operator-(const NEW_TYPE& other) const { return NEW_TYPE(value - other.value); } \
+		constexpr NEW_TYPE operator-() const { return NEW_TYPE(-value); } \
 		NEW_TYPE operator+=(const NEW_TYPE& other) { value = grace::clamp(value + other.value, MIN, MAX); return *this; } \
 		NEW_TYPE operator-=(const NEW_TYPE& other) { value = grace::clamp(value - other.value, MIN, MAX); return *this; } \
 		NEW_TYPE operator*=(const UNDERLYING_TYPE& scalar) { value = grace::clamp(value * scalar, MIN, MAX); return *this; } \
