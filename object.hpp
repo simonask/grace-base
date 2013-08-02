@@ -55,6 +55,8 @@ struct Object {
 	size_t object_offset() const { return offset_; }
 	void set_object_offset__(uint32 o) { offset_ = o; }
 
+	void enable_updates();
+	void disable_updates();
 private:
 	StringRef object_type_name() const;
 

@@ -99,6 +99,7 @@ struct CompositeType : StructuredType {
 	ArrayRef<const IAttribute*> attributes() const override;
 	ArrayRef<const ISlot*> slots() const override;
 	const StructuredType* super() const final;
+	bool wants_game_update() const final;
 private:
 	const ObjectTypeBase* base_type_;
 	String name_;
@@ -131,6 +132,10 @@ inline Object* CompositeType::get_aspect_in_object(Object *object, size_t idx) c
 		const byte* memory = reinterpret_cast<const byte*>(object);
 		size_t offset = offset_of_element(idx);
 		return reinterpret_cast<const Object*>(memory + offset);
+	}
+	
+	inline bool CompositeType::wants_game_update() const {
+		return base_type()->wants_game_update();
 	}
 }
 

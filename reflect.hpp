@@ -37,6 +37,7 @@ struct ObjectTypeBuilder {
 	Self& name(StringRef n) { type_->name_ = n; return *this; }
 	Self& description(String d) { type_->description_ = std::move(d); return *this; }
 	Self& super(const ObjectTypeBase* t) { type_->super_ = t; return *this; }
+	Self& enable_updates() { type_->set_wants_game_update(true); return *this; }
 	template <typename SuperClass>
 	Self& super() {
 		static_assert(std::is_base_of<SuperClass, T>::value, "Class does not derive from SuperClass.");

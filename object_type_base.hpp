@@ -35,13 +35,19 @@ namespace grace {
 		
 		ObjectTypeBase(const TypeInfo& ti, IAllocator& alloc, const ObjectTypeBase* super, StringRef name, StringRef description) : StructuredType(ti), super_(super), name_(name, alloc), description_(description, alloc), is_abstract_(false) {}
 		
-		const ObjectTypeBase* super_;
+		const ObjectTypeBase* super_ = nullptr;
 		String name_;
 		String description_;
-		bool is_abstract_;
+		bool is_abstract_ = false;
+		bool wants_game_update_ = false;
 		
 		void set_abstract(bool b) { this->is_abstract_ = b; }
 		bool is_abstract() const { return this->is_abstract_; }
+		
+		void set_wants_game_update(bool b) { wants_game_update_ = b; }
+		bool wants_game_update() const override {
+			return wants_game_update_ || (super_ ? super_->wants_game_update() : false);
+		}
 	};
 }
 

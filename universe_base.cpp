@@ -90,6 +90,9 @@ namespace grace {
 		Object* object = reinterpret_cast<Object*>(memory);
 		memory_map_.push_back(object);
 		rename_object(ObjectPtr<>(object), id);
+		if (type->wants_game_update()) {
+			register_object_for_update(ObjectPtr<>(object));
+		}
 		return ObjectPtr<>(object);
 	}
 	

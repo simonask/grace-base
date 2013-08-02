@@ -54,6 +54,14 @@ StringRef Object::object_type_name() const {
 	return object_type()->name();
 }
 
+void Object::enable_updates() {
+	universe()->register_object_for_update(ObjectPtr<>(this));
+}
+
+void Object::disable_updates() {
+	universe()->unregister_object_for_update(ObjectPtr<>(this));
+}
+
 BEGIN_TYPE_INFO(Object)
 	property(&Object::object_id, &Object::set_object_id, "id", "The unique ID for this object.");
 	property<StringRef>(nullptr, nullptr, "class", "The class name for this object.");
