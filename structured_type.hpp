@@ -22,6 +22,7 @@ namespace grace {
 		virtual ArrayRef<const IAttribute*> attributes() const = 0;
 		virtual const StructuredType* super() const = 0;
 		virtual const ReferenceType* reference_type() const;
+		virtual bool wants_game_update() const = 0;
 		
 		const ISlot* find_slot_by_name(StringRef name) const;
 		const IAttribute* find_attribute_by_name(StringRef name) const;
