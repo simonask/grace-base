@@ -10,7 +10,7 @@
 #define grace_events_hpp
 
 #include "event/keys.hpp"
-#include "base/vector.hpp"
+#include "geometry/vector.hpp"
 
 namespace grace {
 	enum class FileSystemEvent : uint8 {

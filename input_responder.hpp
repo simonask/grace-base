@@ -10,7 +10,7 @@
 #define grace_input_responder_hpp
 
 #include "base/auto_link_queue.hpp"
-#include "base/geometry.hpp"
+#include "geometry/rect.hpp"
 #include "event/events.hpp"
 
 namespace grace {
