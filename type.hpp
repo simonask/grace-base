@@ -4,7 +4,7 @@
 
 #include "base/basic.hpp"
 #include "base/array.hpp"
-#include "base/vector.hpp"
+#include "geometry/vector.hpp"
 #include "memory/static_allocator.hpp"
 #include "base/string.hpp"
 #include "io/string_stream.hpp"

@@ -9,7 +9,7 @@
 #ifndef grace_matrix_type_hpp
 #define grace_matrix_type_hpp
 
-#include "base/matrix.hpp"
+#include "geometry/matrix.hpp"
 #include "type/type.hpp"
 #include "base/log.hpp"
 

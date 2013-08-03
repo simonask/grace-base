@@ -10,7 +10,7 @@
 #define grace_vector_type_hpp
 
 #include "type/type.hpp"
-#include "base/vector.hpp"
+#include "geometry/vector.hpp"
 #include "serialization/document_node.hpp"
 
 namespace grace {
