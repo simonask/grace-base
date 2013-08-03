@@ -10,7 +10,7 @@
 #define grace_math_hpp
 
 #include <cmath>
-#include "base/vector.hpp"
+#include "geometry/vector.hpp"
 
 namespace grace {
 	static constexpr const float32 E = M_E;

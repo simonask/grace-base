@@ -9,7 +9,7 @@
 #ifndef grace_color_hpp
 #define grace_color_hpp
 
-#include "base/vector.hpp"
+#include "geometry/vector.hpp"
 
 namespace grace {
 	struct Color {

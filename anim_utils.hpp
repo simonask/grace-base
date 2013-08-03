@@ -10,8 +10,8 @@
 #define grace_anim_utils_hpp
 
 #include "base/basic.hpp"
-#include "base/vector.hpp"
-#include "base/matrix.hpp"
+#include "geometry/vector.hpp"
+#include "geometry/matrix.hpp"
 #include "base/color.hpp"
 
 namespace grace {
