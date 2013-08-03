@@ -12,7 +12,7 @@
 #include "io/formatted_stream.hpp"
 #include "io/string_stream.hpp"
 #include "base/array.hpp"
-#include "base/matrix.hpp"
+#include "geometry/matrix.hpp"
 #include "base/array_list.hpp"
 #include "base/maxarray.hpp"
 #include "base/color.hpp"

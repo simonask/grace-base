@@ -11,7 +11,7 @@
 
 #include "base/basic.hpp"
 #include "io/output_stream.hpp"
-#include "base/vector.hpp"
+#include "geometry/vector.hpp"
 #include "base/string.hpp"
 #include <stdio.h>
 #include "base/string.hpp"
