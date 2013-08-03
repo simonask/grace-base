@@ -10,8 +10,10 @@
 #define grace_spatial_object_hpp
 
 #include "object/object.hpp"
-#include "base/vector.hpp"
-#include "base/geometry.hpp"
+#include "geometry/vector.hpp"
+#include "geometry/rect.hpp"
+#include "geometry/units.hpp"
+#include "geometry/matrix.hpp"
 #include "render/renderable.hpp"
 #include "object/objectptr.hpp"
 

@@ -9,7 +9,7 @@
 #include "object/spatial_object.hpp"
 #include "type/vector_type.hpp"
 #include "object/reflect.hpp"
-#include "base/geometry.hpp"
+#include "geometry/2d.hpp"
 #include "render/renderer.hpp"
 #include "render/path.hpp"
 #include "render/vertex.hpp"
