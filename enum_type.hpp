@@ -73,7 +73,7 @@ namespace grace {
 		}
 		EnumTypeBuilder& value(ssize_t val, StringRef name, StringRef description = "") {
 			ASSERT(allow_arbitrary_integers_);
-			ASSERT(val >= LONG_LONG_MIN);
+			ASSERT(val >= SSIZE_MIN);
 			ASSERT(val <= SSIZE_MAX);
 			entries_.push_back(EnumType::Entry{name, description, val});
 			return *this;
@@ -92,7 +92,7 @@ namespace grace {
 		bool allow_arbitrary_integers_ = false;
 		StringRef name_;
 		size_t width_;
-		ssize_t min_ = LONG_LONG_MIN;
+		ssize_t min_ = SSIZE_MIN;
 		ssize_t max_ = SSIZE_MAX;
 	};
 }
