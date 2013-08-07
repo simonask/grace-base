@@ -11,7 +11,7 @@
 
 #include "base/basic.hpp"
 #include "memory/allocator.hpp"
-#include <type_traits>
+#include "base/type_traits.hpp"
 
 namespace grace {
 	/*
@@ -31,7 +31,7 @@ namespace grace {
 			}
 			ASSERT(req_size >= new_size);
 			T* new_data;
-			if (std::is_trivially_copyable<T>::value) {
+			if (IsTriviallyCopyable<T>::Value) {
 				new_data = (T*)allocator.reallocate(data, sizeof(T) * (*inout_alloc_size), sizeof(T) * req_size, alignof(T));
 			} else {
 				new_data = (T*)allocator.allocate(sizeof(T)*req_size, alignof(T));

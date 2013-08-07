@@ -43,6 +43,15 @@ namespace grace {
 		static const size_t Value = IndexOfTypeImpl<T, 0, Types...>::Value;
 	};
 	
+	template <typename T>
+	struct IsTriviallyCopyable {
+	#if defined(__has_trivial_copy)
+		static const bool Value = __has_trivial_copy(T);
+	#else
+		static const bool Value = false;
+	#endif
+	};
+	
 	// === AlignedUnion ===
 	// TODO: Use std::aligned_union once libc++ catches up with C++11.
 	template <typename... Types>
