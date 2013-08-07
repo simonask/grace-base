@@ -8,6 +8,7 @@
 
 #include "base/regex.hpp"
 #include "io/string_stream.hpp"
+#include "base/stack_array.hpp"
 #include <regex.h>
 
 namespace grace {
@@ -101,17 +102,29 @@ namespace grace {
 		if (is_case_insensitive())  o |= REG_ICASE;
 		if (is_newline_sensitive()) o |= REG_NEWLINE;
 		o |= REG_EXTENDED;
+#if defined(__APPLE__)
+		// Faster copyless Apple alternative:
 		// TODO: Consider using REG_PEND option instead of regncomp
 		int err = ::regncomp((regex_t*)regex_, pattern_.data(), pattern_.size(), o);
+#else
+		COPY_STRING_REF_TO_CSTR_BUFFER(pattern_buffer, pattern_);
+		int err = ::regcomp((regex_t*)regex_, pattern_buffer.data(), o);
+#endif
 		check_error(err);
 	}
 	
 	bool Regex::match(StringRef haystack) const {
 		if (regex_ == nullptr) return false;
 		regmatch_t matches[1];
+#if defined(__APPLE__)
+		// Faster copyless Apple alternative:
 		int err = ::regnexec((regex_t*)regex_, haystack.data(), haystack.size(), 1, matches, 0);
-		if (err == REG_NOMATCH) return false;
 		if (err == REG_EMPTY) return false;
+#else
+		COPY_STRING_REF_TO_CSTR_BUFFER(haystack_buffer, haystack);
+		int err = ::regexec((regex_t*)regex_, haystack_buffer.data(), 1, matches, 0);
+#endif
+		if (err == REG_NOMATCH) return false;
 		check_error(err);
 		return true;
 	}
@@ -123,7 +136,13 @@ namespace grace {
 			const char* p = haystack.data();
 			const char* end = p + haystack.size();
 			while (p < end) {
+#if defined(__APPLE__)
+				// Faster copyless Apple alternative:
 				int err = ::regnexec((regex_t*)regex_, p, end - p, 1, &match, 0);
+#else
+				COPY_STRING_REF_TO_CSTR_BUFFER(p_buffer, StringRef(p, end));
+				int err = ::regexec((regex_t*)regex_, p_buffer.data(), 1, &match, 0);
+#endif
 				if (err == REG_NOMATCH) {
 					break;
 				}
@@ -149,9 +168,11 @@ namespace grace {
 				case REG_ERANGE: throw RegexError("Invalid character in range.");
 				case REG_ESPACE: throw RegexError("Out of memory.");
 				case REG_BADRPT: throw RegexError("Invalid repeat operator.");
+#if defined(__APPLE__)
 				case REG_ASSERT: UNREACHABLE();
 				case REG_INVARG: throw RegexError("Negative-length string.");
 				case REG_ILLSEQ: throw RegexError("Bad multibyte character.");
+#endif
 				default: UNREACHABLE();
 			}
 		}
