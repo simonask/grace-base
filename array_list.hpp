@@ -20,6 +20,8 @@
 namespace grace {
 	struct FormattedStream;
 
+	template <typename T, bool IsConst> struct ArrayListIteratorImpl;
+
 	template <typename T>
     class ArrayList {
     public:
@@ -48,9 +50,8 @@ namespace grace {
         T& operator[](size_t idx);
         const T& operator[](size_t idx) const;
         
-        template <bool IsConst> struct iterator_impl;
-        using iterator = iterator_impl<false>;
-        using const_iterator = iterator_impl<true>;
+        using iterator = ArrayListIteratorImpl<T, false>;
+        using const_iterator = ArrayListIteratorImpl<T, true>;
         
         iterator begin();
         iterator end();
@@ -72,7 +73,8 @@ namespace grace {
         iterator erase(iterator it);
 		void resize(size_t new_size, T filler = T());
     private:
-        template <bool> friend struct iterator_impl;
+	friend struct ArrayListIteratorImpl<T, false>;
+	friend struct ArrayListIteratorImpl<T, true>;
         
         IAllocator& allocator_;
         
@@ -433,11 +435,10 @@ namespace grace {
 		allocator_.free_large(ptr, (byte*)ptr->end - (byte*)ptr);
 	}
     
-    template <typename T>
-    template <bool IsConst>
-    struct ArrayList<T>::iterator_impl {
+    template <typename T, bool IsConst>
+    struct ArrayListIteratorImpl {
     public:
-        using Self = iterator_impl<IsConst>;
+        using Self = ArrayListIteratorImpl<T, IsConst>;
         using Owner = typename std::conditional<IsConst, const ArrayList<T>, ArrayList<T>>::type;
         using ValueType = typename std::conditional<IsConst, const T, T>::type;
         using value_type = ValueType;
@@ -499,23 +500,23 @@ namespace grace {
 		}
         
 		template <bool IsConst_>
-		ssize_t operator-(const iterator_impl<IsConst_>& other) const {
+		ssize_t operator-(const ArrayListIteratorImpl<T, IsConst_>& other) const {
 			ASSERT(owner_ == other.owner_);
 			return (ssize_t)position_ - (ssize_t)other.position_;
 		}
         
-        bool operator==(const iterator_impl<true>& other) const {
+        bool operator==(const ArrayListIteratorImpl<T, true>& other) const {
             return owner_ == other.owner_ && block_ == other.block_ && current_ == other.current_;
         }
-        bool operator!=(const iterator_impl<true>& other) const {
+        bool operator!=(const ArrayListIteratorImpl<T, true>& other) const {
             return !(*this == other);
         }
         
-		iterator_impl() : owner_(nullptr), current_(nullptr) {}
-        iterator_impl(const iterator_impl<false>& other) : owner_(other.owner_), block_(other.block_), current_(other.current_), position_(other.position_) {}
+		ArrayListIteratorImpl() : owner_(nullptr), current_(nullptr) {}
+        ArrayListIteratorImpl(const ArrayListIteratorImpl<T, false>& other) : owner_(other.owner_), block_(other.block_), current_(other.current_), position_(other.position_) {}
         template <bool IsConst_ = IsConst>
-        iterator_impl(const typename std::enable_if<IsConst_, iterator_impl<true>>::type& other) : owner_(other.owner_), block_(other.block_), current_(other.current_), position_(other.position_) {}
-        Self& operator=(const iterator_impl<false>& other) {
+        ArrayListIteratorImpl(const typename std::enable_if<IsConst_, ArrayListIteratorImpl<T, true>>::type& other) : owner_(other.owner_), block_(other.block_), current_(other.current_), position_(other.position_) {}
+        Self& operator=(const ArrayListIteratorImpl<T, false>& other) {
             owner_ = other.owner_;
             block_ = other.block_;
             current_ = other.current_;
@@ -523,7 +524,7 @@ namespace grace {
             return *this;
         }
         template <bool IsConst_ = IsConst>
-        Self& operator=(const typename std::enable_if<IsConst_, iterator_impl<true>>::type& other) {
+        Self& operator=(const typename std::enable_if<IsConst_, ArrayListIteratorImpl<T, true>>::type& other) {
             owner_ = other.owner_;
             block_ = other.block_;
             current_ = other.current_;
@@ -531,9 +532,9 @@ namespace grace {
             return *this;
         }
     private:
-        iterator_impl(Owner& owner, BlockListIterator b, ValueType* c, size_t position) : owner_(&owner), block_(b), current_(c), position_(position) {}
+        ArrayListIteratorImpl(Owner& owner, BlockListIterator b, ValueType* c, size_t position) : owner_(&owner), block_(b), current_(c), position_(position) {}
         friend class ArrayList<T>;
-        friend struct iterator_impl<!IsConst>;
+        friend struct ArrayListIteratorImpl<T, !IsConst>;
         Owner* owner_;
         BlockListIterator block_;
         ValueType* current_;
@@ -616,6 +617,17 @@ namespace grace {
     typename ArrayList<T>::const_iterator ArrayList<T>::end() const {
         return const_iterator(*this, blocks_.end(), nullptr, size());
     }
+}
+
+namespace std {
+	template <typename T, bool IsConst>
+	struct iterator_traits<grace::ArrayListIteratorImpl<T, IsConst>> {
+		using difference_type = ptrdiff_t;
+		using value_type = typename std::conditional<IsConst, const T, T>::type;
+		using pointer = typename std::conditional<IsConst, const T*, T*>::type;
+		using reference = typename std::conditional<IsConst, const T&, T&>::type;
+		using iterator_category = std::bidirectional_iterator_tag;
+	};
 }
 
 #endif
