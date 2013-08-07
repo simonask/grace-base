@@ -12,6 +12,7 @@
 #include "base/basic.hpp"
 #include "memory/memory_tracker.hpp"
 #include <atomic>
+#include <string.h>
 
 namespace grace {
 	class FormattedStream;
