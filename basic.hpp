@@ -135,6 +135,9 @@ struct IsMoveAssignableNonRef {
 	struct GetMemberFunctionPointerType {
 		typedef R(T::*Type)(Args...);
 	};
+	
+	// Use with decltype to infer the type of members with get_member_type(&T::foo)
+	template <typename M, typename T> M get_member_type(M T::*);
 
 template <typename T>
 void destruct(byte* ptr) {
