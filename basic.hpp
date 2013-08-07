@@ -2,12 +2,16 @@
 #ifndef BASIC_HPP_S0NRU03V
 #define BASIC_HPP_S0NRU03V
 
+#define __STDC_LIMIT_MACROS 1
+#define __STDC_CONSTANT_MACROS 1
+
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <memory>
 #include <type_traits>
+#include <limits.h>
 
 namespace grace {
 
@@ -30,6 +34,12 @@ typedef uint8 byte;
 #endif
 #if !defined(SSIZE_MIN)
 #define SSIZE_MIN INTPTR_MIN
+#endif
+#if !defined(SIZE_MAX)
+#define SIZE_MAX ((size_t)-1)
+#endif
+#if !defined(SIZE_T_MAX)
+#define SIZE_T_MAX ((size_t)-1)
 #endif
 
 static const struct NothingType { NothingType() {} } Nothing;
