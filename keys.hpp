@@ -13,11 +13,7 @@
 
 // TODO: Make independent on SDL.
 
-#if defined(__APPLE__)
 #include <SDL2/SDL_keyboard.h>
-#else
-#include <SDL_keyboard.h>
-#endif
 
 namespace grace {
 	enum class Key : uint32 {
