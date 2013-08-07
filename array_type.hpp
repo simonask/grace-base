@@ -28,7 +28,7 @@ struct VariableLengthArrayType : TypeFor<Container, ArrayType> {
 public:
 	typedef typename Container::value_type ElementType;
 	VariableLengthArrayType(IAllocator& alloc, StringRef base_container_name) : name_(build_variable_length_array_type_name(alloc, base_container_name, get_type<ElementType>())) {}
-	size_t num_elements() const { return SIZE_T_MAX; }
+	size_t num_elements() const { return SIZE_MAX; }
 	size_t offset_of_element(size_t idx) const { return idx * this->element_type_->size(); }
 	
 	void deserialize(Container& place, const DocumentNode& node, IUniverse&) const;
