@@ -13,6 +13,7 @@
 #include "geometry/matrix.hpp"
 #include "geometry/rect.hpp"
 #include "geometry/units.hpp"
+#include "base/stack_array.hpp"
 
 namespace grace {
 	inline Maybe<vec2> line_intersection(vec2 p0, vec2 p1, vec2 q0, vec2 q1) {
@@ -48,12 +49,12 @@ namespace grace {
 		return Nothing;
 	}
 	
-	template <typename P>
-	void project_polygon(vec2 axis, const P& path, float32& begin, float32& end) {
+	template <typename InputIterator>
+	void project_polygon(vec2 axis, InputIterator p_begin, InputIterator p_end, float32& begin, float32& end) {
 		begin = HUGE_VALF;
 		end = -HUGE_VALF;
-		for (auto& p: path) {
-			float32 dot = path.position.dot(axis);
+		for (auto it = p_begin; it != p_end; ++it) {
+			float32 dot = it->dot(axis);
 			if (dot < begin) {
 				begin = dot;
 			} else if (dot > end) {
@@ -62,8 +63,16 @@ namespace grace {
 		}
 	}
 	
+	inline float32 interval_distance(float32 a0, float32 a1, float32 b0, float32 b1) {
+		if (a0 < b0) {
+			return b0 - a1;
+		} else {
+			return a0 - b1;
+		}
+	}
+	
 	template <typename PathA, typename PathB>
-	bool polygon_intersection(const PathA& a, const PathB& b) {
+	bool polygon_intersection(const PathA& a, const PathB& b, const matrix33& transform_a, const matrix33& transform_b) {
 		if (a.size() == 0 || b.size() == 0) return false;
 		
 		// Quickly check bounds overlap
@@ -81,6 +90,44 @@ namespace grace {
 		
 		// They overlap, do polygon overlap check
 		
+		using VTa = typename PathA::ValueType;
+		using VTb = typename PathB::ValueType;
+		using Va = decltype(get_member_type(&VTa::position));
+		using Vb = decltype(get_member_type(&VTb::position));
+		
+		DEFINE_STACK_ARRAY(Va, transformed_positions_a, a.size());
+		for (size_t i = 0; i < a.size(); ++i) {
+			transformed_positions_a[i] = matrix_transform(transform_a, a[i].position);
+		}
+		DEFINE_STACK_ARRAY(Vb, transformed_positions_b, b.size());
+		for (size_t i = 0; i < b.size(); ++i) {
+			transformed_positions_b[i] = matrix_transform(transform_b, b[i].position);
+		}
+		
+		for (size_t i = 0; i < a.size(); ++i) {
+			vec2 p0 = transformed_positions_a[i].position;
+			vec2 p1 = transformed_positions_a[(i + 1) % a.size()].position;
+			vec2 axis = (p1 - p0).normalize();
+			float32 begin_a, end_a, begin_b, end_b;
+			project_polygon(axis, transformed_positions_a.begin(), transformed_positions_a.end(), begin, end);
+			project_polygon(axis, transformed_positions_b.begin(), transformed_positions_b.end(), begin, end);
+			
+			if (interval_distance(begin_a, end_a, begin_b, end_b) > 0) {
+				return false;
+			}
+		}
+		for (size_t i = 0; i < b.size(); ++i) {
+			vec2 p0 = transformed_positions_b[i].position;
+			vec2 p1 = transformed_positions_b[(i + 1) % a.size()].position;
+			vec2 axis = (p1 - p0).normalize();
+			float32 begin_a, end_a, begin_b, end_b;
+			project_polygon(axis, transformed_positions_a.begin(), transformed_positions_a.end(), begin, end);
+			project_polygon(axis, transformed_positions_b.begin(), transformed_positions_b.end(), begin, end);
+			
+			if (interval_distance(begin_a, end_a, begin_b, end_b) > 0) {
+				return false;
+			}
+		}
 	}
 	
 	inline matrix22 make_rotation_matrix22(float32 theta) {
