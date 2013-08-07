@@ -93,6 +93,9 @@ namespace grace {
 	ProcessTime process_now() {
 #if defined(__MACH__)
 		uint64 ns = mach_absolute_time();
+#else
+		// On other systems, ProcessTime is equivalent to SystemTime
+		uint64 ns = system_now().nanoseconds_since_epoch();
 #endif
 		return ProcessTime() + ProcessTime::nanoseconds(ns);
 	}
