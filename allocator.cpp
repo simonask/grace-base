@@ -10,7 +10,11 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <errno.h>
+#if defined(__APPLE__)
 #include <malloc/malloc.h>
+#else
+#include <malloc.h>
+#endif
 #include <mutex>
 #include "io/formatted_stream.hpp"
 #include "io/formatters.hpp"
