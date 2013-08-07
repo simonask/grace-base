@@ -28,6 +28,9 @@ typedef uint8 byte;
 #if !defined(SSIZE_MAX)
 #define SSIZE_MAX INTPTR_MAX
 #endif
+#if !defined(SSIZE_MIN)
+#define SSIZE_MIN INTPTR_MIN
+#endif
 
 static const struct NothingType { NothingType() {} } Nothing;
 using NullPtr = std::nullptr_t;
