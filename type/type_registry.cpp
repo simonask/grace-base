@@ -2,7 +2,7 @@
 #include "object/object_type.hpp"
 #include "base/basic.hpp"
 #include "base/map.hpp"
-#include "render/vertex_type.hpp"
+//#include "render/vertex_type.hpp"
 
 namespace grace {
 
@@ -29,7 +29,7 @@ void TypeRegistry::add(const ObjectTypeBase* type) {
 }
 
 void TypeRegistry::add(const VertexType* type) {
-	impl()->vertex_type_map[type->name()] = type;
+	//impl()->vertex_type_map[type->name()] = type;
 }
 
 void TypeRegistry::add(const EnumType* type) {
