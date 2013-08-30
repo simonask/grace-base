@@ -25,19 +25,19 @@ namespace grace {
 
 	struct IEventLoop {
 		using FileSystemCallback = Function<void(FileSystemDescriptor fd, FileSystemEvent event)>;
-		using InputEventCallback = Function<EventResponse(const InputEvent&)>; // return: handled?
+		//using InputEventCallback = Function<EventResponse(const InputEvent&)>; // return: handled?
 	
 		// Call-later API
 		virtual UniquePtr<IEventHandle> schedule(IAllocator&, Function<void()>, SystemTimeDelta delay) = 0;
 		virtual UniquePtr<IEventHandle> call_repeatedly(IAllocator&, Function<void()>, SystemTimeDelta interval) = 0;
 		
 		// Input Event API
-		virtual UniquePtr<IEventHandle> listen_for_input_event(IAllocator&, uint32 input_event_mask, InputEventCallback callback) = 0;
-		virtual void push_input_event(InputEvent event, bool handle_immediately = true) = 0;
+		//virtual UniquePtr<IEventHandle> listen_for_input_event(IAllocator&, uint32 input_event_mask, InputEventCallback callback) = 0;
+		//virtual void push_input_event(InputEvent event, bool handle_immediately = true) = 0;
 		
 		// Input Event Recording API
-		virtual void record_input_events(StringRef output_file_path) = 0;
-		virtual void replay_recorded_input_events(StringRef recorded_events_file_path, bool authentic_time) = 0;
+		//virtual void record_input_events(StringRef output_file_path) = 0;
+		//virtual void replay_recorded_input_events(StringRef recorded_events_file_path, bool authentic_time) = 0;
 		
 		// Async File I/O API
 		virtual UniquePtr<IEventHandle> watch_descriptor(IAllocator&, FileSystemDescriptor fd, uint8 event_mask, FileSystemCallback callback, SystemTimeDelta timeout = SystemTimeDelta::forever()) = 0;

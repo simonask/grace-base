@@ -22,9 +22,6 @@ set(SOURCES
 	base/regex.cpp
 	base/string.cpp
 	base/time.cpp
-	event/input_manager.cpp
-	event/input_responder.cpp
-	event/keys.cpp
 	geometry/rect.cpp
 	geometry/units.cpp
 	geometry/vector.cpp
