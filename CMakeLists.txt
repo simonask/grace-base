@@ -32,6 +32,7 @@ set(SOURCES
 	io/file_stream.cpp
 	io/formatted_stream.cpp
 	io/memory_stream.cpp
+	io/process_stream.cpp
 	io/resource.cpp
 	io/resource_loader.cpp
 	io/resource_manager.cpp
