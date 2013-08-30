@@ -28,7 +28,8 @@ public:
 	Array() : allocator_(default_allocator()) {}
 	explicit Array(IAllocator& alloc) : allocator_(alloc) {}
 	Array(std::initializer_list<T> list, IAllocator& alloc = default_allocator());
-	Array(const Array<T>& other, IAllocator& alloc = default_allocator());
+	Array(const Array<T>& other, IAllocator& alloc);
+	Array(const Array<T>& other);
 	Array(Array<T>&& other);
 	explicit Array(ArrayRef<T> array, IAllocator& alloc = default_allocator());
 	~Array();
@@ -64,9 +65,15 @@ public:
 	
 	template <typename InputIterator>
 	iterator insert(InputIterator begin, InputIterator end);
+
+	template <typename InputIterator>
+	iterator insert_move(InputIterator begin, InputIterator end);
 	
 	template <typename InputIterator>
 	iterator insert(InputIterator begin, InputIterator end, iterator before);
+
+	template <typename InputIterator>
+	iterator insert_move(InputIterator begin, InputIterator end, iterator before);
 	
 	iterator insert(T element, iterator before);
 	
@@ -113,6 +120,12 @@ Array<T>::Array(std::initializer_list<T> list, IAllocator& alloc) : allocator_(a
 }
 
 template <typename T>
+Array<T>::Array(const Array<T>& other) : allocator_(default_allocator()) {
+	reserve(other.size());
+	insert(other.begin(), other.end());
+}
+
+template <typename T>
 Array<T>::Array(const Array<T>& other, IAllocator& alloc) : allocator_(alloc) {
 	reserve(other.size());
 	insert(other.begin(), other.end());
@@ -153,12 +166,19 @@ Array<T>& Array<T>::operator=(const Array<T>& other) {
 
 template <typename T>
 Array<T>& Array<T>::operator=(Array<T>&& other) {
-	data_ = other.data_;
-	size_ = other.size_;
-	alloc_size_ = other.alloc_size_;
-	other.data_ = nullptr;
-	other.size_ = 0;
-	other.alloc_size_ = 0;
+	if (&allocator_ == &other.allocator_) {
+		data_ = other.data_;
+		size_ = other.size_;
+		alloc_size_ = other.alloc_size_;
+		other.data_ = nullptr;
+		other.size_ = 0;
+		other.alloc_size_ = 0;
+	} else {
+		clear();
+		reserve(other.size());
+		insert_move(other.begin(), other.end());
+		other.clear();
+	}
 	return *this;
 }
 
@@ -246,6 +266,12 @@ typename Array<T>::iterator Array<T>::insert(InputIterator b, InputIterator e) {
 
 template <typename T>
 template <typename InputIterator>
+typename Array<T>::iterator Array<T>::insert_move(InputIterator b, InputIterator e) {
+	return insert_move(b, e, end());
+}
+
+template <typename T>
+template <typename InputIterator>
 typename Array<T>::iterator Array<T>::insert(InputIterator b, InputIterator e, iterator before) {
 	size_t add_len = e - b;
 	size_t num_move = end() - before;
@@ -276,6 +302,44 @@ typename Array<T>::iterator Array<T>::insert(InputIterator b, InputIterator e, i
 		} else {
 			// moving to uninitialized memory
 			new(dst.get()) T(*it);
+		}
+	}
+	size_ += add_len;
+	return before;
+}
+
+template <typename T>
+template <typename InputIterator>
+typename Array<T>::iterator Array<T>::insert_move(InputIterator b, InputIterator e, iterator before) {
+	size_t add_len = e - b;
+	size_t num_move = end() - before;
+	size_t before_idx = before - begin();
+	reserve(size_ + add_len);
+	// reserve invalidates iterators, so recalculate it:
+	before = begin() + before_idx;
+	iterator move_end = end();
+	iterator move_begin = before;
+	iterator move_target_end = end() + add_len;
+	for (size_t i = 0; i < num_move; ++i) {
+		iterator src = move_end - i - 1;
+		iterator dst = move_target_end - i - 1;
+		if (dst >= end()) {
+			// moving to uninitialized memory
+			new(dst.get()) T(std::move(*src));
+		} else {
+			// moving to previously initialized memory
+			*dst = std::move(*src);
+		}
+	}
+	size_t i = 0;
+	for (auto it = b; it != e; ++it, ++i) {
+		iterator dst = before + i;
+		if (dst < end()) {
+			// moving to previously initialized memory
+			*dst = move(*it);
+		} else {
+			// moving to uninitialized memory
+			new(dst.get()) T(move(*it));
 		}
 	}
 	size_ += add_len;
