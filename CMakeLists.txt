@@ -74,18 +74,6 @@ set(SOURCES
 	grace_base.cpp
 )
 
-if(APPLE)
-	list(APPEND SOURCES platform/paths_apple.mm)
-
-	find_library(CF_LIB CoreFoundation)
-	find_library(COCOA_LIB Cocoa)
-	find_library(SDL2_LIB SDL2) # For keys.hpp
-	mark_as_advanced(CF_LIB COCOA_LIB SDL2_LIB)
-	set(EXTRA_LIBS ${CF_LIB} ${COCOA_LIB} ${SDL2_LIB})
-else(APPLE)
-	find_library(SDL2_LIB sdl2)
-endif(APPLE)
-
 set(FINAL_SOURCES)
 foreach(f ${SOURCES})
 	list(APPEND FINAL_SOURCES ${SRCPATH}/${f})
@@ -96,6 +84,5 @@ find_library(EVENT_LIB event)
 
 add_library(grace-base SHARED ${FINAL_SOURCES})
 
-target_link_libraries(grace-base ${EXTRA_LIBS})
 target_link_libraries(grace-base yaml)
 target_link_libraries(grace-base event)
