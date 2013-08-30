@@ -165,7 +165,7 @@ namespace grace {
 		assign(other.data(), other.size());
 	}
 	
-	inline String::String(const String& other) : String(other, other.allocator()) {
+	inline String::String(const String& other) : String(other, default_allocator()) {
 	}
 	
 	inline String::String(String&& other) : allocator_(other.allocator_), data_(nullptr), size_(0) {
@@ -219,13 +219,11 @@ namespace grace {
 		if (this == &other) {
 			return *this;
 		}
-		clear();
 		if (&allocator_ == &other.allocator_) {
-			data_ = other.data_;
-			size_ = other.size_;
-			other.data_ = nullptr;
-			other.size_ = 0;
+			std::swap(data_, other.data_);
+			std::swap(size_, other.size_);
 		} else {
+			clear();
 			assign(other.data_, other.size_);
 			other.clear();
 		}
