@@ -9,12 +9,13 @@
 #include "io/util.hpp"
 #include "base/string.hpp"
 #include "base/stack_array.hpp"
-#include "string_stream.hpp"
+#include "io/string_stream.hpp"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <limits.h>
+#include <glob.h>
 
 namespace grace {
 	bool path_is_directory(StringRef path) {
@@ -71,5 +72,31 @@ namespace grace {
 		COPY_STRING_REF_TO_CSTR_BUFFER(relpath_cstr, relpath);
 		char* str = realpath(relpath_cstr.data(), buffer);
 		return String(str, alloc);
+	}
+
+	Array<String> path_glob(StringRef pattern, IAllocator& alloc) {
+		Array<String> result(alloc);
+		COPY_STRING_REF_TO_CSTR_BUFFER(pattern_cstr, pattern);
+		// TODO: Invoke in a thread-safe manner!
+		glob_t g;
+		int r = ::glob(pattern_cstr.data(), GLOB_MARK | GLOB_NOSORT, nullptr, &g);
+		if (r == 0) {
+			result.reserve(g.gl_matchc);
+			for (size_t i = 0; i < g.gl_matchc; ++i) {
+				result.push_back(String(g.gl_pathv[i], alloc));
+			}
+		}
+		return move(result);
+	}
+
+	Maybe<SystemTime> file_modification_time(StringRef path) {
+		struct stat s;
+		COPY_STRING_REF_TO_CSTR_BUFFER(path_cstr, path);
+		int r = stat(path_cstr.data(), &s);
+		if (r == 0 && !S_ISDIR(s.st_mode)) {
+			auto mtime = s.st_mtimespec;
+			return SystemTime(0) + SystemTime::seconds((int64)mtime.tv_sec) + SystemTime::nanoseconds((int64)mtime.tv_nsec);
+		}
+		return Nothing;
 	}
 }

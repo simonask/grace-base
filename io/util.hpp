@@ -11,6 +11,7 @@
 
 #include "io/input_stream.hpp"
 #include "base/array.hpp"
+#include "base/time.hpp"
 
 namespace grace {
 	template <typename ContainerType>
@@ -40,6 +41,8 @@ namespace grace {
 	String path_join(ArrayRef<const StringRef> components, IAllocator& alloc = default_allocator());
 	StringRef path_chomp(StringRef path);
 	String path_absolute(StringRef relpath, IAllocator& alloc = default_allocator());
+	Array<String> path_glob(StringRef pattern, IAllocator& alloc = default_allocator());
+	Maybe<SystemTime> file_modification_time(StringRef path);
 }
 
 
