@@ -137,7 +137,9 @@ namespace grace {
 	size_t find(StringRef, const StringRef& substring);
 	size_t rfind(StringRef, char letter);
 	size_t rfind(StringRef, const StringRef& substring);
-	StringRef strip(StringRef s);
+	StringRef lstrip(StringRef s, char l = ' ');
+	StringRef rstrip(StringRef s, char l = ' ');
+	StringRef strip(StringRef s, char l = ' ');
 	String reverse(StringRef str, IAllocator& alloc = default_allocator());
 	String reverse(String&& str, IAllocator& alloc);
 	String reverse(String&& str);

@@ -94,19 +94,28 @@ namespace grace {
 		}
 		return String::NPos;
 	}
-	
-	StringRef strip(StringRef input) {
+
+	StringRef lstrip(StringRef input, char c) {
 		const char* p = input.data();
 		const char* end = input.data() + input.size();
-		while (*p == ' ' && p != end) {
+		while (*p == c && p != end) {
 			++p;
 		}
+		return StringRef(p, end);
+	}
+
+	StringRef rstrip(StringRef input, char c) {
+		const char* p = input.data();
+		const char* end = input.data() + input.size();
 		if (p != end) {
 			do {
 				--end;
-			} while (*end == ' ' && end != p);
-			++end;
+			} while (*end == c && end != p);
 		}
 		return StringRef(p, end);
+	}
+	
+	StringRef strip(StringRef input, char c) {
+		return rstrip(lstrip(input, c), c);
 	}
 }
