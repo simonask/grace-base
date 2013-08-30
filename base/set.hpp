@@ -11,6 +11,7 @@
 
 #include "base/basic.hpp"
 #include "memory/allocator.hpp"
+#include "io/formatters.hpp" // TODO: Get rid of dependency
 #include <algorithm>
 
 namespace grace {
@@ -25,12 +26,16 @@ namespace grace {
 		
 		explicit Set(IAllocator& alloc = default_allocator());
 		Set(Compare cmp, IAllocator& alloc = default_allocator());
-		Set(const Set<T,Container,Compare>& other, IAllocator& alloc = default_allocator());
+		Set(const Set<T,Container,Compare>& other);
+		Set(const Set<T,Container,Compare>& other, IAllocator& alloc);
 		Set(Set<T,Container,Compare>&& other);
 		Set(std::initializer_list<T> list, IAllocator& alloc = default_allocator());
 		Set(std::initializer_list<T> list, Compare cmp, IAllocator& alloc = default_allocator());
-		Set(ArrayRef<T> list, IAllocator& alloc = default_allocator());
+		explicit Set(ArrayRef<T> list, IAllocator& alloc = default_allocator());
 		Set(ArrayRef<T> list, Compare cmp, IAllocator& alloc = default_allocator());
+
+		Self& operator=(const Self& other);
+		Self& operator=(Self&& other);
 		
 		bool operator==(const Self& other) const;
 		bool operator!=(const Self& other) const;
@@ -69,6 +74,9 @@ namespace grace {
 	
 	template <typename T, typename C, typename Cmp>
 	Set<T,C,Cmp>::Set(const Set<T,C,Cmp>& other, IAllocator& alloc) : Cmp(other.cmp_), container_(other.container_, alloc) {}
+
+	template <typename T, typename C, typename Cmp>
+	Set<T,C,Cmp>::Set(const Set<T,C,Cmp>& other) : Cmp(other.cmp_), container_(other.container_) {}
 	
 	template <typename T, typename C, typename Cmp>
 	Set<T,C,Cmp>::Set(Set<T,C,Cmp>&& other) : Cmp(move(other)), container_(std::move(other.container_)) {}
@@ -103,6 +111,18 @@ namespace grace {
 		for (auto& x: list) {
 			insert(x);
 		}
+	}
+
+	template <typename T, typename C, typename Cmp>
+	Set<T,C,Cmp>& Set<T,C,Cmp>::operator=(const Set<T,C,Cmp>& other) {
+		container_ = other.container_;
+		return *this;
+	}
+
+	template <typename T, typename C, typename Cmp>
+	Set<T,C,Cmp>& Set<T,C,Cmp>::operator=(Set<T,C,Cmp>&& other) {
+		container_ = move(other.container_);
+		return *this;
 	}
 	
 	template <typename T, typename C, typename Cmp>
