@@ -22,6 +22,8 @@ set(SOURCES
 	base/regex.cpp
 	base/string.cpp
 	base/time.cpp
+	event/event_loop_libevent.cpp
+	event/libevent_util.cpp
 	geometry/rect.cpp
 	geometry/units.cpp
 	geometry/vector.cpp
@@ -90,8 +92,10 @@ foreach(f ${SOURCES})
 endforeach(f)
 
 find_library(YAML_LIB yaml)
+find_library(EVENT_LIB event)
 
 add_library(grace-base SHARED ${FINAL_SOURCES})
 
 target_link_libraries(grace-base ${EXTRA_LIBS})
 target_link_libraries(grace-base yaml)
+target_link_libraries(grace-base event)
