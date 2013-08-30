@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 set(SRCPATH .)
 #include(${LEVEL}/config.cmake)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++")
+set(CMAKE_CXX_FLAGS "-O0 -g -std=c++11 -stdlib=libc++ -DDEBUG")
 
 include_directories(${SRCPATH})
 
