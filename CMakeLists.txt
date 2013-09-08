@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 set(SRCPATH .)
 #include(${LEVEL}/config.cmake)
 
-set(CMAKE_CXX_FLAGS "-O0 -g -std=c++11 -stdlib=libc++ -DDEBUG")
+set(CMAKE_CXX_FLAGS "-O0 -g -std=c++11 -stdlib=libc++ -DDEBUG -Wno-unused-comparison")
 
 include_directories(${SRCPATH})
 
@@ -58,6 +58,7 @@ set(SOURCES
 	serialization/document_node.cpp
 	serialization/json.cpp
 	serialization/yaml.cpp
+	tests/test.cpp
 	type/any_type.cpp
 	type/array_type.cpp
 	type/attribute.cpp
@@ -87,3 +88,45 @@ add_library(grace-base SHARED ${FINAL_SOURCES})
 
 target_link_libraries(grace-base yaml)
 target_link_libraries(grace-base event)
+
+
+set(TESTS
+	anim_utils_test
+	any_test
+	array_list_test
+	array_ref_test
+	array_test
+	aspect_cast_test
+	binary_archive_test
+	composite_test
+	either_test
+	fiber_test
+	function_test
+	geometry_test
+	link_list_test
+	map_test
+	math_test
+	matrix_test
+	maxarray_test
+	maybe_test
+	memory_stream_test
+	priority_queue_test
+	regex_test
+	signal_test
+	simd_test
+	string_test
+	time_test
+	type_info_test
+	vector_test
+	work_queue_test
+)
+
+add_custom_target(test)
+
+foreach(t ${TESTS})
+	add_executable(.tests/${t} EXCLUDE_FROM_ALL tests/${t}.cpp)
+	target_link_libraries(.tests/${t} grace-base)
+	add_custom_target(run_${t} COMMAND .tests/${t} $ENV{TEST_FLAGS})
+	add_dependencies(run_${t} .tests/${t})
+	add_dependencies(test run_${t})
+endforeach()
