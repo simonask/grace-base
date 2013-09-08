@@ -7,3 +7,4 @@ cmake_install.cmake
 *.dylib
 *.so
 *.o
+.tests/*
