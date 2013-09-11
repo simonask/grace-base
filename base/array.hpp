@@ -78,7 +78,7 @@ public:
 	iterator insert(T element, iterator before);
 	
 	template <typename... Args>
-	void emplace_back(Args... args);
+	void emplace_back(Args&&... args);
 	
 	iterator begin() { return data_; }
 	iterator end() { return data_ + size_; }
@@ -354,7 +354,7 @@ typename Array<T>::iterator Array<T>::insert(T element, iterator before) {
 
 template <typename T>
 template <typename... Args>
-void Array<T>::emplace_back(Args... args) {
+void Array<T>::emplace_back(Args&&... args) {
 	reserve(size_+1);
 	new(data_ + size_) T(std::forward<Args>(args)...);
 	size_++;
