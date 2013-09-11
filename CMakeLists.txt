@@ -101,6 +101,7 @@ set(TESTS
 	composite_test
 	either_test
 	fiber_test
+	formatting_test
 	function_test
 	geometry_test
 	link_list_test

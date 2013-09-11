@@ -14,7 +14,6 @@
 #include "geometry/vector.hpp"
 #include "base/string.hpp"
 #include <stdio.h>
-#include "base/string.hpp"
 
 namespace grace {
 	class FormattedStream;
@@ -28,6 +27,10 @@ namespace grace {
 		size_t tell_write() const final { return stream_.tell_write(); }
 		bool seek_write(size_t position) final { return stream_.seek_write(position); }
 		void flush() final { return stream_.flush(); }
+
+		// Include io/printf.hpp for the implementation of this:
+		template <typename... Args>
+		FormattedStream& printf(StringRef format, Args&&... args);
 	protected:
 		OutputStream& stream_;
 	};
