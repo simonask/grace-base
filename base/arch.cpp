@@ -13,28 +13,28 @@
 #include <execinfo.h>
 #include <cxxabi.h>
 #include <dlfcn.h>
+#include <libunwind.h>
 
 namespace grace {
 	size_t get_backtrace(void** out_instruction_pointers, size_t num_steps, size_t offset) {
-		const void* main_sym = ::dlsym(nullptr, "main");
-
 		offset += 1;
-		size_t total_steps = num_steps + offset;
-		void* buffer[total_steps];
-		int r = backtrace(buffer, (int)total_steps);
-		void** begin = buffer + offset;
-		void** end = buffer + r;
-		if (end <= begin) {
-			begin = end-1;
-		}
-		for (void** p = begin; p != end; ++p) {
-			if (*p == main_sym) {
-				end = p;
-				break;
+		unw_cursor_t ucur;
+		unw_context_t uctx;
+		unw_getcontext(&uctx);
+		unw_init_local(&ucur, &uctx);
+		size_t i = 0;
+		while (unw_step(&ucur) > 0) {
+			if (i >= offset) {
+				size_t j = i - offset;
+				unw_word_t val;
+				unw_get_reg(&ucur, UNW_REG_IP, &val);
+				out_instruction_pointers[j] = (void*)val;
 			}
+			++i;
+			if (i >= num_steps + offset)
+				break;
 		}
-		std::copy(begin, end, out_instruction_pointers);
-		return (size_t)r;
+		return i - offset;
 	}
 
 	String demangle_symbol(StringRef mangled, IAllocator& alloc) {
