@@ -209,6 +209,21 @@ auto linear_search(Container& container, const ComparableValue& value)
 		typedef typename MakeIndices<sizeof...(Args)>::Type Indices;
 		return apply_tuple_to_member_impl(object, function, std::move(args), Indices());
 	}
+
+	template <typename FunctionType, typename... Args, size_t... I>
+	auto apply_tuple_to_function_impl(FunctionType function, std::tuple<Args...> args, Indices<I...> i)
+	-> decltype(function(std::get<I>(args)...))
+	{
+		return function(std::get<I>(args)...);
+	}
+	
+	template <typename FunctionType, typename... Args>
+	auto apply_tuple_to_function(FunctionType function, std::tuple<Args...> args)
+	-> decltype(apply_tuple_to_function_impl(function, std::move(args), typename MakeIndices<sizeof...(Args)>::Type()))
+	{
+		typedef typename MakeIndices<sizeof...(Args)>::Type Indices;
+		return apply_tuple_to_function_impl(function, std::move(args), Indices());
+	}
 	
 	
 	template <typename T>
