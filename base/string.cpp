@@ -107,10 +107,8 @@ namespace grace {
 	StringRef rstrip(StringRef input, char c) {
 		const char* p = input.data();
 		const char* end = input.data() + input.size();
-		if (p != end) {
-			do {
-				--end;
-			} while (*end == c && end != p);
+		while (end != p && *(end-1) == c) {
+			--end;
 		}
 		return StringRef(p, end);
 	}
