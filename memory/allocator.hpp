@@ -256,7 +256,7 @@ namespace grace {
 		if (ptr != nullptr) {
 			ptr->~T();
 		}
-		alloc.free(ptr, sizeof(T));
+		alloc.free((void*)ptr, sizeof(T));
 	}
 }
 
