@@ -13,6 +13,7 @@
 #include "base/basic.hpp"
 #include "base/array.hpp"
 #include "io/formatted_stream.hpp"
+#include "base/function.hpp"
 
 namespace grace {
 	enum RegexOptions : uint32 {
@@ -48,20 +49,21 @@ namespace grace {
 		bool is_newline_sensitive() const;
 		
 		struct SearchResults {
-			Array<StringRef> matches;
-			SearchResults(Array<StringRef> m) : matches(move(m)) {}
+			Array<Array<StringRef>> matches;
+			SearchResults(Array<Array<StringRef>>&& m) : matches(std::move(m)) {}
 			SearchResults(const SearchResults&) = default;
 			SearchResults(SearchResults&&) = default;
 			
-			using iterator = Array<StringRef>::const_iterator;
+			using iterator = Array<Array<StringRef>>::const_iterator;
 			iterator begin() const { return matches.begin(); }
 			iterator end()   const { return matches.end(); }
-			StringRef operator[](size_t idx) const { return matches[idx]; }
+			StringRef operator[](size_t idx) const { return matches[idx][0]; }
 			size_t size() const { return matches.size(); }
 		};
 		
 		bool match(StringRef haystack) const;
 		SearchResults search(StringRef haystack, IAllocator& alloc = default_allocator()) const;
+		void search(StringRef haystack, Function<void(ArrayRef<StringRef> match_groups)> callback) const;
 	private:
 		String pattern_;
 		uint32 options_ = RegexOptions::None;
@@ -72,7 +74,9 @@ namespace grace {
 		void check_error(int) const;
 	};
 	
-	String replace(StringRef haystack, Regex pattern, StringRef replacement, IAllocator& alloc = default_allocator());
+	String replace(StringRef haystack, const Regex& pattern, StringRef replacement, IAllocator& alloc = default_allocator());
+	String replace_with(StringRef haystack, const Regex& pattern, Function<String(ArrayRef<StringRef>)> replacement, IAllocator& alloc = default_allocator());
+	FormattedStream& replace_with_through(StringRef haystack, const Regex& pattern, FormattedStream&, Function<void(FormattedStream&, ArrayRef<StringRef>)> replacement);
 		
 	inline IAllocator& Regex::allocator() const {
 		return pattern_.allocator();

@@ -34,4 +34,17 @@ SUITE(Regex) {
 		Regex r = "[ab]*";
 		TEST(r.match(bar)).should == true;
 	});
+
+	it("should match groups", [=]() {
+		Regex r = "quick (brown) fox";
+		auto results = r.search(foo);
+		TEST(results.matches[0][1]).should == "brown";
+	});
+
+	it("should match groups of braces with numbers", [=]() {
+		Regex r = "{\\d+}";
+		String str = "Hello {0}!";
+		auto results = r.search(str);
+		TEST(results.matches[0][0]).should == "{0}";
+	});
 }

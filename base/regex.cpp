@@ -102,6 +102,7 @@ namespace grace {
 		if (is_case_insensitive())  o |= REG_ICASE;
 		if (is_newline_sensitive()) o |= REG_NEWLINE;
 		o |= REG_EXTENDED;
+		o |= REG_ENHANCED;
 #if defined(__APPLE__)
 		// Faster copyless Apple alternative:
 		// TODO: Consider using REG_PEND option instead of regncomp
@@ -130,27 +131,47 @@ namespace grace {
 	}
 	
 	Regex::SearchResults Regex::search(StringRef haystack, IAllocator& alloc) const {
-		Array<StringRef> matches(alloc);
+		Array<Array<StringRef>> matches(alloc);
+		search(haystack, [&](ArrayRef<StringRef> match) {
+			matches.emplace_back(match, alloc);
+		});
+		return std::move(matches);
+	}
+
+	void Regex::search(StringRef haystack, Function<void(ArrayRef<StringRef>)> callback) const {
+		static const size_t MAX_SUBGROUPS = 10;
 		if (regex_ != nullptr) {
-			regmatch_t match;
+			regmatch_t matches[MAX_SUBGROUPS];
+			DEFINE_STACK_ARRAY(StringRef, match_groups, MAX_SUBGROUPS);
 			const char* p = haystack.data();
 			const char* end = p + haystack.size();
 			while (p < end) {
 #if defined(__APPLE__)
 				// Faster copyless Apple alternative:
-				int err = ::regnexec((regex_t*)regex_, p, end - p, 1, &match, 0);
+				int err = ::regnexec((regex_t*)regex_, p, end - p, MAX_SUBGROUPS, matches, 0);
 #else
 				COPY_STRING_REF_TO_CSTR_BUFFER(p_buffer, StringRef(p, end));
-				int err = ::regexec((regex_t*)regex_, p_buffer.data(), 1, &match, 0);
+				int err = ::regexec((regex_t*)regex_, p_buffer.data(), MAX_SUBGROUPS, matches, 0);
 #endif
 				if (err == REG_NOMATCH) {
 					break;
 				}
-				matches.push_back(StringRef(p + match.rm_so, match.rm_eo - match.rm_so));
-				p = p + match.rm_eo;
+
+				size_t num_matches = 0;
+				for (size_t i = 0; i < MAX_SUBGROUPS; ++i) {
+					if (matches[i].rm_so == -1) {
+						break;
+					}
+					match_groups[i] = StringRef(p + matches[i].rm_so, matches[i].rm_eo - matches[i].rm_so);
+					++num_matches;
+				}
+
+				ArrayRef<StringRef> match_group_list(match_groups.data(), match_groups.data() + num_matches);
+				callback(match_group_list);
+
+				p = p + matches[0].rm_eo;
 			}
 		}
-		return move(matches);
 	}
 	
 	void Regex::check_error(int err) const {
@@ -178,19 +199,30 @@ namespace grace {
 		}
 	}
 	
-	String replace(StringRef haystack, Regex pattern, StringRef replacement, IAllocator& alloc) {
-		auto results = pattern.search(haystack, alloc);
+	String replace(StringRef haystack, const Regex& pattern, StringRef replacement, IAllocator& alloc) {
+		return replace_with(haystack, pattern, [&](ArrayRef<StringRef> matches) {
+			return String(replacement);
+		});
+	}
+
+	String replace_with(StringRef haystack, const Regex& pattern, Function<String(ArrayRef<StringRef>)> replacement, IAllocator& alloc) {
 		StringStream ss(alloc);
-		const char* p = haystack.data();
-		const char* end = p + haystack.size();
-		for (auto& match: results) {
-			if (match.data() > p) {
-				ss.write((const byte*)p, match.data() - p);
-			}
-			p = match.data() + match.size();
-			ss << replacement;
-		}
-		ss.write((const byte*)p, end - p);
+		replace_with_through(haystack, pattern, ss, [&](FormattedStream& os, ArrayRef<StringRef> matches) {
+			os << replacement(matches);
+		});
 		return ss.string(alloc);
+	}
+
+	FormattedStream& replace_with_through(StringRef haystack, const Regex& pattern, FormattedStream& os, Function<void(FormattedStream& os, ArrayRef<StringRef>)> replacement) {
+		const char* end = haystack.data() + haystack.size();
+		const char* last_end = haystack.data();
+		pattern.search(haystack, [&](ArrayRef<StringRef> match_groups) {
+			StringRef whole_match = match_groups[0];
+			os << StringRef(last_end, whole_match.data() - last_end);
+			replacement(os, match_groups);
+			last_end = whole_match.data() + whole_match.size();
+		});
+		os << StringRef(last_end, end - last_end);
+		return os;
 	}
 }
