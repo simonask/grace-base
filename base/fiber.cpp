@@ -8,6 +8,7 @@
 
 #include "base/fiber.hpp"
 #include "base/log.hpp"
+#include "base/raise.hpp"
 
 #include <setjmp.h>
 #include <cxxabi.h>
@@ -119,7 +120,7 @@ namespace grace {
 	}
 	
 	namespace {
-		struct FiberError {};
+		struct FiberError : ErrorBase<FiberError> {};
 		struct FiberTerminated {};
 		
 		__attribute__((noinline)) byte* get_sp() {
@@ -155,7 +156,7 @@ namespace grace {
 	
 	void Fiber::resume() {
 		if (state() != FiberState::Sleeping && state() != FiberState::Unstarted) {
-			throw FiberError();
+			raise<FiberError>();
 		}
 		resume_into_state(FiberState::Running);
 	}
@@ -172,7 +173,7 @@ namespace grace {
 	
 	void Fiber::yield(void*) {
 		if (state() != FiberState::Running) {
-			throw FiberError();
+			raise<FiberError>();
 		}
 		jmp_buf away_from_fiber;
 		memcpy(away_from_fiber, impl().portal, sizeof(away_from_fiber));
@@ -194,7 +195,7 @@ namespace grace {
 				this->terminate(nullptr); // which throws and thus unwinds the stack
 			}
 			if (state() != FiberState::Running) {
-				throw FiberError(); // Wrong state!
+				raise<FiberError>(); // Wrong state!
 			}
 			return;
 		}
@@ -202,7 +203,7 @@ namespace grace {
 
 	void Fiber::resume_into_state(FiberState new_state) {
 		if (new_state != FiberState::Running && new_state != FiberState::Terminating) {
-			throw FiberError();
+			raise<FiberError>();
 		}
 		
 		uintptr_t sp = (uintptr_t)get_sp();
@@ -254,7 +255,7 @@ namespace grace {
 						__cxxabiv1::__cxa_rethrow();
 					}
 					if (impl().state != FiberState::Sleeping && impl().state != FiberState::Unstarted) {
-						throw FiberError();
+						raise<FiberError>();
 					}
 					return;
 				}
@@ -284,14 +285,14 @@ namespace grace {
 						__cxxabiv1::__cxa_rethrow();
 					}
 					if (impl().state != FiberState::Sleeping && impl().state != FiberState::Unstarted) {
-						throw FiberError();
+						raise<FiberError>();
 					}
 					return;
 				}
 			}
 			default: {
 				Error() << "Cannot resume running or terminating fiber!";
-				throw FiberError();
+				raise<FiberError>();
 			}
 		}
 	}

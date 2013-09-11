@@ -13,7 +13,6 @@
 #include "memory/allocator.hpp"
 #include "base/link_list.hpp"
 #include "base/iterators.hpp"
-#include "base/exceptions.hpp"
 #include <initializer_list>
 #include <algorithm>
 
@@ -22,66 +21,70 @@ namespace grace {
 
 	template <typename T, bool IsConst> struct ArrayListIteratorImpl;
 
+	namespace detail {
+		void array_list_index_out_of_bounds(size_t idx, size_t max) __attribute__((noreturn));
+	}
+
 	template <typename T>
-    class ArrayList {
-    public:
-        explicit ArrayList(IAllocator& allocator = default_allocator());
-        ArrayList(const ArrayList<T>& other, IAllocator& allocator = default_allocator());
+	class ArrayList {
+	public:
+		explicit ArrayList(IAllocator& allocator = default_allocator());
+		ArrayList(const ArrayList<T>& other, IAllocator& allocator = default_allocator());
 		ArrayList(std::initializer_list<T> init, IAllocator& allocator = default_allocator());
-        ArrayList(ArrayList&& other);
-        ~ArrayList();
-        
-        IAllocator& allocator() const;
-        
-        size_t size() const;
+		ArrayList(ArrayList&& other);
+		~ArrayList();
+
+		IAllocator& allocator() const;
+
+		size_t size() const;
 		void reserve(size_t) {}
 		bool operator==(const ArrayList<T>& other) const;
 		bool operator!=(const ArrayList<T>& other) const;
-        
-        void push_back(const T& x);
-        void push_back(T&& x);
+
+		void push_back(const T& x);
+		void push_back(T&& x);
 		void pop_back();
-        void clear();
-        T& front();
-        const T& front() const;
-        T& back();
-        const T& back() const;
-        
-        T& operator[](size_t idx);
-        const T& operator[](size_t idx) const;
-        
-        using iterator = ArrayListIteratorImpl<T, false>;
-        using const_iterator = ArrayListIteratorImpl<T, true>;
-        
-        iterator begin();
-        iterator end();
-        const_iterator begin() const;
-        const_iterator end() const;
+		void clear();
+		T& front();
+		const T& front() const;
+		T& back();
+		const T& back() const;
+
+		T& operator[](size_t idx);
+		const T& operator[](size_t idx) const;
+
+		using iterator = ArrayListIteratorImpl<T, false>;
+		using const_iterator = ArrayListIteratorImpl<T, true>;
+
+		iterator begin();
+		iterator end();
+		const_iterator begin() const;
+		const_iterator end() const;
 		
 		iterator find(const T& item) { return std::find(begin(), end(), item); }
 		const_iterator find(const T& item) const { return std::find(begin(), end(), item); }
-        
-        template <typename InputIterator>
-        void insert(InputIterator i0, InputIterator i1);
-        template <typename InputIterator>
-        void insert(InputIterator i0, InputIterator i1, const iterator& before);
+
 		template <typename InputIterator>
-        void insert_move(InputIterator i0, InputIterator i1);
-        template <typename InputIterator>
-        void insert_move(InputIterator i0, InputIterator i1, const iterator& before);
+		void insert(InputIterator i0, InputIterator i1);
+		template <typename InputIterator>
+		void insert(InputIterator i0, InputIterator i1, const iterator& before);
+		template <typename InputIterator>
+		void insert_move(InputIterator i0, InputIterator i1);
+		template <typename InputIterator>
+		void insert_move(InputIterator i0, InputIterator i1, const iterator& before);
 		void insert(T value, const iterator& before);
-        iterator erase(iterator it);
+		iterator erase(iterator it);
 		void resize(size_t new_size, T filler = T());
-    private:
-	friend struct ArrayListIteratorImpl<T, false>;
-	friend struct ArrayListIteratorImpl<T, true>;
-        
-        IAllocator& allocator_;
-        
-        struct Block : ListLinkBase<Block> {
-            T* begin;
-            T* end;
-            T* current;
+	private:
+		friend struct ArrayListIteratorImpl<T, false>;
+		friend struct ArrayListIteratorImpl<T, true>;
+
+		IAllocator& allocator_;
+
+		struct Block : ListLinkBase<Block> {
+			T* begin;
+			T* end;
+			T* current;
 			
 			void extend_current_by(size_t n) {
 				ASSERT(current + n <= end);
@@ -93,22 +96,22 @@ namespace grace {
 				construct_range(current, end);
 				current = end;
 			}
-        };
-        
-        BareLinkList<Block> blocks_;
-        size_t size_ = 0;
+		};
+
+		BareLinkList<Block> blocks_;
+		size_t size_ = 0;
 		
 		using BlockIterator = typename BareLinkList<Block>::iterator;
-        
-        Block* create_and_append_block();
+
+		Block* create_and_append_block();
 		Block* create_block_of_size(size_t n_elements);
 		void delete_and_remove_block(BlockIterator b);
 		iterator make_room_at(const iterator& at, size_t n);
 		iterator fill_and_spill(BlockIterator fill, size_t n, const iterator& before);
-    };
-    
-    template <typename T>
-    ArrayList<T>::ArrayList(IAllocator& alloc) : allocator_(alloc) {}
+	};
+
+	template <typename T>
+	ArrayList<T>::ArrayList(IAllocator& alloc) : allocator_(alloc) {}
 	
 	template <typename T>
 	ArrayList<T>::ArrayList(const ArrayList<T>& other, IAllocator& alloc) : allocator_(alloc) {
@@ -122,21 +125,21 @@ namespace grace {
 	ArrayList<T>::ArrayList(std::initializer_list<T> init, IAllocator& alloc) : allocator_(alloc) {
 		insert(init.begin(), init.end());
 	}
-    
-    template <typename T>
-    ArrayList<T>::~ArrayList() {
-        clear();
-    }
-    
-    template <typename T>
-    IAllocator& ArrayList<T>::allocator() const {
-        return allocator_;
-    }
-    
-    template <typename T>
-    size_t ArrayList<T>::size() const {
-        return size_;
-    }
+
+	template <typename T>
+	ArrayList<T>::~ArrayList() {
+		clear();
+	}
+
+	template <typename T>
+	IAllocator& ArrayList<T>::allocator() const {
+		return allocator_;
+	}
+
+	template <typename T>
+	size_t ArrayList<T>::size() const {
+		return size_;
+	}
 	
 	template <typename T>
 	bool ArrayList<T>::operator==(const ArrayList<T>& other) const {
@@ -157,11 +160,11 @@ namespace grace {
 	bool ArrayList<T>::operator!=(const ArrayList<T>& other) const {
 		return !(*this == other);
 	}
-    
-    template <typename T>
-    void ArrayList<T>::push_back(const T& object) {
+
+		template <typename T>
+	void ArrayList<T>::push_back(const T& object) {
 		insert(&object, &object + 1);
-    }
+	}
 	
 	template <typename T>
 	void ArrayList<T>::push_back(T&& object) {
@@ -171,7 +174,7 @@ namespace grace {
 	template <typename T>
 	void ArrayList<T>::pop_back() {
 		if (size() == 0) {
-			throw IndexOutOfBoundsException();
+			detail::array_list_index_out_of_bounds(0, size());
 		}
 		erase(end()-1);
 	}
@@ -291,23 +294,23 @@ namespace grace {
 	void ArrayList<T>::insert(T value, const iterator &before) {
 		insert_move(&value, &value + 1, before);
 	}
-    
-    template <typename T>
-    void ArrayList<T>::clear() {
-        for (auto it = blocks_.begin(); it != blocks_.end();) {
-            Block* b = it.get();
-            it = blocks_.erase(it);
-            size_t block_size = (byte*)b->end - (byte*)b;
-            allocator_.free_large(b, block_size);
-        }
+
+		template <typename T>
+	void ArrayList<T>::clear() {
+		for (auto it = blocks_.begin(); it != blocks_.end();) {
+			Block* b = it.get();
+			it = blocks_.erase(it);
+			size_t block_size = (byte*)b->end - (byte*)b;
+			allocator_.free_large(b, block_size);
+		}
 		size_ = 0;
-        ASSERT(blocks_.empty());
-    }
+		ASSERT(blocks_.empty());
+	}
 	
 	template <typename T>
 	T& ArrayList<T>::front() {
 		if (size() == 0) {
-			throw IndexOutOfBoundsException();
+			detail::array_list_index_out_of_bounds(0, size());
 		}
 		return *begin();
 	}
@@ -315,7 +318,7 @@ namespace grace {
 	template <typename T>
 	const T& ArrayList<T>::front() const {
 		if (size() == 0) {
-			throw IndexOutOfBoundsException();
+			detail::array_list_index_out_of_bounds(0, size());
 		}
 		return *begin();
 	}
@@ -323,7 +326,7 @@ namespace grace {
 	template <typename T>
 	T& ArrayList<T>::back() {
 		if (size() == 0) {
-			throw IndexOutOfBoundsException();
+			detail::array_list_index_out_of_bounds(0, size());
 		}
 		return *(end()-1);
 	}
@@ -331,7 +334,7 @@ namespace grace {
 	template <typename T>
 	const T& ArrayList<T>::back() const {
 		if (size() == 0) {
-			throw IndexOutOfBoundsException();
+			detail::array_list_index_out_of_bounds(0, size());
 		}
 		return *(end()-1);
 	}
@@ -362,7 +365,7 @@ namespace grace {
 				i -= sz;
 			}
 		}
-		throw IndexOutOfBoundsException();
+		detail::array_list_index_out_of_bounds(idx, size());
 	}
 	
 	template <typename T>
@@ -376,13 +379,13 @@ namespace grace {
 				i -= sz;
 			}
 		}
-		throw IndexOutOfBoundsException();
+		detail::array_list_index_out_of_bounds(idx, size());
 	}
 	
 	template <typename T>
 	typename ArrayList<T>::iterator ArrayList<T>::erase(iterator it) {
 		if (it == end()) {
-			throw IndexOutOfBoundsException();
+			detail::array_list_index_out_of_bounds(size(), size());
 		}
 		size_t pos = it - begin();
 		auto output_begin = it;
@@ -409,23 +412,23 @@ namespace grace {
 		Block* b = new(memory) Block;
 		
 		byte* begin = memory + sizeof(Block);
-        intptr_t ibegin = reinterpret_cast<intptr_t>(begin);
-        intptr_t adjust = (ibegin % alignof(T)) & (alignof(T)-1);
-        begin += adjust;
-        b->begin = reinterpret_cast<T*>(begin);
-        b->end = reinterpret_cast<T*>(memory + actual_allocation_size);
-        b->current = b->begin;
+		intptr_t ibegin = reinterpret_cast<intptr_t>(begin);
+		intptr_t adjust = (ibegin % alignof(T)) & (alignof(T)-1);
+		begin += adjust;
+		b->begin = reinterpret_cast<T*>(begin);
+		b->end = reinterpret_cast<T*>(memory + actual_allocation_size);
+		b->current = b->begin;
 		
 		return b;
 	}
-    
-    template <typename T>
-    typename ArrayList<T>::Block* ArrayList<T>::create_and_append_block() {
+
+		template <typename T>
+	typename ArrayList<T>::Block* ArrayList<T>::create_and_append_block() {
 		size_t n_elements = (4096 - sizeof(Block)) / sizeof(T);
 		Block* b = create_block_of_size(n_elements);
 		blocks_.link_tail(b);
-        return b;
-    }
+		return b;
+	}
 	
 	template <typename T>
 	void ArrayList<T>::delete_and_remove_block(BlockIterator b) {
@@ -434,45 +437,45 @@ namespace grace {
 		blocks_.erase(b);
 		allocator_.free_large(ptr, (byte*)ptr->end - (byte*)ptr);
 	}
-    
-    template <typename T, bool IsConst>
-    struct ArrayListIteratorImpl {
-    public:
-        using Self = ArrayListIteratorImpl<T, IsConst>;
-        using Owner = typename std::conditional<IsConst, const ArrayList<T>, ArrayList<T>>::type;
-        using ValueType = typename std::conditional<IsConst, const T, T>::type;
-        using value_type = ValueType;
-        using Block = typename Owner::Block;
-        using BlockList = BareLinkList<Block>;
-        using BlockListIterator = typename std::conditional<IsConst, typename BlockList::const_iterator, typename BlockList::iterator>::type;
-        
-        ValueType& operator*() const {
-            return *current_;
-        }
-        
-        ValueType* operator->() const {
-            return current_;
-        }
+
+		template <typename T, bool IsConst>
+	struct ArrayListIteratorImpl {
+	public:
+		using Self = ArrayListIteratorImpl<T, IsConst>;
+		using Owner = typename std::conditional<IsConst, const ArrayList<T>, ArrayList<T>>::type;
+		using ValueType = typename std::conditional<IsConst, const T, T>::type;
+		using value_type = ValueType;
+		using Block = typename Owner::Block;
+		using BlockList = BareLinkList<Block>;
+		using BlockListIterator = typename std::conditional<IsConst, typename BlockList::const_iterator, typename BlockList::iterator>::type;
+
+		ValueType& operator*() const {
+			return *current_;
+		}
+
+		ValueType* operator->() const {
+			return current_;
+		}
 		
 		ValueType* get() const {
 			return current_;
 		}
-        
-        Self& operator++() {
+
+		Self& operator++() {
 			inc_by(1);
-            return *this;
-        }
+			return *this;
+		}
 		
 		Self& operator--() {
 			dec_by(1);
 			return *this;
 		}
-        
-        Self operator++(int) {
-            Self s = *this;
-            inc_by(1);
-            return s;
-        }
+
+		Self operator++(int) {
+			Self s = *this;
+			inc_by(1);
+			return s;
+		}
 		
 		Self operator+(ptrdiff_t n) const {
 			Self s = *this;
@@ -498,46 +501,46 @@ namespace grace {
 		Self& operator-=(ptrdiff_t n) {
 			return this->operator+=(-n);
 		}
-        
+
 		template <bool IsConst_>
 		ssize_t operator-(const ArrayListIteratorImpl<T, IsConst_>& other) const {
 			ASSERT(owner_ == other.owner_);
 			return (ssize_t)position_ - (ssize_t)other.position_;
 		}
-        
-        bool operator==(const ArrayListIteratorImpl<T, true>& other) const {
-            return owner_ == other.owner_ && block_ == other.block_ && current_ == other.current_;
-        }
-        bool operator!=(const ArrayListIteratorImpl<T, true>& other) const {
-            return !(*this == other);
-        }
-        
+
+		bool operator==(const ArrayListIteratorImpl<T, true>& other) const {
+			return owner_ == other.owner_ && block_ == other.block_ && current_ == other.current_;
+		}
+		bool operator!=(const ArrayListIteratorImpl<T, true>& other) const {
+			return !(*this == other);
+		}
+
 		ArrayListIteratorImpl() : owner_(nullptr), current_(nullptr) {}
-        ArrayListIteratorImpl(const ArrayListIteratorImpl<T, false>& other) : owner_(other.owner_), block_(other.block_), current_(other.current_), position_(other.position_) {}
-        template <bool IsConst_ = IsConst>
-        ArrayListIteratorImpl(const typename std::enable_if<IsConst_, ArrayListIteratorImpl<T, true>>::type& other) : owner_(other.owner_), block_(other.block_), current_(other.current_), position_(other.position_) {}
-        Self& operator=(const ArrayListIteratorImpl<T, false>& other) {
-            owner_ = other.owner_;
-            block_ = other.block_;
-            current_ = other.current_;
+		ArrayListIteratorImpl(const ArrayListIteratorImpl<T, false>& other) : owner_(other.owner_), block_(other.block_), current_(other.current_), position_(other.position_) {}
+		template <bool IsConst_ = IsConst>
+		ArrayListIteratorImpl(const typename std::enable_if<IsConst_, ArrayListIteratorImpl<T, true>>::type& other) : owner_(other.owner_), block_(other.block_), current_(other.current_), position_(other.position_) {}
+		Self& operator=(const ArrayListIteratorImpl<T, false>& other) {
+			owner_ = other.owner_;
+			block_ = other.block_;
+			current_ = other.current_;
 			position_ = other.position_;
-            return *this;
-        }
+			return *this;
+		}
         template <bool IsConst_ = IsConst>
-        Self& operator=(const typename std::enable_if<IsConst_, ArrayListIteratorImpl<T, true>>::type& other) {
-            owner_ = other.owner_;
-            block_ = other.block_;
-            current_ = other.current_;
+		Self& operator=(const typename std::enable_if<IsConst_, ArrayListIteratorImpl<T, true>>::type& other) {
+			owner_ = other.owner_;
+			block_ = other.block_;
+			current_ = other.current_;
 			position_ = other.position_;
-            return *this;
-        }
-    private:
-        ArrayListIteratorImpl(Owner& owner, BlockListIterator b, ValueType* c, size_t position) : owner_(&owner), block_(b), current_(c), position_(position) {}
-        friend class ArrayList<T>;
-        friend struct ArrayListIteratorImpl<T, !IsConst>;
-        Owner* owner_;
-        BlockListIterator block_;
-        ValueType* current_;
+			return *this;
+		}
+	private:
+		ArrayListIteratorImpl(Owner& owner, BlockListIterator b, ValueType* c, size_t position) : owner_(&owner), block_(b), current_(c), position_(position) {}
+		friend class ArrayList<T>;
+		friend struct ArrayListIteratorImpl<T, !IsConst>;
+		Owner* owner_;
+		BlockListIterator block_;
+		ValueType* current_;
 		size_t position_ = 0;
 		
 		void inc_by(size_t n) {
@@ -560,7 +563,7 @@ namespace grace {
 				}
 			}
 			if (remaining > 0) {
-				throw IndexOutOfBoundsException();
+				detail::array_list_index_out_of_bounds(owner_->size(), owner_->size());
 			}
 			position_ += n;
 		}
@@ -569,7 +572,7 @@ namespace grace {
 			if (n && block_ == owner_->blocks_.end()) {
 				--block_;
 				if (block_ == owner_->blocks_.end()) {
-					throw IndexOutOfBoundsException();
+					detail::array_list_index_out_of_bounds(owner_->size(), owner_->size());
 				}
 				current_ = block_->current;
 			}
@@ -592,31 +595,31 @@ namespace grace {
 				}
 			}
 			if (remaining > 0) {
-				throw IndexOutOfBoundsException();
+				detail::array_list_index_out_of_bounds(owner_->size(), owner_->size());
 			}
 			position_ -= n;
 		}
-    };
-    
-    template <typename T>
-    typename ArrayList<T>::iterator ArrayList<T>::begin() {
-        return iterator(*this, blocks_.begin(), blocks_.empty() ? nullptr : blocks_.head()->begin, 0);
-    }
-    
-    template <typename T>
-    typename ArrayList<T>::iterator ArrayList<T>::end() {
-        return iterator(*this, blocks_.end(), nullptr, size());
-    }
-    
-    template <typename T>
-    typename ArrayList<T>::const_iterator ArrayList<T>::begin() const {
-        return const_iterator(*this, blocks_.begin(), blocks_.empty() ? nullptr : blocks_.head()->begin, 0);
-    }
-    
-    template <typename T>
-    typename ArrayList<T>::const_iterator ArrayList<T>::end() const {
-        return const_iterator(*this, blocks_.end(), nullptr, size());
-    }
+	};
+
+	template <typename T>
+	typename ArrayList<T>::iterator ArrayList<T>::begin() {
+		return iterator(*this, blocks_.begin(), blocks_.empty() ? nullptr : blocks_.head()->begin, 0);
+	}
+
+	template <typename T>
+	typename ArrayList<T>::iterator ArrayList<T>::end() {
+		return iterator(*this, blocks_.end(), nullptr, size());
+	}
+
+	template <typename T>
+	typename ArrayList<T>::const_iterator ArrayList<T>::begin() const {
+		return const_iterator(*this, blocks_.begin(), blocks_.empty() ? nullptr : blocks_.head()->begin, 0);
+	}
+
+	template <typename T>
+	typename ArrayList<T>::const_iterator ArrayList<T>::end() const {
+		return const_iterator(*this, blocks_.end(), nullptr, size());
+	}
 }
 
 namespace std {

@@ -22,11 +22,7 @@ namespace grace {
 		NewlineSensitive = 1 << ('m' - 'a'),
 	};
 		
-	struct RegexError : IException {
-		String message;
-		RegexError(String msg) : message(move(msg)) {}
-		StringRef what() const { return message; }
-	};
+	struct RegexError : ErrorBase<RegexError> {};
 	
 	struct Regex {
 		Regex(IAllocator& alloc = default_allocator()) : pattern_(alloc) {}

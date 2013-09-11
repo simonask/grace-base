@@ -10,17 +10,14 @@
 #include "io/util.hpp"
 #include "base/parse.hpp"
 #include "base/pair.hpp"
+#include "base/raise.hpp"
 
 #include <yaml.h>
 #include <stdexcept>
 
 namespace grace {
 	namespace {
-		struct YAMLParserError : IException {
-			String message_;
-			YAMLParserError(StringRef message) : message_(message, default_allocator()) {}
-			StringRef what() const final { return message_; }
-		};
+		struct YAMLParserError : ErrorBase<YAMLParserError> {};
 		
 		struct YAMLParserState {
 			Document& document;
@@ -58,7 +55,7 @@ namespace grace {
 				if (node->is_array() || node->is_map()) {
 					stack.push_back(Pair<DocumentNode*,String>{node, String("")});
 				} else {
-					throw YAMLParserError("Invalid node type for parser stack.");
+					raise<YAMLParserError>("Invalid node type for parser stack.");
 				}
 			}
 			
@@ -77,7 +74,7 @@ namespace grace {
 						break;
 					case MappingExpectingKey: {
 						if (!node->is_string()) {
-							throw YAMLParserError("Expected map key, but didn't get a string.");
+							raise<YAMLParserError>("Expected map key, but didn't get a string.");
 						}
 						*node >> top_key();
 						break;
@@ -111,7 +108,7 @@ namespace grace {
 			
 			void end_sequence() {
 				if (state() != Sequence) {
-					throw YAMLParserError("Got end of sequence event, but wasn't parsing a sequence.");
+					raise<YAMLParserError>("Got end of sequence event, but wasn't parsing a sequence.");
 				}
 				DocumentNode* seq = pop();
 				add_value_to_top(seq);
@@ -126,10 +123,10 @@ namespace grace {
 			
 			void end_mapping() {
 				if (state() == MappingExpectingValue) {
-					throw YAMLParserError("Incomplete mapping.");
+					raise<YAMLParserError>("Incomplete mapping.");
 				}
 				if (state() != MappingExpectingKey) {
-					throw YAMLParserError("Got end of mapping event, but wasn't parsing a map.");
+					raise<YAMLParserError>("Got end of mapping event, but wasn't parsing a map.");
 				}
 				DocumentNode* map = pop();
 				add_value_to_top(map);
@@ -140,7 +137,7 @@ namespace grace {
 				if (it != anchors.end()) {
 					add_value_to_top(it->second);
 				} else {
-					throw YAMLParserError(String("Undefined anchor: ") + anchor);
+					raise<YAMLParserError>(String("Undefined anchor: ") + anchor);
 				}
 			}
 			

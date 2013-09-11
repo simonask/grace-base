@@ -146,13 +146,13 @@ namespace grace {
 		try {
 			describe__();
 		}
-		catch (const IException& ex) {
+		catch (const IError& ex) {
 			if (last_was_quiet_success_) {
 				StdOut << '\n';
 				last_was_quiet_success_ = false;
 			}
 			StringStream ss;
-			ss << "Unexpected exception outside of examples: " << ex.what();
+			ss << "Unexpected exception outside of examples: " << ex;
 			auto s = ss.string();
 			print_failure(name, "<none>", s, "<unknown>", 0);
 		}
@@ -219,14 +219,14 @@ namespace grace {
 				StdOut << '.';
 			}
 		}
-		catch (const IException& ex) {
+		catch (const IError& ex) {
 			statistics.failed++;
 			if (last_was_quiet_success_) {
 				StdOut << '\n';
 				last_was_quiet_success_ = false;
 			}
 			StringStream ss;
-			ss << "Exception: " << ex.what();
+			ss << "Exception: " << ex;
 			String err = ss.string();
 			print_failure(name, should, err, "<unknown>", 0);
 		}
@@ -338,8 +338,8 @@ namespace grace {
 			try {
 				suite.run(options);
 			}
-			catch (const IException& exception) {
-				StdOut << "UNCAUGHT EXCEPTION OUTSIDE OF EXAMPLES: " << exception.what() << '\n';
+			catch (const IError& exception) {
+				StdOut << "UNCAUGHT EXCEPTION OUTSIDE OF EXAMPLES: " << exception << '\n';
 				result = -1;
 			}
 			catch (const std::exception& exception) {

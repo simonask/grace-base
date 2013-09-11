@@ -6,6 +6,7 @@
 #include "type/type.hpp"
 #include "serialization/document_node.hpp"
 #include "base/any.hpp"
+#include "base/raise.hpp"
 
 namespace grace {
 	struct IAttribute {
@@ -168,9 +169,7 @@ struct MethodAttribute : AttributeForObjectOfType<ObjectType, MemberType, Getter
 	SetterPointer setter_;
 };
 
-struct ReadOnlyAttributeError : IException {
-	StringRef what() const { return "Read-only attributes cannot be written."; }
-};
+struct ReadOnlyAttributeError : ErrorBase<ReadOnlyAttributeError> {};
 
 template <typename ObjectType,
 		  typename MemberType,
@@ -185,7 +184,7 @@ struct ReadOnlyMethodAttribute : AttributeForObjectOfType<ObjectType, MemberType
 	}
 	
 	void set(ObjectType& object, MemberType dummy) const {
-		throw ReadOnlyAttributeError();
+		raise<ReadOnlyAttributeError>("Tried to write read-only attribute '{0}' of object '{1}' ({2}).", this->name(), object.object_id(), object.object_type()->name());
 	}
 	
 	bool is_read_only() const final { return true; }
@@ -194,20 +193,18 @@ struct ReadOnlyMethodAttribute : AttributeForObjectOfType<ObjectType, MemberType
 	GetterPointer getter_;
 };
 
-struct OpaqueAttributeError : IException {
-	StringRef what() const { return "Opaque attributes can neither be read nor written."; }
-};
+struct OpaqueAttributeError : ErrorBase<OpaqueAttributeError> {};
 
 template <typename ObjectType, typename MemberType>
 struct OpaqueAttribute : AttributeForObjectOfType<ObjectType, MemberType> {
 	OpaqueAttribute(IAllocator& alloc, StringRef name, StringRef description) : AttributeForObjectOfType<ObjectType, MemberType>(alloc, name, description) {}
 	
 	MemberType get(const ObjectType& object) const {
-		throw OpaqueAttributeError();
+		raise<OpaqueAttributeError>("Tried to read opaque attribute '{0}' of object '{1}' ({2}).", this->name(), object.object_id(), object.object_type()->name());
 	}
 	
 	void set(ObjectType& object, MemberType dummy) const {
-		throw OpaqueAttributeError();
+		raise<OpaqueAttributeError>("Tried to write opaque attribute '{0}' of object '{1}' ({2}).", this->name(), object.object_id(), object.object_type()->name());
 	}
 	
 	bool is_read_only() const final { return true; }

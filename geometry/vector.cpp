@@ -8,6 +8,7 @@
 
 #include "geometry/vector.hpp"
 #include "geometry/vector_errors.hpp"
+#include "base/raise.hpp"
 
 namespace grace {
 	template struct TVector<float32, 4>;
@@ -21,6 +22,6 @@ namespace grace {
 	template struct TVector<uint32, 2>;
 	
 	void throw_normalize_zero_length_vector_exception() {
-		throw VectorNormalizeZeroLengthException();
+		raise<VectorNormalizeZeroLengthException>();
 	}
 }

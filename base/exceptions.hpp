@@ -9,26 +9,12 @@
 #ifndef __grace__exceptions__
 #define __grace__exceptions__
 
-#include "base/basic.hpp"
+#include "base/error.hpp"
 
 namespace grace {
-	struct StringRef;
-	
-	struct IException {
-		virtual StringRef what() const = 0;
-	};
-	
-	struct DLL_PUBLIC IndexOutOfBoundsException : IException {
-		StringRef what() const final;
-	};
-	
-	struct DLL_PUBLIC BadAlignmentError : IException {
-		StringRef what() const final;
-	};
-	
-	struct DLL_PUBLIC OutOfMemoryError : IException {
-		StringRef what() const final;
-	};
+	struct DLL_PUBLIC IndexOutOfBoundsException : ErrorBase<IndexOutOfBoundsException> {};
+	struct DLL_PUBLIC BadAlignmentError : ErrorBase<BadAlignmentError> {};
+	struct DLL_PUBLIC OutOfMemoryError : ErrorBase<OutOfMemoryError> {};
 }
 
 #endif /* defined(__grace__exceptions__) */

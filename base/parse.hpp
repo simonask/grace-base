@@ -10,7 +10,7 @@
 #define grace_parse_hpp
 
 #include "base/maybe.hpp"
-#include "base/string.hpp"
+#include "base/string_ref.hpp"
 #include "base/stack_array.hpp"
 
 #include <type_traits>

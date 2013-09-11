@@ -125,10 +125,9 @@ namespace grace {
 			ss << "Expected no exceptions, but got exception of type " << typeid(ExceptionType).name() << ".";
 			fail(ss.str(), file, lineno);
 		}
-		catch (const IException& ex) {
+		catch (const IError& ex) {
 			StringStream ss;
-			const std::type_info* ex_type = __cxxabiv1::__cxa_current_exception_type();
-			ss << "Expected no exceptions, but got exceptions of type " << ex_type->name() << " with message: " << ex.what();
+			ss << "Expected no exceptions, but got exceptions of type " << ex.type_name() << " with message: " << ex.description();
 			fail(ss.str(), file, lineno);
 		}
 		catch (const std::exception& ex) {
@@ -153,10 +152,9 @@ namespace grace {
 		catch (TestFailureException ex) {
 			throw ex;
 		}
-		catch (const IException& ex) {
+		catch (const IError& ex) {
 			StringStream ss;
-			const std::type_info* ex_type = __cxxabiv1::__cxa_current_exception_type();
-			ss << "Expected no exceptions, but got exceptions of type " << ex_type->name() << " with message: " << ex.what();
+			ss << "Expected no exceptions, but got exceptions of type " << ex.type_name() << " with message: " << ex.description();
 			fail(ss.str(), file, lineno);
 		}
 		catch (const std::exception& ex) {

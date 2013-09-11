@@ -15,7 +15,10 @@ namespace grace {
 	ErrorBaseImpl::ErrorBaseImpl(const ErrorBaseImpl& other) : allocator_(default_allocator()) {
 		backtrace_ = (void**)allocator_.allocate(sizeof(void*) * other.backtrace_length_, alignof(void*));
 		backtrace_length_ = other.backtrace_length_;
-		memcpy(backtrace_, other.backtrace_, sizeof(void*) * other.backtrace_length_);
+		std::copy(other.backtrace_, other.backtrace_ + other.backtrace_length_, backtrace_);
+		description_data_ = (char*)allocator_.allocate(sizeof(char) * other.description_length_, alignof(char));
+		description_length_ = other.description_length_;
+		std::copy(other.description_data_, other.description_data_ + other.description_length_, description_data_);
 	}
 
 	ErrorBaseImpl::~ErrorBaseImpl() {
@@ -35,7 +38,7 @@ namespace grace {
 		void* trace[MAX_STACK_TRACE_LENGTH];
 		backtrace_length_ = get_backtrace(trace, MAX_STACK_TRACE_LENGTH, IGNORE_LEVELS_IN_STACK_TRACE);
 		backtrace_ = (void**)allocator_.allocate(sizeof(void*) * backtrace_length_, alignof(void*));
-		memcpy(backtrace_, trace, sizeof(void*) * backtrace_length_);
+		std::copy(trace, trace + backtrace_length_, backtrace_);
 	}
 
 	ArrayRef<void*> ErrorBaseImpl::backtrace() const {
@@ -54,6 +57,7 @@ namespace grace {
 		} else {
 			description_data_ = (char*)allocator_.allocate(description_length, alignof(char));
 			std::copy(description_data, description_data + description_length, description_data_);
+			check_alloc.free(description_data, description_length);
 		}
 	}
 

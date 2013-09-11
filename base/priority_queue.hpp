@@ -11,6 +11,7 @@
 
 #include "base/basic.hpp"
 #include "memory/allocator.hpp"
+#include "base/exceptions.hpp"
 #include <algorithm>
 
 namespace grace {
@@ -99,7 +100,7 @@ namespace grace {
 	template <typename T, typename C, typename Cmp>
 	T PriorityQueue<T,C,Cmp>::pop() {
 		if (size() == 0) {
-			throw IndexOutOfBoundsException();
+			raise<IndexOutOfBoundsException>("Tried to pop from empty PriorityQueue.");
 		}
 		iterator l = end() - 1;
 		T x = std::move(*l);

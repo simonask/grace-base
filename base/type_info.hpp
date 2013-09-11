@@ -10,19 +10,11 @@
 #define grace_type_info_hpp
 
 #include "base/basic.hpp"
-#include "base/exceptions.hpp"
 #include "base/string.hpp"
 #include <type_traits>
 
 namespace grace {
 	struct TypeInfo;
-
-	struct UnsupportedTypeOperationError : IException {
-		const TypeInfo& type;
-		StringRef operation;
-		UnsupportedTypeOperationError(const TypeInfo& type, StringRef op) : type(type), operation(op) {}
-		StringRef what() const { return operation; }
-	};
 
 	struct TypeInfo {
 		using ConstructorFuncPtr     = void(*)(byte*);
@@ -53,22 +45,22 @@ namespace grace {
 		bool is_abstract() const { return !is_constructible() && !is_move_or_copy_constructible(); }
 		
 		void construct(byte* self) const {
-			construct_ ? construct_(self) : unsupported("Unsupported: construct");
+			construct_ ? construct_(self) : unsupported("construct");
 		}
 		void destruct(byte* self) const {
-			destruct_ ? destruct_(self) : unsupported("Unsupported: destruct");
+			destruct_ ? destruct_(self) : unsupported("destruct");
 		}
 		void copy_assign(byte* self, const byte* other) const {
-			copy_assign_ ? copy_assign_(self, other) : unsupported("Unsupported: copy_assign");
+			copy_assign_ ? copy_assign_(self, other) : unsupported("copy_assign");
 		}
 		void copy_construct(byte* self, const byte* other) const {
-			copy_construct_ ? copy_construct_(self, other) : unsupported("Unsupported: copy_construct");
+			copy_construct_ ? copy_construct_(self, other) : unsupported("copy_construct");
 		}
 		void move_assign(byte* self, byte* other) const {
-			move_assign_ ? move_assign_(self, other) : unsupported("Unsupported: move_assign");
+			move_assign_ ? move_assign_(self, other) : unsupported("move_assign");
 		}
 		void move_construct(byte* self, byte* other) const {
-			move_construct_ ? move_construct_(self, other) : unsupported("Unsupported: move_construct");
+			move_construct_ ? move_construct_(self, other) : unsupported("move_construct");
 		}
 		
 		void move_or_copy_construct(byte* self, byte* other) const {
@@ -87,9 +79,7 @@ namespace grace {
 		}
 		
 	private:
-		void unsupported(const char* op) const {
-			throw UnsupportedTypeOperationError{*this, op};
-		}
+		void unsupported(const char* op) const;
 	};
 	
 	template <typename T>

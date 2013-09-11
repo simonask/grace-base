@@ -11,12 +11,12 @@
 
 #include "base/array_ref.hpp"
 #include "base/iterators.hpp"
+#include "base/raise.hpp"
+#include "base/exceptions.hpp"
 #include <type_traits>
 
 namespace grace {
-	struct MaxArrayTooSmallError : IException {
-		StringRef what() const { return "The MaxArray capacity was too small to contain the attempted insertion."; }
-	};
+	struct MaxArrayTooSmallError : ErrorBase<MaxArrayTooSmallError> {};
 
 	template <typename T, uint32 Max>
 	class MaxArray {
@@ -91,7 +91,7 @@ namespace grace {
 	template <typename T, uint32 C>
 	MaxArray<T,C>::MaxArray(std::initializer_list<T> list) {
 		if (list.size() > C) {
-			throw MaxArrayTooSmallError();
+			raise<MaxArrayTooSmallError>("Tried to initialize a MaxArray<T,{1}> with a list of length {0}.", list.size(), C);
 		}
 		insert(list.begin(), list.end());
 	}
@@ -99,7 +99,7 @@ namespace grace {
 	template <typename T, uint32 C>
 	MaxArray<T,C>::MaxArray(ArrayRef<T> list) {
 		if (list.size() > C) {
-			throw MaxArrayTooSmallError();
+			raise<MaxArrayTooSmallError>("Tried to initialize a MaxArray<T,{1}> with a list of length {0}.", list.size(), C);
 		}
 		insert(list.begin(), list.end());
 	}
@@ -150,7 +150,7 @@ namespace grace {
 	template <typename T, uint32 C>
 	void MaxArray<T,C>::push_back(T value) {
 		if (size_+1 > C) {
-			throw MaxArrayTooSmallError();
+			raise<MaxArrayTooSmallError>("Tried to insert element at position {0} in a MaxArray<T,{1}>.", size_, C);
 		}
 		new(ptr() + size_) T(move(value));
 		++size_;
@@ -160,7 +160,7 @@ namespace grace {
 	template <typename... Args>
 	void MaxArray<T,C>::emplace_back(Args&&... args) {
 		if (size_+1 > C) {
-			throw MaxArrayTooSmallError();
+			raise<MaxArrayTooSmallError>("Tried to insert element at position {0} in a MaxArray<T,{1}>.", size_, C);
 		}
 		new(ptr() + size_) T(std::forward<Args>(args)...);
 		++size_;
@@ -169,7 +169,7 @@ namespace grace {
 	template <typename T, uint32 C>
 	T MaxArray<T,C>::pop_back() {
 		if (size_ == 0) {
-			throw IndexOutOfBoundsException();
+			raise<IndexOutOfBoundsException>("Requested index {0} from MaxArray<T,{1}>.", size_, size_);
 		}
 		size_t idx = size_ - 1;
 		T tmp = move(*(ptr() + idx));
@@ -180,7 +180,7 @@ namespace grace {
 	template <typename T, uint32 C>
 	void MaxArray<T,C>::resize(size_t new_size, T fill) {
 		if (new_size > C) {
-			throw MaxArrayTooSmallError();
+			raise<MaxArrayTooSmallError>("Attempted to resize MaxArray<T,{1}> beyond its memory to size {0}.", new_size, C);
 		}
 		if (size_ < new_size) {
 			while (size_ < new_size) push_back(fill);
@@ -209,7 +209,7 @@ namespace grace {
 		size_t add_len = e - b;
 		size_t num_move = end() - before;
 		if (size_ + add_len > C) {
-			throw MaxArrayTooSmallError();
+			raise<MaxArrayTooSmallError>("Attempted to insert {0} elements in MaxArray<T,{1}> already containing {2} elements.", add_len, C, size_);
 		}
 		iterator move_end = end();
 		iterator move_begin = before;
@@ -291,8 +291,16 @@ namespace grace {
 	template <typename T, uint32 C>
 	void MaxArray<T,C>::check_index_valid(size_t idx) const {
 		if (idx >= size_ || idx >= C) {
-			throw IndexOutOfBoundsException();
+			raise<IndexOutOfBoundsException>("Requested index {0} of MaxArray<T,{1}>.", idx, C);
 		}
+	}
+
+	template <typename OS, typename T, uint32 C>
+	OS& operator<<(OS& stream, const MaxArray<T, C>& array) {
+		stream << '[';
+		stream << join(array, ", ");
+		stream << ']';
+		return stream;
 	}
 }
 

@@ -14,6 +14,7 @@
 #include "memory/allocator.hpp"
 #include "base/string.hpp"
 #include "base/either.hpp"
+#include "base/raise.hpp"
 
 #include <type_traits>
 
@@ -21,9 +22,7 @@ namespace grace {
 	template <typename Signature>
 	class Function;
 	
-	struct EmptyFunctionCallError : IException {
-		StringRef what() const { return "Called empty function object."; }
-	};
+	struct EmptyFunctionCallError : ErrorBase<EmptyFunctionCallError> {};
 	
 	template <typename R, typename... Args>
 	class Function<R(Args...)> {
@@ -63,7 +62,7 @@ namespace grace {
 		using InvokerPad = R(Function<R(Args...)>::*)(Args...) const;
 		
 		R empty_invoker_pad(Args...) const {
-			throw EmptyFunctionCallError();
+			raise<EmptyFunctionCallError>();
 		}
 	
 		struct CallerBase {

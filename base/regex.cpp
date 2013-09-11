@@ -9,6 +9,7 @@
 #include "base/regex.hpp"
 #include "io/string_stream.hpp"
 #include "base/stack_array.hpp"
+#include "base/raise.hpp"
 #include <regex.h>
 
 namespace grace {
@@ -177,22 +178,22 @@ namespace grace {
 	void Regex::check_error(int err) const {
 		if (err != 0) {
 			switch (err) {
-				case REG_BADPAT: throw RegexError("Bad pattern.");
-				case REG_ECOLLATE: throw RegexError("Invalid collating element.");
-				case REG_ECTYPE: throw RegexError("Invalid character class.");
-				case REG_EESCAPE: throw RegexError("Invalid escape sequence.");
-				case REG_ESUBREG: throw RegexError("Invalid backreference number.");
-				case REG_EBRACK: throw RegexError("Unbalanced brackets.");
-				case REG_EBRACE: throw RegexError("Unbalanced braces.");
-				case REG_EPAREN: throw RegexError("Unbalanced parens.");
-				case REG_BADBR:  throw RegexError("Invalid repetition count.");
-				case REG_ERANGE: throw RegexError("Invalid character in range.");
-				case REG_ESPACE: throw RegexError("Out of memory.");
-				case REG_BADRPT: throw RegexError("Invalid repeat operator.");
+				case REG_BADPAT:   raise<RegexError>("Bad pattern.");
+				case REG_ECOLLATE: raise<RegexError>("Invalid collating element.");
+				case REG_ECTYPE:   raise<RegexError>("Invalid character class.");
+				case REG_EESCAPE:  raise<RegexError>("Invalid escape sequence.");
+				case REG_ESUBREG:  raise<RegexError>("Invalid backreference number.");
+				case REG_EBRACK:   raise<RegexError>("Unbalanced brackets.");
+				case REG_EBRACE:   raise<RegexError>("Unbalanced braces.");
+				case REG_EPAREN:   raise<RegexError>("Unbalanced parens.");
+				case REG_BADBR:    raise<RegexError>("Invalid repetition count.");
+				case REG_ERANGE:   raise<RegexError>("Invalid character in range.");
+				case REG_ESPACE:   raise<RegexError>("Out of memory.");
+				case REG_BADRPT:   raise<RegexError>("Invalid repeat operator.");
 #if defined(__APPLE__)
-				case REG_ASSERT: UNREACHABLE();
-				case REG_INVARG: throw RegexError("Negative-length string.");
-				case REG_ILLSEQ: throw RegexError("Bad multibyte character.");
+				case REG_ASSERT:   UNREACHABLE();
+				case REG_INVARG:   raise<RegexError>("Negative-length string.");
+				case REG_ILLSEQ:   raise<RegexError>("Bad multibyte character.");
 #endif
 				default: UNREACHABLE();
 			}

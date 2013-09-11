@@ -7,7 +7,6 @@
 #include "memory/allocator.hpp"
 #include "base/iterators.hpp"
 #include "base/array_utils.hpp"
-#include "base/exceptions.hpp"
 
 #if defined(USE_STD_VECTOR)
 #include <vector>
@@ -17,6 +16,10 @@ template <typename T> using Array = std::vector<T>;
 #else
 
 namespace grace {
+
+	namespace detail {
+		void array_index_out_of_bounds(size_t idx, size_t max);
+	}
 
 template <typename T>
 class Array {
@@ -376,7 +379,7 @@ void Array<T>::clear(bool deallocate) {
 template <typename T>
 void Array<T>::check_index_valid(size_t idx) const {
 	if (idx >= size_) {
-		throw IndexOutOfBoundsException();
+		detail::array_index_out_of_bounds(idx, size_);
 	}
 }
 	

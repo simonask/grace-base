@@ -10,6 +10,7 @@ set(SOURCES
 	base/any.cpp
 	base/arch.cpp
 	base/array.cpp
+	base/array_list.cpp
 	base/array_ref.cpp
 	base/bag.cpp
 	base/benchmark.cpp
@@ -23,6 +24,7 @@ set(SOURCES
 	base/regex.cpp
 	base/string.cpp
 	base/time.cpp
+	base/type_info.cpp
 	event/event_loop_libevent.cpp
 	event/libevent_util.cpp
 	geometry/rect.cpp
@@ -38,6 +40,7 @@ set(SOURCES
 	io/resource_loader.cpp
 	io/resource_manager.cpp
 	io/stdio_stream.cpp
+	io/string_stream.cpp
 	io/util.cpp
 	loaders/object_template_loader.cpp
 	memory/allocator.cpp

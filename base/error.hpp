@@ -23,6 +23,7 @@ namespace grace {
 	using IErrorPtr = UniquePtr<const IError>;
 
 	struct ErrorBaseImpl : IError {
+	protected:
 		ErrorBaseImpl();
 		ErrorBaseImpl(const ErrorBaseImpl& other);
 		ErrorBaseImpl(ErrorBaseImpl&& other) : allocator_(other.allocator_) {
@@ -31,6 +32,7 @@ namespace grace {
 			std::swap(backtrace_, other.backtrace_);
 			std::swap(backtrace_length_, other.backtrace_length_);
 		}
+	public:
 		virtual ~ErrorBaseImpl();
 		ArrayRef<void*> backtrace() const final;
 		StringRef type_name() const;
@@ -63,6 +65,10 @@ namespace grace {
 		const char* _internal_type_name() const final {
 			return typeid(T).name();
 		}
+	protected:
+		ErrorBase() : ErrorBaseImpl() {}
+		ErrorBase(const ErrorBase<T>& other) : ErrorBaseImpl(other) {}
+		ErrorBase(ErrorBase<T>&& other) : ErrorBaseImpl(std::move(other)) {}
 	};
 
 	template <typename T = void> struct E;

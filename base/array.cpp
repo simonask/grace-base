@@ -8,6 +8,8 @@
 
 #include "base/array.hpp"
 #include "base/string.hpp"
+#include "base/raise.hpp"
+#include "base/exceptions.hpp"
 
 namespace grace {
 	template class Array<byte>;
@@ -18,4 +20,10 @@ namespace grace {
 	template class Array<IAttribute*>;
 	template class Array<ISlot*>;
 	template class Array<const IType*>;
+
+	namespace detail {
+		void array_index_out_of_bounds(size_t idx, size_t max) {
+			raise<IndexOutOfBoundsException>("Requested index {0} from Array of size {1}.", idx, max);
+		}
+	}
 }

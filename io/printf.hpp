@@ -8,6 +8,8 @@
 #include "base/regex.hpp"
 #include "memory/static_allocator.hpp"
 
+#include <array>
+
 namespace grace {
 	struct IWriteToFormattedStream { virtual void write(FormattedStream&) = 0; };
 	template <typename T>

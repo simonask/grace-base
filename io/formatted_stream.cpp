@@ -85,4 +85,9 @@ namespace grace {
 	FormattedStream& operator<<(FormattedStream& stream, void* ptr) {
 		return stream << format("%p", ptr);
 	}
+
+	FormattedStream& operator<<(FormattedStream& stream, const StringRef& str) {
+		stream.write((byte*)str.data(), str.size());
+		return stream;
+	}
 }

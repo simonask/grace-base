@@ -218,14 +218,6 @@ namespace grace {
 		return stream;
 	}
 	
-	template <typename T, uint32 C>
-	FormattedStream& operator<<(FormattedStream& stream, const MaxArray<T, C>& array) {
-		stream << '[';
-		stream << join(array, ", ");
-		stream << ']';
-		return stream;
-	}
-	
 	template <typename T, bool C>
 	FormattedStream& operator<<(FormattedStream& stream, const LinearMemoryIterator<T, C>& it) {
 		stream << it.get();

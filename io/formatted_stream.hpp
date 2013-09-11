@@ -12,11 +12,12 @@
 #include "base/basic.hpp"
 #include "io/output_stream.hpp"
 #include "geometry/vector.hpp"
-#include "base/string.hpp"
 #include <stdio.h>
 
 namespace grace {
 	class FormattedStream;
+	class String;
+	struct StringRef;
 	
 	class FormattedStream : public OutputStream {
 	public:
@@ -37,7 +38,7 @@ namespace grace {
 
 	FormattedStream& operator<<(FormattedStream& stream, const char* cstr);
 	FormattedStream& operator<<(FormattedStream& stream, const String&);
-	FormattedStream& operator<<(FormattedStream& stream, StringRef);
+	FormattedStream& operator<<(FormattedStream& stream, const StringRef&);
 	FormattedStream& operator<<(FormattedStream& stream, bool b);
 	FormattedStream& operator<<(FormattedStream& stream, uint8);
 	FormattedStream& operator<<(FormattedStream& stream, uint16);
@@ -85,11 +86,6 @@ namespace grace {
 			}
 		}
 		stream << '}';
-		return stream;
-	}
-	
-	inline FormattedStream& operator<<(FormattedStream& stream, StringRef str) {
-		stream.write((byte*)str.data(), str.size());
 		return stream;
 	}
 }

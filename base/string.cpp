@@ -7,8 +7,16 @@
 //
 
 #include "base/string.hpp"
+#include "base/exceptions.hpp"
+#include "base/raise.hpp"
 
 namespace grace {
+	namespace detail {
+		void string_index_of_out_bounds_exception(size_t idx, size_t sz) {
+			raise<IndexOutOfBoundsException>("Requested character {0} from a string of length {1}.", idx, sz);
+		}
+	}
+
 	String String::take_ownership(IAllocator &alloc, const char *utf8, size_t size) {
 		String s(alloc);
 		s.data_ = utf8;

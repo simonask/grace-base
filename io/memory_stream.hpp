@@ -11,7 +11,6 @@
 
 #include "io/input_stream.hpp"
 #include "io/output_stream.hpp"
-
 #include "base/array_list.hpp"
 
 namespace grace {

@@ -4,17 +4,18 @@
 
 #include "base/error.hpp"
 #include "io/string_stream.hpp"
-#include "io/formatters.hpp"
 #include "base/string.hpp"
 #include "io/printf.hpp"
 
 namespace grace {
 	template <typename ErrorType>
+	__attribute__((noreturn))
 	void raise() {
 		throw ErrorType();
 	}
 
 	template <typename ErrorType, typename... Args>
+	__attribute__((noreturn))
 	void raise(StringRef format, Args&&... args) {
 		StringStream ss;
 		ss.printf(format, std::forward<Args>(args)...);
@@ -24,7 +25,7 @@ namespace grace {
 		ss.buffer().copy_to(description, description + len);
 		ErrorType err;
 		err._take_description(description, len, alloc);
-		throw err;
+		throw ErrorType(std::move(err));
 	}
 }
 

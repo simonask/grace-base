@@ -27,35 +27,14 @@ namespace grace {
 		size_t size() const { return buffer_.size(); }
 		
 		// StringStream-like
-		String str() const { return string(); }
-		void str(StringRef s) { set_string(s); }
+		String str() const;
+		void str(StringRef s);
 
 		MemoryBufferStream& buffer() { return buffer_; }
 		const MemoryBufferStream& buffer() const { return buffer_; }
 	private:
 		MemoryBufferStream buffer_;
 	};
-	
-	inline StringStream::StringStream(StringRef s) : FormattedStream(buffer_) {
-		set_string(s);
-	}
-	
-	inline String StringStream::string() const {
-		return string(buffer_.allocator());
-	}
-	
-	inline String StringStream::string(IAllocator& alloc) const {
-		size_t len = buffer_.size();
-		char* buffer = (char*)alloc.allocate(len, 1);
-		char* end = buffer + len;
-		buffer_.copy_to(buffer, end);
-		return String::take_ownership(alloc, buffer, len);
-	}
-	
-	inline void StringStream::set_string(StringRef s) {
-		buffer_.clear();
-		buffer_.insert(s.begin(), s.end());
-	}
 }
 
 #endif
