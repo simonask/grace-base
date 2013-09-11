@@ -10,6 +10,8 @@
 #define grace_type_info_hpp
 
 #include "base/basic.hpp"
+#include "base/exceptions.hpp"
+#include "base/string.hpp"
 #include <type_traits>
 
 namespace grace {
