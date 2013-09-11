@@ -13,8 +13,11 @@
 
 namespace grace {
 	class String;
+	class StringRef;
+	class IAllocator;
 
-	void get_backtrace(void** out_instruction_pointers, size_t num_steps, size_t offset = 0);
+	String demangle_symbol(StringRef mangled, IAllocator&);
+	size_t get_backtrace(void** out_instruction_pointers, size_t max_num_steps, size_t offset = 0);
 	void resolve_symbol(void* ip, String& out_module_name, String& out_demangled_function_name, uint32& out_offset);
 }
 

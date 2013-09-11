@@ -12,13 +12,44 @@
 #include "base/parse.hpp"
 #include <execinfo.h>
 #include <cxxabi.h>
+#include <dlfcn.h>
 
 namespace grace {
-	void get_backtrace(void** out_instruction_pointers, size_t num_steps, size_t offset) {
-		size_t total_steps = num_steps + offset + 1;
+	size_t get_backtrace(void** out_instruction_pointers, size_t num_steps, size_t offset) {
+		const void* main_sym = ::dlsym(nullptr, "main");
+
+		offset += 1;
+		size_t total_steps = num_steps + offset;
 		void* buffer[total_steps];
-		backtrace(buffer, (int)total_steps);
-		memcpy(out_instruction_pointers, buffer + offset + 1, num_steps * sizeof(void*));
+		int r = backtrace(buffer, (int)total_steps);
+		void** begin = buffer + offset;
+		void** end = buffer + r;
+		if (end <= begin) {
+			begin = end-1;
+		}
+		for (void** p = begin; p != end; ++p) {
+			if (*p == main_sym) {
+				end = p;
+				break;
+			}
+		}
+		std::copy(begin, end, out_instruction_pointers);
+		return (size_t)r;
+	}
+
+	String demangle_symbol(StringRef mangled, IAllocator& alloc) {
+		size_t len;
+		int status;
+		COPY_STRING_REF_TO_CSTR_BUFFER(mangled_buffer, mangled);
+		char* buffer = __cxxabiv1::__cxa_demangle(mangled_buffer.data(), nullptr, &len, &status);
+		String result(alloc);
+		if (status == 0) {
+			result = buffer;
+		} else {
+			result = mangled;
+		}
+		::free(buffer);
+		return std::move(result);
 	}
 	
 	void resolve_symbol(void* ip, String& out_module_name, String& out_demangled_function_name, uint32& out_offset) {
@@ -36,17 +67,9 @@ namespace grace {
 		
 		size_t mangled_symbol_name_length = symbol_line.size() - 59 - offset_string.size();
 		StringRef mangled_symbol_name = substr(symbol_line, 59, mangled_symbol_name_length);
-		COPY_STRING_REF_TO_CSTR_BUFFER(mangled_symbol_name_buffer, mangled_symbol_name);
-		
-		size_t len;
-		int status;
-		char* buffer = __cxxabiv1::__cxa_demangle(mangled_symbol_name_buffer.data(), nullptr, &len, &status);
-		if (status == 0) {
-			out_demangled_function_name = buffer;
-		} else {
-			out_demangled_function_name = mangled_symbol_name;
-		}
-		::free(buffer);
+
+		out_demangled_function_name = demangle_symbol(mangled_symbol_name, out_module_name.allocator());
+
 		::free(symbols);
 	}
 }
