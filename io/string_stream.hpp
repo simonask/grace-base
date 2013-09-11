@@ -29,6 +29,9 @@ namespace grace {
 		// StringStream-like
 		String str() const { return string(); }
 		void str(StringRef s) { set_string(s); }
+
+		MemoryBufferStream& buffer() { return buffer_; }
+		const MemoryBufferStream& buffer() const { return buffer_; }
 	private:
 		MemoryBufferStream buffer_;
 	};
