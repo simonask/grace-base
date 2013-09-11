@@ -15,6 +15,7 @@ set(SOURCES
 	base/benchmark.cpp
 	base/color.cpp
 	base/config.cpp
+	base/error.cpp
 	base/exceptions.cpp
 	base/fiber.cpp
 	base/log.cpp
@@ -100,6 +101,7 @@ set(TESTS
 	binary_archive_test
 	composite_test
 	either_test
+	error_test
 	fiber_test
 	formatting_test
 	function_test
