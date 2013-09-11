@@ -13,7 +13,6 @@
 #include "geometry/vector.hpp"
 
 namespace grace {
-	static constexpr const float32 E = M_E;
 	static constexpr const float32 Log2E = M_LOG2E;
 	static constexpr const float32 Log10E = M_LOG10E;
 	static constexpr const float32 Ln2 = M_LN2;
