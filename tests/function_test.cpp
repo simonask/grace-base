@@ -8,6 +8,7 @@
 
 #include "tests/test.hpp"
 #include "base/function.hpp"
+#include "base/function_error.hpp"
 
 using namespace grace;
 

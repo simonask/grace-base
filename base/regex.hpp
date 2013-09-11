@@ -21,8 +21,6 @@ namespace grace {
 		CaseInsensitive = 1 << ('i' - 'a'),
 		NewlineSensitive = 1 << ('m' - 'a'),
 	};
-		
-	struct RegexError : ErrorBase<RegexError> {};
 	
 	struct Regex {
 		Regex(IAllocator& alloc = default_allocator()) : pattern_(alloc) {}

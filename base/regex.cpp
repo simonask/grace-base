@@ -13,6 +13,8 @@
 #include <regex.h>
 
 namespace grace {
+	struct RegexError : ErrorBase<RegexError> {};
+	
 	void Regex::parse_options(const char* options) {
 		for (const char* o = options; *o; ++o) {
 			switch (*o) {

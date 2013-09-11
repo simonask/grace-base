@@ -19,6 +19,7 @@ set(SOURCES
 	base/error.cpp
 	base/exceptions.cpp
 	base/fiber.cpp
+	base/function.cpp
 	base/log.cpp
 	base/random.cpp
 	base/regex.cpp
