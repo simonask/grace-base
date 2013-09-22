@@ -15,8 +15,7 @@ namespace grace {
 	}
 
 	template <typename ErrorType, typename... Args>
-	__attribute__((noreturn))
-	void raise(StringRef format, Args&&... args) {
+	ErrorType make_error(StringRef format, Args&&... args) {
 		StringStream ss;
 		ss.printf(format, std::forward<Args>(args)...);
 		size_t len = ss.buffer().size();
@@ -25,6 +24,13 @@ namespace grace {
 		ss.buffer().copy_to(description, description + len);
 		ErrorType err;
 		err._take_description(description, len, alloc);
+		return std::move(err);
+	}
+
+	template <typename ErrorType, typename... Args>
+	__attribute__((noreturn))
+	void raise(StringRef format, Args&&... args) {
+		ErrorType err = make_error<ErrorType>(format, std::forward<Args>(args)...);
 		throw ErrorType(std::move(err));
 	}
 }
