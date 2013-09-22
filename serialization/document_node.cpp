@@ -7,7 +7,7 @@
 #include "io/stdio_stream.hpp"
 
 namespace grace {
-class IUniverse;
+struct IUniverse;
 
 bool DocumentNode::is_integer() const {
 	return value_.is_a<IntegerType>();

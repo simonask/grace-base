@@ -58,7 +58,8 @@ private:
 
 void resolve_exposed_attribute(const IAttribute*& inout_attr, ObjectPtr<>& inout_object);
 
-struct CompositeType : StructuredType {
+class CompositeType : public StructuredType {
+public:
 	CompositeType(IAllocator& alloc, StringRef name, const ObjectTypeBase* base_type = nullptr);
 	~CompositeType();
 	

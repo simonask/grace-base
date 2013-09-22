@@ -15,7 +15,7 @@
 #include "memory/unique_ptr.hpp"
 
 namespace grace {
-	struct InputStream;
+	class InputStream;
 	
 	struct IArchive {
 		virtual bool contains(ResourceID) const = 0;

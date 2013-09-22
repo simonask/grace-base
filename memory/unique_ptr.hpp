@@ -19,7 +19,7 @@ namespace grace {
 		template <typename U> friend class UniquePtr;
 		
 		UniquePtr() { check_invariant(); }
-		UniquePtr(NullPtr* null) : ptr_(nullptr), alloc_(nullptr) { check_invariant(); }
+		UniquePtr(NullPtr* null) { check_invariant(); }
 		UniquePtr(UniquePtr<T>&& other) { this->swap(other); check_invariant(); }
 		template <typename U>
 		UniquePtr(UniquePtr<U>&& other) {

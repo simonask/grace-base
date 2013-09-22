@@ -24,10 +24,11 @@ template <typename T> const IType* build_type_info(); // Only used for non-refle
 
 class Renderer;
 
-struct Object {
+class Object {
 	REFLECT;
+public:
 	
-	Object() : type_(nullptr), offset_(0), universe_(nullptr) {}
+	Object() {}
 	Object(const Object&) = delete;
 	virtual ~Object() {}
 	
@@ -60,10 +61,10 @@ struct Object {
 private:
 	StringRef object_type_name() const;
 
-	const StructuredType* type_;
-	IUniverse* universe_;
-	uint32 offset_; // offset within composite
-	uint32 universe_data_;
+	const StructuredType* type_ = nullptr;
+	IUniverse* universe_ = nullptr;
+	uint32 offset_ = 0; // offset within composite
+	uint32 universe_data_ = 0;
 };
 
 template <typename T>

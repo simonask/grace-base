@@ -87,7 +87,7 @@ namespace grace {
 			iterator operator++(int) { iterator copy = *this; current = current->next; return copy; }
 			T* operator*() const { return self->convert_link_to_object(current); }
 		private:
-			template <typename, size_t> friend class AutoList;
+			template <typename, size_t> friend struct AutoList;
 			iterator(AutoList<T,MemberOffset>* self, AutoListLink<T>* current) : self(self), current(current) {}
 			AutoList<T,MemberOffset>* self = nullptr;
 			AutoListLink<T>* current = nullptr;

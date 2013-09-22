@@ -12,7 +12,7 @@
 #include "base/iterators.hpp"
 
 namespace grace {
-	template <typename T> class BareLinkList;
+	template <typename T> struct BareLinkList;
     
     template <typename T>
     struct ListLinkBase {
@@ -25,7 +25,7 @@ namespace grace {
 			next->previous = previous;
 			previous->next = next;
 		}
-		friend class BareLinkList<T>;
+		friend struct BareLinkList<T>;
 		friend struct GetNextNode<ListLinkBase<T>>;
 		friend struct GetPreviousNode<ListLinkBase<T>>;
         T* next = nullptr;

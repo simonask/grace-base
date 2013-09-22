@@ -30,7 +30,7 @@ namespace grace {
 		void add_time(ProcessTimeDelta, uint32 i);
 	};
 	
-	struct FormattedStream;
+	class FormattedStream;
 	FormattedStream& operator<<(FormattedStream&, const BenchmarkResults&);
 	
 	BenchmarkResults benchmark(StringRef description, uint32 iterations, Function<void()> function);

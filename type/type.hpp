@@ -116,7 +116,7 @@ protected:
 };
 
 struct EnumType : SimpleType {
-	EnumType(const TypeInfo& type_info, IAllocator& alloc, StringRef name, size_t width, bool is_signed = true) : SimpleType(alloc, type_info, name, width, width, false, is_signed), max_(1LL-SSIZE_MAX), min_(SSIZE_MAX), entries_(alloc) {}
+	EnumType(const TypeInfo& type_info, IAllocator& alloc, StringRef name, size_t width, bool is_signed = true) : SimpleType(alloc, type_info, name, width, width, false, is_signed), entries_(alloc), max_(1LL-SSIZE_MAX), min_(SSIZE_MAX) {}
 	bool contains(ssize_t value) const;
 	bool contains(StringRef name) const;
 	ssize_t max() const { return max_; }

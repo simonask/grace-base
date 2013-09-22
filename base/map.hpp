@@ -22,7 +22,7 @@
 
 namespace grace {
 	template <typename Key, typename Value, bool IsConst>
-	class MapIteratorImpl;
+	struct MapIteratorImpl;
 
 	template <typename Key, typename Value, typename Cmp = Less>
 	class Map {

@@ -6,7 +6,7 @@
 #include "base/either.hpp"
 
 namespace grace {
-	template <typename> class ArrayRef;
+	template <typename> struct ArrayRef;
 
 	struct IError {
 		virtual ~IError() {}

@@ -20,7 +20,7 @@ struct DeserializeSignalBase;
 struct IUniverse;
 struct ISlot;
 struct DerivedType;
-struct Object;
+class Object;
 
 struct DocumentNode {
 	bool is_empty() const;

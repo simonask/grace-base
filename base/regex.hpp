@@ -92,7 +92,7 @@ namespace grace {
 			return (options_ & RegexOptions::NewlineSensitive) != 0;
 		}
 	
-	struct FormattedStream;
+	class FormattedStream;
 	inline FormattedStream& operator<<(FormattedStream& os, const Regex& rx) {
 		os << '/';
 		os << rx.pattern();

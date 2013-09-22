@@ -102,10 +102,10 @@ private:
 };
 
 class String;
-class StringRef;
-class IAttribute;
-class ISlot;
-class Type;
+struct StringRef;
+struct IAttribute;
+struct ISlot;
+struct Type;
 
 extern template class Array<byte>;
 extern template class Array<float32>;

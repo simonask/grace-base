@@ -13,7 +13,7 @@
 
 namespace grace {
 	class String;
-	class StringRef;
+	struct StringRef;
 	class IAllocator;
 	template <typename> class Array;
 	template <typename> struct ArrayRef;

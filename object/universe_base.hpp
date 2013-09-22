@@ -16,7 +16,7 @@
 #include "base/set.hpp"
 
 namespace grace {
-	struct CompositeType;
+	class CompositeType;
 
 	struct DeferredAttributeDeserialization {
 		ObjectPtr<> object;
@@ -78,7 +78,7 @@ namespace grace {
 		void set_event_loop(IEventLoop* el) final { event_loop_ = el; }
 		IEventLoop* event_loop() const final { return event_loop_; }
 	protected:
-		UniverseBase(IAllocator& alloc) : allocator_(alloc), auto_lists(alloc), deferred_(alloc), composite_types_(alloc), update_objects_(alloc) {}
+		UniverseBase(IAllocator& alloc) : deferred_(alloc), composite_types_(alloc), allocator_(alloc), auto_lists(alloc), update_objects_(alloc) {}
 		Array<DeferredAttributeDeserialization> deferred_;
 		Array<CompositeType*> composite_types_;
 	private:

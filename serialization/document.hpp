@@ -18,8 +18,8 @@ namespace grace {
 
 	struct DocumentNode;
 	struct IUniverse;
-	struct InputStream;
-	struct OutputStream;
+	class InputStream;
+	class OutputStream;
 
 	struct Document {
 		const DocumentNode& operator[](StringRef key) const;

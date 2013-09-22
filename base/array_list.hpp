@@ -17,7 +17,7 @@
 #include <algorithm>
 
 namespace grace {
-	struct FormattedStream;
+	class FormattedStream;
 
 	template <typename T, bool IsConst> struct ArrayListIteratorImpl;
 
