@@ -12,7 +12,7 @@
 #include "base/basic.hpp"
 
 namespace grace {
-	enum Timeline : byte {
+	enum class Timeline : byte {
 		System,
 		Game,
 		Process,
