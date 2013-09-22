@@ -14,8 +14,6 @@
 #include "base/basic.hpp"
 
 namespace grace {
-	struct Empty {};
-	
 	#define AREF(static_array) (ArrayRef<typename std::remove_reference<decltype(static_array[0])>::type>(static_array, static_array + sizeof(static_array)/sizeof(static_array[0])))
 	
 	template <typename T>

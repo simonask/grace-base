@@ -43,6 +43,7 @@ typedef uint8 byte;
 #endif
 
 static const struct NothingType { NothingType() {} } Nothing;
+struct Empty {};
 using NullPtr = std::nullptr_t;
 
 using std::move;
