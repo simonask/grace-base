@@ -43,7 +43,7 @@ namespace grace {
 		constexpr ArrayRefBase() {}
 		constexpr ArrayRefBase(T* begin, T* end) : begin_(begin), end_(end) {}
 		template <size_t N, typename C = T>
-		constexpr ArrayRefBase(const C(&data)[N]) : begin_(data), end_(data + N) {}
+		constexpr ArrayRefBase(C(&data)[N]) : begin_(data), end_(data + N) {}
 		ArrayRefBase(const ArrayRefBase<T>& other) = default;
 		ArrayRefBase(ArrayRefBase<T>&& other) = default;
 		T* begin_;
@@ -92,7 +92,7 @@ namespace grace {
 		ArrayRef(NothingType nothing) {}
 		constexpr ArrayRef(T* begin, T* end) : ArrayRefBase<T>(begin, end) {}
 		template <size_t N, typename C = T>
-		constexpr ArrayRef(const C(&data)[N]) : ArrayRefBase<T>(data) {}
+		constexpr ArrayRef(C(&data)[N]) : ArrayRefBase<T>(data) {}
 		ArrayRef(const ArrayRef<T>& other) = default;
 		ArrayRef(ArrayRef<T>&& other) = default;
 		
