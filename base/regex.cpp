@@ -53,8 +53,8 @@ namespace grace {
 	
 	Regex::Regex(Regex&& other)
 	: pattern_(move(other.pattern_))
-	, regex_(other.regex_)
 	, options_(other.options_)
+	, regex_(other.regex_)
 	{
 		other.regex_ = nullptr;
 		other.options_ = RegexOptions::None;
