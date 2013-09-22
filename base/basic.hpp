@@ -306,7 +306,7 @@ auto linear_search(Container& container, const ComparableValue& value)
 #define UNREACHABLE() __builtin_unreachable()
 
 //#if defined(DEBUG)
-#define ASSERT(X) do{ if (!(X)) { fprintf(stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); TRAP(); UNREACHABLE(); } } while(0)
+#define ASSERT(X) do{ if (!(X)) { fprintf(::stderr, "TRAP AT %s:%d (function '%s', expression '%s')\n", __FILE__, __LINE__, __func__, #X); TRAP(); UNREACHABLE(); } } while(0)
 //#else
 //#define ASSERT(X) do{ if (!(X)) { TRAP(); UNREACHABLE(); } } while(0)
 //#endif
