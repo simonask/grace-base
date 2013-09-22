@@ -4,6 +4,7 @@
 
 #include "base/basic.hpp"
 #include "base/iterators.hpp"
+#include "base/array_ref.hpp"
 
 namespace grace {
 	namespace detail {
