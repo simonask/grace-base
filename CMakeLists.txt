@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 set(SRCPATH .)
-#include(${LEVEL}/config.cmake)
+list(APPEND CMAKE_MODULE_PATH ./cmake)
 
 set(CMAKE_CXX_FLAGS "-O0 -g -std=c++11 -stdlib=libc++ -DDEBUG -Wno-unused-comparison")
 
@@ -26,8 +26,6 @@ set(SOURCES
 	base/string.cpp
 	base/time.cpp
 	base/type_info.cpp
-	event/event_loop_libevent.cpp
-	event/libevent_util.cpp
 	geometry/rect.cpp
 	geometry/units.cpp
 	geometry/vector.cpp
@@ -86,13 +84,18 @@ foreach(f ${SOURCES})
 	list(APPEND FINAL_SOURCES ${SRCPATH}/${f})
 endforeach(f)
 
-find_library(YAML_LIB yaml)
-find_library(EVENT_LIB event)
+find_package(yaml REQUIRED)
+find_package(event REQUIRED)
+
+include_directories(${YAML_INCLUDE_DIRS})
+include_directories(${EVENT_INCLUDE_DIRS})
+
+list(APPEND SOURCES platform/libevent_util.cpp platform/event_loop_libevent.cpp)
 
 add_library(grace-base SHARED ${FINAL_SOURCES})
 
-target_link_libraries(grace-base yaml)
-target_link_libraries(grace-base event)
+target_link_libraries(grace-base ${YAML_LIBRARIES})
+target_link_libraries(grace-base ${EVENT_LIBRARIES})
 
 
 set(TESTS
