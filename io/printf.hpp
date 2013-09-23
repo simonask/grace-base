@@ -27,7 +27,7 @@ namespace grace {
 
 	template <typename ArgsWriterTuple, size_t... I>
 	void formatted_stream_printf_impl(FormattedStream& os, StringRef format, ArgsWriterTuple& tuple, Indices<I...>) {
-		std::array<IWriteToFormattedStream*, sizeof...(I)> arg_writers = { static_cast<IWriteToFormattedStream*>(&std::get<I>(tuple))... };
+		std::array<IWriteToFormattedStream*, sizeof...(I)> arg_writers = {{ static_cast<IWriteToFormattedStream*>(&std::get<I>(tuple))... }};
 
 		StringRef haystack = format;
 		static const Regex interpolation("{(\\d+)}", static_allocator());
