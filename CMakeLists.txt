@@ -21,6 +21,7 @@ set(SOURCES
 	base/fiber.cpp
 	base/function.cpp
 	base/log.cpp
+	base/process.cpp
 	base/random.cpp
 	base/regex.cpp
 	base/string.cpp
@@ -123,6 +124,7 @@ set(TESTS
 	memory_stream_test
 	network_stream_test
 	priority_queue_test
+	process_test
 	regex_test
 	signal_test
 	simd_test
