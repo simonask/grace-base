@@ -34,6 +34,8 @@ namespace grace {
 		read_all(is, buffer);
 		return move(buffer);
 	}
+
+	String read_string(InputStream& is, IAllocator& alloc = default_allocator());
 	
 	bool path_exists(StringRef path);
 	bool path_is_file(StringRef path);

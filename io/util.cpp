@@ -18,6 +18,12 @@
 #include <glob.h>
 
 namespace grace {
+	String read_string(InputStream& is, IAllocator& alloc) {
+		StringStream ss(alloc);
+		read_all(is, ss);
+		return ss.string(alloc);
+	}
+
 	bool path_is_directory(StringRef path) {
 		struct stat s;
 		COPY_STRING_REF_TO_CSTR_BUFFER(path_cstr, path);
