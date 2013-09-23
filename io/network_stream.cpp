@@ -20,7 +20,7 @@ namespace grace {
 
 		explicit SocketNetworkStream(int fd) : fd(fd) {}
 
-		~SocketNetworkStream() {
+		virtual ~SocketNetworkStream() {
 			close();
 		}
 
