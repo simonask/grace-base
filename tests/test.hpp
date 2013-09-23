@@ -191,7 +191,7 @@ namespace grace {
 	}
 	
 	template <typename R>
-	void should_not_return(R unexpected, Function<R()> closure, StringRef file = "<unknown>", int lineno = 0) {
+	void should_not_return(const R& unexpected, Function<R()> closure, StringRef file = "<unknown>", int lineno = 0) {
 		bool r;
 		should_not_throw_any_exception([&](){
 			r = unexpected == closure();
@@ -204,7 +204,7 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	void should_be_equal(A a, B b, StringRef file = "<unknown>", int lineno = 0) {
+	void should_be_equal(const A& a, const B& b, StringRef file = "<unknown>", int lineno = 0) {
 		bool r;
 		should_not_throw_any_exception([&](){
 			r = a == b;
@@ -217,7 +217,7 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	void should_not_be_equal(A a, B b, StringRef file = "<unknown>", int lineno = 0) {
+	void should_not_be_equal(const A& a, const B& b, StringRef file = "<unknown>", int lineno = 0) {
 		bool r;
 		should_not_throw_any_exception([&]() {
 			r = !(a == b);
@@ -230,7 +230,7 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	void should_be_not_equal(A a, B b, StringRef file = "<unknown>", int lineno = 0) {
+	void should_be_not_equal(const A& a, const B& b, StringRef file = "<unknown>", int lineno = 0) {
 		bool r;
 		should_not_throw_any_exception([&]() {
 			r = a != b;
@@ -243,7 +243,7 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	void should_be_less_than(A a, B b, StringRef file = "<unknown>", int lineno = 0) {
+	void should_be_less_than(const A& a, const B& b, StringRef file = "<unknown>", int lineno = 0) {
 		bool r;
 		should_not_throw_any_exception([&]() {
 			r = a < b;
@@ -256,7 +256,7 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	void should_be_not_less_than(A a, B b, StringRef file = "<unknown>", int lineno = 0) {
+	void should_be_not_less_than(const A& a, const B& b, StringRef file = "<unknown>", int lineno = 0) {
 		bool r;
 		should_not_throw_any_exception([&]() {
 			r = !(a < b);
@@ -269,7 +269,7 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	void should_be_less_than_or_equal_to(A a, B b, StringRef file = "<unknown>", int lineno = 0) {
+	void should_be_less_than_or_equal_to(const A& a, const B& b, StringRef file = "<unknown>", int lineno = 0) {
 		bool r;
 		should_not_throw_any_exception([&](){
 			r = a <= b;
@@ -282,7 +282,7 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	void should_be_greater_than(A a, B b, StringRef file = "<unknown>", int lineno = 0) {
+	void should_be_greater_than(const A& a, const B& b, StringRef file = "<unknown>", int lineno = 0) {
 		bool r;
 		should_not_throw_any_exception([&](){
 			r = a > b;
@@ -295,7 +295,7 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	void should_be_greater_than_or_equal_to(A a, B b, StringRef file = "<unknown>", int lineno = 0) {
+	void should_be_greater_than_or_equal_to(const A& a, const B& b, StringRef file = "<unknown>", int lineno = 0) {
 		bool r;
 		should_not_throw_any_exception([&](){
 			r = a >= b;
@@ -308,7 +308,7 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	void should_be_faster_than(A a, StringRef a_name, B b, StringRef b_name, uint32 iterations = 10, StringRef file = "<unknown>", int lineno = 0) {
+	void should_be_faster_than(const A& a, StringRef a_name, const B& b, StringRef b_name, uint32 iterations = 10, StringRef file = "<unknown>", int lineno = 0) {
 		StringStream description_ss;
 		description_ss << file << ":" << lineno;
 		String description = description_ss.string();
@@ -328,7 +328,7 @@ namespace grace {
 	}
 	
 	template <typename A, typename B>
-	void should_be_at_least_as_fast_as(A a, StringRef a_name, B b, StringRef b_name, uint32 iterations = 10, StringRef file = "<unknown>", int lineno = 0) {
+	void should_be_at_least_as_fast_as(const A& a, StringRef a_name, const B& b, StringRef b_name, uint32 iterations = 10, StringRef file = "<unknown>", int lineno = 0) {
 		StringStream description_ss;
 		description_ss << file << ":" << lineno;
 		String description = description_ss.string();
@@ -354,9 +354,9 @@ namespace grace {
 			Not(TestValue<Value>& owner) : owner(owner) {}
 			
 			template <typename B>
-			void operator==(B b) { owner.should != b; }
+			void operator==(const B& b) { owner.should != b; }
 			template <typename B>
-			void operator!=(B b) { owner.should == b; }
+			void operator!=(const B& b) { owner.should == b; }
 			/*template <typename B>
 			void operator<(B b) { should_be_not_less_than(v, b); }
 			template <typename B>
@@ -367,7 +367,7 @@ namespace grace {
 			void operator>=(B b) { should_be_not_greater_than_or_equal_to(v, b); }*/
 		};
 		
-		TestValue(Value v, StringRef expr, StringRef file, int lineno) : v(move(v)), expr(std::move(expr)), file(file), lineno(lineno), should(*this), should_be(*this), should_not(*this), should_not_be(should_not) {}
+		TestValue(StringRef expr, StringRef file, int lineno, const Value& v) : expr(std::move(expr)), file(file), lineno(lineno), v(move(v)), should(*this), should_be(*this), should_not(*this), should_not_be(should_not) {}
 		StringRef expr;
 		StringRef file;
 		int lineno;
@@ -403,7 +403,7 @@ namespace grace {
 #define MACRO_RETARDATION(x, y) x ## y
 #define MACRO_CONCAT(x, y) MACRO_RETARDATION(x, y)
 #define TEST(VALUE) \
-	grace::TestValue<typename grace::RemoveConstRef<decltype(VALUE)>::Type> MACRO_CONCAT(_testAssertionObject_, __LINE__)(VALUE, #VALUE, __FILE__, __LINE__); MACRO_CONCAT(_testAssertionObject_, __LINE__)
+	grace::TestValue<typename grace::RemoveConstRef<decltype(VALUE)>::Type> MACRO_CONCAT(_testAssertionObject_, __LINE__)(#VALUE, __FILE__, __LINE__, VALUE); MACRO_CONCAT(_testAssertionObject_, __LINE__)
 #define FASTER_THAN(OTHER) \
 	.faster_than(OTHER, #OTHER)
 #define AT_LEAST_AS_FAST_AS(OTHER) \
