@@ -30,6 +30,9 @@ namespace grace {
 			current_ += to_copy;
 			return to_copy;
 		}
+		size_t read_if_available(byte* buffer, size_t max, bool&) override {
+			return read(buffer, max);
+		}
 		size_t tell_read() const { return current_ - begin_; }
 		bool seek_read(size_t position) {
 			if (position > size()) {
@@ -76,6 +79,7 @@ namespace grace {
 		// InputStream API
 		bool is_readable() const final;
 		size_t read(byte* buffer, size_t max) final;
+		size_t read_if_available(byte* buffer, size_t max, bool&) final { return read(buffer, max); }
 		size_t tell_read() const final;
 		bool seek_read(size_t pos) final;
 		bool has_length() const final;
@@ -84,6 +88,7 @@ namespace grace {
 		// OutputStream API
 		bool is_writable() const final;
 		size_t write(const byte* buffer, size_t max) final;
+		size_t write_if_available(const byte* buffer, size_t max, bool&) final { return write(buffer, max); }
 		size_t tell_write() const final;
 		bool seek_write(size_t pos) final;
 		void flush() final {}

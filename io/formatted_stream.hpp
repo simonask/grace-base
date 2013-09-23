@@ -25,6 +25,9 @@ namespace grace {
 		
 		bool is_writable() const final { return stream_.is_writable(); }
 		size_t write(const byte* buffer, size_t max) final { return stream_.write(buffer, max); }
+
+		// Always blocks:
+		size_t write_if_available(const byte* buffer, size_t max, bool& out_would_block) { out_would_block = true; return stream_.write(buffer, max); }
 		size_t tell_write() const final { return stream_.tell_write(); }
 		bool seek_write(size_t position) final { return stream_.seek_write(position); }
 		void flush() final { return stream_.flush(); }

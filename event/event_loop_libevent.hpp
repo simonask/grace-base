@@ -12,29 +12,29 @@
 #include "event/event_loop.hpp"
 
 namespace grace {
-	class EventLoop_libevent : public IEventLoopWithSockets {
+	class EventLoop_libevent : public IEventLoop {
 	public:
 		EventLoop_libevent();
 		~EventLoop_libevent();
+
+		// Call-later API
+		UniquePtr<IEventHandle> schedule(Function<void()>, SystemTimeDelta delay, IAllocator& = default_allocator());
+		UniquePtr<IEventHandle> call_repeatedly(Function<void()>, SystemTimeDelta interval, IAllocator& = default_allocator());
+		
+		// Async File I/O API
+		UniquePtr<IEventHandle> add_input_stream(IAsyncInputStream& stream, InputStreamCallback, SystemTimeDelta timeout = SystemTimeDelta::forever(), IAllocator& alloc = default_allocator());
+		UniquePtr<IEventHandle> add_output_stream(IAsyncOutputStream& stream, OutputStreamCallback, SystemTimeDelta timeout = SystemTimeDelta::forever(), IAllocator& alloc = default_allocator());
+
+		// Async Network I/O API
+		UniquePtr<IEventedSocket> connect(IAllocator&, StringRef host, uint32 port, ConnectionCallback on_connect, ConnectionErrorCallback on_error);
+		UniquePtr<IEventHandle> listen(IAllocator&, uint32 port, AcceptCallback on_accept, ConnectionErrorCallback on_error);
+		
+		// Main
+		void quit();
 		void run();
 	
-		// IEventLoop interface
-		UniquePtr<IEventHandle> schedule(IAllocator&, Function<void()>, SystemTimeDelta delay) final;
-		UniquePtr<IEventHandle> call_repeatedly(IAllocator&, Function<void()>, SystemTimeDelta interval) final;
-		//UniquePtr<IEventHandle> listen_for_input_event(IAllocator&, uint32 input_event_mask, InputEventCallback callback) final;
-		//void push_input_event(InputEvent event, bool handle_immediately = true) final;
-		UniquePtr<IEventHandle> watch_descriptor(IAllocator&, FileSystemDescriptor fd, uint8 event_mask, FileSystemCallback callback, SystemTimeDelta timeout) final;
-		//void record_input_events(StringRef output_file_path) final {}
-		//void replay_recorded_input_events(StringRef recorded_events_file_path, bool authentic_time) final {}
-		
-		// IEventLoopWithSockets interface
-		UniquePtr<IEventedSocket> connect(IAllocator&, StringRef host, uint32 port, ConnectionCallback on_connect, ConnectionErrorCallback on_error) final;
-		UniquePtr<IEventHandle> listen(IAllocator&, uint32 port, AcceptCallback on_accept, ConnectionErrorCallback on_error) final;
-		
 		struct Impl;
 		Impl* impl = nullptr;
-	private:
-		//void broadcast_input_event(const InputEvent&);
 	};
 }
 

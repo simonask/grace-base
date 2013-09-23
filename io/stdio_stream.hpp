@@ -10,57 +10,41 @@
 #define grace_stdio_stream_hpp
 
 #include "io/formatted_stream.hpp"
-#include "io/file_stream.hpp"
+#include "io/input_stream.hpp"
 
 namespace grace {
-	enum StandardOStreamType {
-		StandardOutputStreamType,
-		StandardErrorStreamType,
-		NumStandardOutputStreamTypes
-	};
-	
-	enum StandardInputStreamType {
-		StandardInput,
-	};
-	
-	class StdOutputStream : public FormattedStream {
-	public:
-		StdOutputStream(StandardOStreamType stream_type = StandardOutputStreamType);
-		StdOutputStream(StdOutputStream&& other) = default;
-		StdOutputStream& operator=(StdOutputStream&& other) = default;
+	struct ConsoleStream : InputStream, FormattedStream {
+		ConsoleStream(const ConsoleStream&) = delete;
+		ConsoleStream(ConsoleStream&&) = delete;
+		ConsoleStream& operator=(const ConsoleStream&) = delete;
+		ConsoleStream& operator=(ConsoleStream&&) = delete;
+		static ConsoleStream& get();
 		
-		FORWARD_TO_MEMBER(sync, stream_, OutputFileStream);
-		FORWARD_TO_MEMBER(set_sync, stream_, OutputFileStream);
+		bool autoflush() const;
+		void set_autoflush(bool b);
+
+		// InputStream (stdin)
+		bool is_readable() const final;
+		size_t read(byte* buffer, size_t max) final;
+		size_t read_if_available(byte* buffer, size_t max, bool& out_would_block) final;
+		size_t tell_read() const final;
+		bool seek_read(size_t position) final;
+		bool has_length() const final;
+		size_t length() const final;
+
+		FormattedStream& stderr();
+		
+		struct Impl;
 	private:
-		OutputFileStream stream_;
+		ConsoleStream();
+		Impl* impl = nullptr;
 	};
+
+	static ConsoleStream& Console = ConsoleStream::get();
 	
-	StdOutputStream& get_stdout_stream(StandardOStreamType type);
-	
-	template <typename T>
-	StdOutputStream& operator<<(StandardOStreamType type, const T& value) {
-		StdOutputStream& stream = get_stdout_stream(type);
-		stream << value;
-		return stream;
-	}
-	
-	template <StandardOStreamType t>
-	struct GetOutputStream {
-		GetOutputStream() {}
-		
-		StdOutputStream& stream() const {
-			return get_stdout_stream(t);
-		}
-		
-		operator StdOutputStream&() const {
-			return stream();
-		}
-	};
-	
-	static const GetOutputStream<StandardOutputStreamType> StdOut;
-	static const GetOutputStream<StandardOutputStreamType> StandardOutput;
-	static const GetOutputStream<StandardErrorStreamType> StdErr;
-	static const GetOutputStream<StandardErrorStreamType> StandardError;
+	static FormattedStream& StdErr = ConsoleStream::get().stderr();
+	static ConsoleStream& StdOut = ConsoleStream::get();
+	static ConsoleStream& StdIn = ConsoleStream::get();
 }
 
 #endif

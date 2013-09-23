@@ -14,6 +14,7 @@ namespace grace {
 	public:
 		virtual bool is_writable() const = 0;
 		virtual size_t write(const byte* buffer, size_t max) = 0;
+		virtual size_t write_if_available(const byte* buffer, size_t max, bool& out_would_block) = 0;
 		virtual size_t tell_write() const = 0;
 		virtual bool seek_write(size_t position) = 0;
 		virtual void flush() = 0;

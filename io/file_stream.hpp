@@ -12,74 +12,74 @@
 #include "io/input_stream.hpp"
 #include "io/output_stream.hpp"
 #include "base/string.hpp"
+#include "base/error.hpp"
 
 namespace grace {
-	enum FileWriteMode : uint8 {
-		Truncate,
-		Append,
+	struct FileError : ErrorBase<FileError> {};
+
+	static const uint8 FILE_MODE_READ_MASK   = 0x01;
+	static const uint8 FILE_MODE_WRITE_MASK  = 0x02;
+	static const uint8 FILE_MODE_CREATE_MASK = 0x4;
+	static const uint8 FILE_MODE_APPEND_MASK = 0x10 | FILE_MODE_WRITE_MASK;
+
+	enum class FileMode : uint8 {
+		Read              = FILE_MODE_READ_MASK,
+		ReadWrite         = FILE_MODE_READ_MASK | FILE_MODE_WRITE_MASK,
+		WriteCreate       = FILE_MODE_WRITE_MASK | FILE_MODE_CREATE_MASK,
+		ReadWriteCreate   = FILE_MODE_READ_MASK | FILE_MODE_WRITE_MASK | FILE_MODE_CREATE_MASK,
+		AppendCreate      = FILE_MODE_CREATE_MASK | FILE_MODE_APPEND_MASK,
+		ReadAppendCreate  = FILE_MODE_READ_MASK | FILE_MODE_APPEND_MASK | FILE_MODE_CREATE_MASK,
 	};
-	
-	class FileStreamBase {
-	public:
-		// FileStream API
-		~FileStreamBase();
-		FileStreamBase& operator=(FileStreamBase&& other);
-		StringRef path() const { return path_; }
+
+	struct FileStream : InputStream, OutputStream {
+		static FileStream open(StringRef path, FileMode mode = FileMode::ReadWriteCreate);
+
+		FileStream(FileStream&& other);
+		FileStream& operator=(FileStream&& other);
+		~FileStream();
+		void swap(FileStream& other);
+
+		// FileStream
+		void reopen(FileMode new_mode);
+		FileMode mode() const;
+		StringRef path() const;
 		void close();
 		bool is_open() const;
 		bool eof() const;
 		size_t tell() const;
 		bool seek(size_t pos);
-		void seek_end();
+		bool seek_end();
 		size_t file_size() const;
-		bool sync() const { return synchronize_; }
-		void set_sync(bool b) { synchronize_ = b; }
-		
-		// Public for a static_assert, not for external use.
-		static const size_t ImplSize = sizeof(void*);
-		struct Impl;
-	protected:
-		FileStreamBase();
-		FileStreamBase(FileStreamBase&& other);
-		
-		byte impl_data_[ImplSize];
-		Impl& impl();
-		const Impl& impl() const;
-		String path_;
-		bool synchronize_;
-	};
-		
-	class InputFileStream : public InputStream, public FileStreamBase {
-	public:
-		static InputFileStream open(StringRef path);
-		static InputFileStream wrap_file_pointer(void* os_fp);
-		InputFileStream() {}
-		InputFileStream(InputFileStream&& other) = default;
-		InputFileStream& operator=(InputFileStream&& other) = default;
-		
-		// InputStream API
-		bool is_readable() const override;
-		size_t read(byte* buffer, size_t n) override;
-		size_t tell_read() const override;
-		bool seek_read(size_t pos) override;
+		bool autoflush() const;
+		void set_autoflush(bool b);
+		uintptr_t handle() const; // fd
+
+		// InputStream
+		bool is_readable() const final;
+		size_t read(byte* buffer, size_t n) final;
+		size_t read_if_available(byte* buffer, size_t n, bool& out_would_block) final;
+		size_t tell_read() const final;
+		bool seek_read(size_t pos) final;
 		bool has_length() const final;
 		size_t length() const final;
-	};
-		
-	class OutputFileStream : public OutputStream, public FileStreamBase {
-	public:
-		static OutputFileStream open(StringRef path, FileWriteMode mode = FileWriteMode::Truncate);
-		static OutputFileStream wrap_file_pointer(void* os_fp);
-		OutputFileStream() {}
-		OutputFileStream(OutputFileStream&& other) = default;
-		OutputFileStream& operator=(OutputFileStream&& other) = default;
-		
-		// OutputStream API
-		bool is_writable() const override;
-		size_t write(const byte* buffer, size_t n) override;
-		size_t tell_write() const override;
-		bool seek_write(size_t pos) override;
-		void flush() override;
+
+		// OutputStream
+		bool is_writable() const final;
+		size_t write(const byte* buffer, size_t n) final;
+		size_t write_if_available(const byte* buffer, size_t n, bool& out_would_block) final;
+		size_t tell_write() const final;
+		bool seek_write(size_t pos) final;
+		void flush() final;
+	protected:
+		FileStream() {}
+		FileStream(void* fp, StringRef path, FileMode mode, bool autoflush);
+
+		void* fp_;
+		String path_;
+		FileMode mode_;
+		bool autoflush_ = false;
+
+		void check_valid() const;
 	};
 }
 

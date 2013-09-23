@@ -333,7 +333,7 @@ namespace grace {
 				}
 			}
 		
-			StdOut.stream().set_sync(true);
+			StdOut.set_autoflush(true);
 			
 			try {
 				suite.run(options);

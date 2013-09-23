@@ -16,10 +16,10 @@
 namespace grace {
 	class StringStream : public FormattedStream {
 	public:
-		StringStream(IAllocator& alloc = default_allocator()) : buffer_(alloc), FormattedStream(buffer_) {}
+		StringStream(IAllocator& alloc = default_allocator()) : FormattedStream(buffer_), buffer_(alloc)  {}
 		explicit StringStream(StringRef);
-		StringStream(const StringStream& other, IAllocator& alloc = default_allocator()) : buffer_(other.buffer_, alloc), FormattedStream(buffer_) {}
-		StringStream(StringStream&& other) : buffer_(std::move(other.buffer_)), FormattedStream(buffer_) {}
+		StringStream(const StringStream& other, IAllocator& alloc = default_allocator()) : FormattedStream(buffer_), buffer_(other.buffer_, alloc)  {}
+		StringStream(StringStream&& other) : FormattedStream(buffer_), buffer_(std::move(other.buffer_)) {}
 		
 		String string(IAllocator& alloc) const;
 		String string() const;
@@ -29,6 +29,10 @@ namespace grace {
 		// StringStream-like
 		String str() const;
 		void str(StringRef s);
+
+		FORWARD_TO_MEMBER(insert, buffer_, MemoryBufferStream)
+
+		void reserve(size_t) {}
 
 		MemoryBufferStream& buffer() { return buffer_; }
 		const MemoryBufferStream& buffer() const { return buffer_; }

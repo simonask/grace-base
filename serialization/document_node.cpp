@@ -234,7 +234,7 @@ size_t DocumentNode::array_size() const {
 	}
 	
 	void dump_document_node_to_stdout(const DocumentNode& node) {
-		node.dump(StandardOutput);
+		node.dump(StdOut);
 	}
 	
 	void dump_document_to_stdout(const Document& document) {

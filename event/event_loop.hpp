@@ -19,43 +19,48 @@
 #include "memory/unique_ptr.hpp"
 
 namespace grace {
-	using FileSystemDescriptor = int;
-	
-	using CallbackID = uintptr_t;
+	struct IAsyncInputStream;
+	struct IAsyncOutputStream;
+	struct IEventedSocket;
+	struct IInputManager;
+
+	enum class StreamEvent : uint8 {
+		Read   = 1,
+		Write  = 1 << 1,
+		Error  = 1 << 2,
+		Closed = 1 << 3,
+		Ready  = 1 << 4,
+		Accept = 1 << 5,
+		Any    = 0xff
+	};
+	ENUM_IS_FLAGS(StreamEvent);
+
+	// Different stream types that event loops must support:
+	struct FileStream;
+	struct NetworkStream;
+	struct ServerStream;
+	struct PipeStream;
+	struct ConsoleStream;
 
 	struct IEventLoop {
-		using FileSystemCallback = Function<void(FileSystemDescriptor fd, FileSystemEvent event)>;
-		//using InputEventCallback = Function<EventResponse(const InputEvent&)>; // return: handled?
-	
-		// Call-later API
-		virtual UniquePtr<IEventHandle> schedule(IAllocator&, Function<void()>, SystemTimeDelta delay) = 0;
-		virtual UniquePtr<IEventHandle> call_repeatedly(IAllocator&, Function<void()>, SystemTimeDelta interval) = 0;
-		
-		// Input Event API
-		//virtual UniquePtr<IEventHandle> listen_for_input_event(IAllocator&, uint32 input_event_mask, InputEventCallback callback) = 0;
-		//virtual void push_input_event(InputEvent event, bool handle_immediately = true) = 0;
-		
-		// Input Event Recording API
-		//virtual void record_input_events(StringRef output_file_path) = 0;
-		//virtual void replay_recorded_input_events(StringRef recorded_events_file_path, bool authentic_time) = 0;
-		
-		// Async File I/O API
-		virtual UniquePtr<IEventHandle> watch_descriptor(IAllocator&, FileSystemDescriptor fd, uint8 event_mask, FileSystemCallback callback, SystemTimeDelta timeout = SystemTimeDelta::forever()) = 0;
+		// Timer API
+		virtual UniquePtr<IEventHandle> schedule(Function<void()>, SystemTimeDelta delay, IAllocator& = default_allocator()) = 0;
+		virtual UniquePtr<IEventHandle> call_repeatedly(Function<void()>, SystemTimeDelta interval, IAllocator& = default_allocator()) = 0;
+
+		// Async I/O API
+		virtual UniquePtr<IEventHandle> add(FileStream& stream,    uint8 events, Function<void(StreamEvent, FileStream& stream)> handler) = 0;
+		virtual UniquePtr<IEventHandle> add(ServerStream& stream,  uint8 events, Function<void(StreamEvent, ServerStream& stream)> handler) = 0;
+		virtual UniquePtr<IEventHandle> add(PipeStream& stream,    uint8 events, Function<void(StreamEvent, PipeStream& stream)> handler) = 0;
+		virtual UniquePtr<IEventHandle> add(NetworkStream& stream, uint8 events, Function<void(StreamEvent, NetworkStream& stream)> handler) = 0;
+		virtual UniquePtr<IEventHandle> add(ConsoleStream& stream, uint8 events, Function<void(StreamEvent, ConsoleStream& stream)> handler) = 0;
 		
 		// Main
+		virtual void quit() = 0;
 		virtual void run() = 0;
 	};
-	
-	struct IEventedSocket;
-	
-	struct IEventLoopWithSockets : public IEventLoop {
-		using ConnectionCallback = Function<void(IEventedSocket&)>;
-		using AcceptCallback = Function<void(UniquePtr<IEventedSocket>)>;
-		using ConnectionErrorCallback = Function<void(StringRef, bool fatal)>;
-		virtual ~IEventLoopWithSockets() {}
-		virtual UniquePtr<IEventedSocket> connect(IAllocator&, StringRef host, uint32 port, ConnectionCallback on_connect, ConnectionErrorCallback on_error) = 0;
-		virtual UniquePtr<IEventHandle> listen(IAllocator&, uint32 port, AcceptCallback on_accept, ConnectionErrorCallback on_error) = 0;
-	};
+
+	// This creates a suitable event loop for the current platform:
+	UniquePtr<IEventLoop> create_event_loop();
 }
 
 #endif

@@ -1,179 +1,220 @@
-//
-//  file_stream.cpp
-//  grace
-//
-//  Created by Simon Ask Ulsnes on 29/07/12.
-//  Copyright (c) 2012 Simon Ask Consulting. All rights reserved.
-//
-
 #include "io/file_stream.hpp"
 #include "base/stack_array.hpp"
 
 #include <stdio.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include "base/raise.hpp"
 
 namespace grace {
-	struct FileStreamBase::Impl {
-		FILE* fp;
-	};
-	
-	static_assert(sizeof(FileStreamBase::Impl) <= FileStreamBase::ImplSize, "FileStreamBase::Impl is too big. Increase the value of FileStreamBase::ImplSize.");
-	
-	FileStreamBase::Impl& FileStreamBase::impl() {
-		return *reinterpret_cast<Impl*>(impl_data_);
-	}
-	
-	const FileStreamBase::Impl& FileStreamBase::impl() const {
-		return *reinterpret_cast<const Impl*>(impl_data_);
-	}
-	
-	FileStreamBase::FileStreamBase() : synchronize_(false) {
-		impl().fp = nullptr;
-	}
-	
-	FileStreamBase::FileStreamBase(FileStreamBase&& other) {
-		impl().fp = other.impl().fp;
-		other.impl().fp = nullptr;
-	}
-	
-	FileStreamBase::~FileStreamBase() {
-		if (impl().fp != stdout && impl().fp != stderr && impl().fp != stdin) {
-			close();
+	const char* file_mode_to_mstr(FileMode mode) {
+		switch (mode) {
+			case FileMode::Read: return "r";
+			case FileMode::ReadWrite: return "r+";
+			case FileMode::WriteCreate: return "w";
+			case FileMode::ReadWriteCreate: return "w+";
+			case FileMode::AppendCreate: return "a";
+			case FileMode::ReadAppendCreate: return "a+";
 		}
 	}
-	
-	FileStreamBase& FileStreamBase::operator=(FileStreamBase&& other) {
+
+	FileStream FileStream::open(StringRef path, FileMode mode) {
+		const char* mstr = file_mode_to_mstr(mode);
+		COPY_STRING_REF_TO_CSTR_BUFFER(path_cstr, path);
+		FILE* fp = ::fopen(path_cstr.data(), mstr);
+		if (!fp) {
+			raise<FileError>("fopen ({0}): {1}", path, ::strerror(errno));
+		}
+		FileStream f(fp, path, mode, false);
+		return std::move(f);
+	}
+
+	FileStream::FileStream(void* fp, StringRef path, FileMode mode, bool autoflush) : fp_(fp), path_(path), mode_(mode), autoflush_(autoflush) {}
+	FileStream::~FileStream() {
 		close();
-		impl().fp = other.impl().fp;
-		other.impl().fp = nullptr;
+	}
+
+	FileStream::FileStream(FileStream&& other) : fp_(nullptr) {
+		swap(other);
+	}
+
+	FileStream& FileStream::operator=(FileStream&& other) {
+		close();
+		swap(other);
 		return *this;
 	}
-	
-	void FileStreamBase::close() {
-		if (impl().fp != nullptr) {
-			fclose(impl().fp);
-			impl().fp = nullptr;
+
+	void FileStream::swap(FileStream& other) {
+		std::swap(fp_, other.fp_);
+		std::swap(path_, other.path_);
+		std::swap(mode_, other.mode_);
+		std::swap(autoflush_, other.autoflush_);
+	}
+
+	void FileStream::reopen(FileMode mode) {
+		const char* mstr = file_mode_to_mstr(mode);
+		COPY_STRING_REF_TO_CSTR_BUFFER(path_cstr, path_);
+		fp_ = ::freopen(path_cstr.data(), mstr, (FILE*)fp_);
+		if (!fp_) {
+			raise<FileError>("freopen ({0}): {1}", path_, ::strerror(errno));
 		}
 	}
-	
-	bool FileStreamBase::is_open() const {
-		return impl().fp != nullptr;
+
+	FileMode FileStream::mode() const {
+		return mode_;
 	}
-	
-	bool FileStreamBase::eof() const {
-		return !is_open() || feof(impl().fp);
+
+	StringRef FileStream::path() const {
+		return path_;
 	}
-	
-	size_t FileStreamBase::tell() const {
-		if (is_open()) {
-			auto r = ftell(impl().fp);
-			ASSERT(r >= 0);
-			return r;
-		}
-		return 0;
-	}
-	
-	bool FileStreamBase::seek(size_t pos) {
-		if (is_open()) {
-			auto r = fseek(impl().fp, pos, SEEK_SET);
-			return r == 0;
-		}
-		return false;
-	}
-	
-	void FileStreamBase::seek_end() {
-		if (is_open()) {
-			fseek(impl().fp, 0, SEEK_END);
+
+	void FileStream::close() {
+		if (fp_) {
+			::fclose((FILE*)fp_);
+			fp_ = nullptr;
 		}
 	}
-	
-	size_t FileStreamBase::file_size() const {
-		size_t pos = ftell(impl().fp);
-		fseek(impl().fp, 0, SEEK_END);
-		size_t len = ftell(impl().fp);
-		fseek(impl().fp, pos, SEEK_SET);
-		return len;
+
+	bool FileStream::is_open() const {
+		return fp_ != nullptr;
 	}
-	
-	InputFileStream InputFileStream::open(StringRef path) {
-		COPY_STRING_REF_TO_CSTR_BUFFER(path_buffer, path);
-		FILE* fp = fopen(path_buffer.data(), "r");
-		return wrap_file_pointer(fp);
+
+	bool FileStream::eof() const {
+		check_valid();
+		return ::feof((FILE*)fp_);
 	}
-	
-	InputFileStream InputFileStream::wrap_file_pointer(void *os_fp) {
-		FILE* fp = (FILE*)os_fp;
-		InputFileStream fs;
-		fs.impl().fp = fp;
-		return fs;
+
+	size_t FileStream::tell() const {
+		check_valid();
+		return ::ftell((FILE*)fp_);
 	}
-	
-	bool InputFileStream::is_readable() const {
-		return is_open() && !eof();
-	}
-	
-	size_t InputFileStream::read(byte* buffer, size_t n) {
-		if (is_open()) {
-			return fread(buffer, 1, n, impl().fp);
+
+	bool FileStream::seek(size_t pos) {
+		check_valid();
+		int r = ::fseek((FILE*)fp_, pos, SEEK_SET);
+		if (r != 0) {
+			raise<FileError>("fseek: {0}", ::strerror(errno));
 		}
-		return 0;
-	}
-	
-	size_t InputFileStream::tell_read() const {
-		return tell();
-	}
-	
-	bool InputFileStream::seek_read(size_t pos) {
-		return seek(pos);
-	}
-	
-	bool InputFileStream::has_length() const {
 		return true;
 	}
-	
-	size_t InputFileStream::length() const {
-		return file_size();
-	}
-	
-	OutputFileStream OutputFileStream::open(StringRef path, FileWriteMode mode) {
-		const char* m = mode == FileWriteMode::Truncate ? "w" : "a";
-		COPY_STRING_REF_TO_CSTR_BUFFER(path_buffer, path);
-		FILE* fp = fopen(path_buffer.data(), m);
-		return wrap_file_pointer(fp);
-	}
-	
-	OutputFileStream OutputFileStream::wrap_file_pointer(void *os_fp) {
-		FILE* fp = (FILE*)os_fp;
-		OutputFileStream fs;
-		fs.impl().fp = fp;
-		return fs;
-	}
-	
-	bool OutputFileStream::is_writable() const {
-		return is_open();
-	}
-	
-	size_t OutputFileStream::write(const byte* buffer, size_t n) {
-		if (is_open()) {
-			auto r = fwrite(buffer, 1, n, impl().fp);
-			if (synchronize_) {
-				fflush(impl().fp);
-			}
-			return r;
+
+	bool FileStream::seek_end() {
+		check_valid();
+		int r = ::fseek((FILE*)fp_, 0, SEEK_END);
+		if (r != 0) {
+			raise<FileError>("fseek: {0}", ::strerror(errno));
 		}
-		return 0;
+		return true;
 	}
-	
-	size_t OutputFileStream::tell_write() const {
+
+	size_t FileStream::file_size() const {
+		struct stat s;
+		::fstat(::fileno((FILE*)fp_), &s);
+		return s.st_size;
+	}
+
+	bool FileStream::autoflush() const {
+		return autoflush_;
+	}
+
+	void FileStream::set_autoflush(bool b) {
+		autoflush_ = b;
+	}
+
+	uintptr_t FileStream::handle() const {
+		check_valid();
+		return ::fileno((FILE*)fp_);
+	}
+
+	bool FileStream::is_readable() const {
+		return is_open() && (((uint8)mode() & FILE_MODE_READ_MASK) != 0);
+	}
+
+	size_t FileStream::read(byte* buffer, size_t n) {
+		check_valid();
+		size_t r = ::fread(buffer, 1, n, (FILE*)fp_);
+		if (r < n && ::ferror((FILE*)fp_)) {
+			raise<FileError>("fread: {0}", ::strerror(errno));
+		}
+		return r;
+	}
+
+	size_t FileStream::read_if_available(byte* buffer, size_t n, bool& out_would_block) {
+		check_valid();
+		size_t r = ::fread(buffer, 1, n, (FILE*)fp_);
+		if (r < n && ::ferror((FILE*)fp_)) {
+			if (errno == EAGAIN) {
+				out_would_block = true;
+			} else {
+				raise<FileError>("fread: {0}", ::strerror(errno));
+			}
+		} else {
+			out_would_block = false;
+		}
+		return r;
+	}
+
+	size_t FileStream::tell_read() const {
 		return tell();
 	}
-	
-	bool OutputFileStream::seek_write(size_t pos) {
+
+	bool FileStream::seek_read(size_t pos) {
 		return seek(pos);
 	}
-	
-	void OutputFileStream::flush() {
-		if (is_open()) {
-			fflush(impl().fp);
+
+	bool FileStream::has_length() const {
+		return true;
+	}
+
+	size_t FileStream::length() const {
+		return file_size();
+	}
+
+	bool FileStream::is_writable() const {
+		return is_open() && (((uint8)mode() & FILE_MODE_WRITE_MASK) != 0);
+	}
+
+	size_t FileStream::write(const byte* buffer, size_t n) {
+		check_valid();
+		size_t r = ::fwrite(buffer, 1, n, (FILE*)fp_);
+		if (r < n) {
+			raise<FileError>("fwrite: {0}", ::strerror(errno));
+		}
+		if (autoflush_) flush();
+		return r;
+	}
+
+	size_t FileStream::write_if_available(const byte* buffer, size_t n, bool& out_would_block) {
+		check_valid();
+		size_t r = ::fwrite(buffer, 1, n, (FILE*)fp_);
+		if (r < n && ::ferror((FILE*)fp_)) {
+			if (errno == EAGAIN) {
+				out_would_block = true;
+			} else {
+				raise<FileError>("fwrite: {0}", ::strerror(errno));
+			}
+		} else {
+			out_would_block = false;
+		}
+		return r;
+	}
+
+	size_t FileStream::tell_write() const {
+		return tell();
+	}
+
+	bool FileStream::seek_write(size_t pos) {
+		return seek(pos);
+	}
+
+	void FileStream::flush() {
+		check_valid();
+		::fflush((FILE*)fp_);
+	}
+
+	void FileStream::check_valid() const {
+		if (!is_open()) {
+			raise<FileError>("File isn't open.");
 		}
 	}
 }

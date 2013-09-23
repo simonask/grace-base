@@ -22,9 +22,9 @@ namespace grace {
 		ScratchAllocator scratch;
 		StringRef components[] = {path_, rid};
 		auto path = path_join(components, scratch);
-		InputFileStream fs = InputFileStream::open(path);
+		FileStream fs = FileStream::open(path, FileMode::Read);
 		if (fs.is_readable()) {
-			return make_unique<InputFileStream>(alloc, move(fs));
+			return make_unique<FileStream>(alloc, move(fs));
 		}
 		return nullptr;
 	}

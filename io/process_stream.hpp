@@ -13,8 +13,6 @@ namespace grace {
 		ReadWrite = 3,
 	};
 
-
-
 	class ProcessStream : public InputStream, public OutputStream {
 	public:
 		static ProcessStream open(StringRef cmd, ProcessStreamMode mode = ProcessStreamMode::ReadWrite);
@@ -29,6 +27,7 @@ namespace grace {
 		// InputStream interface
 		bool is_readable() const final;
 		size_t read(byte* buffer, size_t max) final;
+		size_t read_if_available(byte* buffer, size_t max, bool& would_block) final;
 		size_t tell_read() const final;
 		bool seek_read(size_t position) final;
 		bool has_length() const final { return false; }
@@ -37,6 +36,7 @@ namespace grace {
 		// OutputStream interface
 		bool is_writable() const final;
 		size_t write(const byte* buffer, size_t max) final;
+		size_t write_if_available(const byte* buffer, size_t max, bool& would_block) final;
 		size_t tell_write() const final;
 		bool seek_write(size_t position) final;
 		void flush() final;

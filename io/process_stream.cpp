@@ -61,6 +61,12 @@ namespace grace {
 			}
 			return 0;
 		}
+		
+		size_t ProcessStream::read_if_available(byte* buffer, size_t max, bool &would_block) {
+			ASSERT(is_readable());
+			would_block = true;
+			return 0;
+		}
 
 		size_t ProcessStream::tell_read() const {
 			if (fp_) {
@@ -83,6 +89,12 @@ namespace grace {
 			if (fp_) {
 				return ::fwrite((const void*)buffer, max, 1, (FILE*)fp_);
 			}
+			return 0;
+		}
+		
+		size_t ProcessStream::write_if_available(const byte *buffer, size_t max, bool &would_block) {
+			ASSERT(is_writable());
+			would_block = true;
 			return 0;
 		}
 

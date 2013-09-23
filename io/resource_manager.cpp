@@ -174,9 +174,9 @@ namespace grace {
 	InputStream* ResourceManager::create_reader_for_resource_id(IAllocator& alloc, ResourceID rid) {
 		// TODO: Consider virtual resources?
 		String path = path_for_resource(rid);
-		InputFileStream of = InputFileStream::open(path);
+		FileStream of = FileStream::open(path, FileMode::Read);
 		if (of.is_open() && of.is_readable()) {
-			return new(alloc) InputFileStream(std::move(of));
+			return new(alloc) FileStream(std::move(of));
 		}
 		Error() << "Could not create reader for resource id '" << rid << "' (path: " << path << ").";
 		return nullptr;
