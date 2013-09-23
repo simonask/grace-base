@@ -10,12 +10,7 @@
 namespace grace {
 	struct NetworkStreamError : ErrorBase<NetworkStreamError> {};
 
-	struct NetworkStream : InputStream, OutputStream {
-		// Connect synchronously:
-		static UniquePtr<NetworkStream> connect(StringRef host, uint16 port, IAllocator& = default_allocator());
-
-		// NetworkStream
-		virtual ~NetworkStream() {}
+	struct INetworkStream : IInputStream, IInputStreamNonblocking, IOutputStream, IOutputStreamNonblocking {
 		virtual uintptr_t handle() const = 0; // sockfd
 		virtual bool is_open() const = 0;
 		virtual void close() = 0;
@@ -23,8 +18,11 @@ namespace grace {
 		virtual StringRef address() const = 0;
 		virtual uint16 port() const = 0;
 		virtual uint16 local_port() const = 0;
-	protected:
-		NetworkStream() {}
+	};
+	
+	struct NetworkStream : INetworkStream {
+		// Connect synchronously:
+		static UniquePtr<INetworkStream> connect(StringRef host, uint16 port, IAllocator& = default_allocator());
 	};
 }
 

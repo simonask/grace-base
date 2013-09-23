@@ -15,7 +15,7 @@
 
 namespace grace {
 	class ObjectTemplateLoader : public ResourceLoader<ObjectTemplate> {
-		virtual bool load(ObjectTemplate& resource, InputStream& input) final;
+		virtual bool load(ObjectTemplate& resource, IInputStream& input) final;
 	};
 }
 

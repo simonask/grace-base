@@ -15,7 +15,7 @@
 
 namespace grace {
 	template <typename ContainerType>
-	inline size_t read_all(InputStream& is, ContainerType& buffer) {
+	inline size_t read_all(IInputStream& is, ContainerType& buffer) {
 		if (is.has_length()) {
 			buffer.reserve(is.length());
 		}
@@ -29,13 +29,13 @@ namespace grace {
 	}
 	
 	template <typename ContainerType>
-	inline ContainerType read_all(InputStream& is, IAllocator& alloc = default_allocator()) {
+	inline ContainerType read_all(IInputStream& is, IAllocator& alloc = default_allocator()) {
 		ContainerType buffer(alloc);
 		read_all(is, buffer);
 		return move(buffer);
 	}
 
-	String read_string(InputStream& is, IAllocator& alloc = default_allocator());
+	String read_string(IInputStream& is, IAllocator& alloc = default_allocator());
 	
 	bool path_exists(StringRef path);
 	bool path_is_file(StringRef path);

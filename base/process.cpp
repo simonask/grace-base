@@ -9,9 +9,10 @@
 #include "base/raise.hpp"
 
 #include "io/stdio_stream.hpp"
+#include "io/fd.hpp"
 
 #include <stdio.h>
-#include <unistd.h> // execvp
+#include <unistd.h> // execvp()
 #include <sys/wait.h> // waitpid()
 #include <signal.h> // kill()
 #include <errno.h>
@@ -48,9 +49,17 @@ namespace grace {
 				fd = -1;
 			}
 		}
+		
+		bool is_nonblocking() const {
+			return grace::is_nonblocking(fd);
+		}
+		
+		void set_nonblocking(bool b) {
+			grace::set_nonblocking(fd, b);
+		}
 	};
 
-	struct InputPipeStream : PipeStreamBase, InputStream {
+	struct InputPipeStream : PipeStreamBase, IInputStream, IInputStreamNonblocking {
 		InputPipeStream(int fd) : PipeStreamBase(fd) {}
 		InputPipeStream() = default;
 		InputPipeStream(InputPipeStream&& other) = default;
@@ -68,7 +77,7 @@ namespace grace {
 			return (size_t)n;
 		}
 
-		size_t read_if_available(byte* buffer, size_t max, bool& out_would_block) final {
+		size_t read_nonblocking(byte* buffer, size_t max, bool& out_would_block) final {
 			ssize_t n = ::read(fd, buffer, max);
 			if (n < 0) {
 				if (errno == EAGAIN) {
@@ -82,6 +91,14 @@ namespace grace {
 			}
 			return (size_t)n;
 		}
+		
+		bool is_read_nonblocking() const final {
+			return is_nonblocking();
+		}
+		
+		void set_read_nonblocking(bool b) final {
+			return set_nonblocking(b);
+		}
 
 		size_t tell_read() const final {
 			return position;
@@ -92,7 +109,7 @@ namespace grace {
 		size_t length() const final { return SIZE_T_MAX; }
 	};
 
-	struct OutputPipeStream : PipeStreamBase, OutputStream {
+	struct OutputPipeStream : PipeStreamBase, IOutputStream, IOutputStreamNonblocking {
 		OutputPipeStream(int fd) : PipeStreamBase(fd) {}
 		OutputPipeStream() = default;
 		OutputPipeStream(OutputPipeStream&& other) = default;
@@ -110,7 +127,7 @@ namespace grace {
 			return (size_t)n;
 		}
 
-		size_t write_if_available(const byte* buffer, size_t max, bool& out_would_block) final {
+		size_t write_nonblocking(const byte* buffer, size_t max, bool& out_would_block) final {
 			ssize_t n = ::write(fd, buffer, max);
 			if (n < 0) {
 				if (errno == EAGAIN) {
@@ -123,6 +140,14 @@ namespace grace {
 				position += n;
 			}
 			return (size_t)n;
+		}
+		
+		bool is_write_nonblocking() const final {
+			return is_nonblocking();
+		}
+		
+		void set_write_nonblocking(bool b) final {
+			set_nonblocking(b);
 		}
 
 		size_t tell_write() const final {
@@ -301,12 +326,12 @@ namespace grace {
 		kill(9);
 	}
 
-	InputStream& Process::stdout() {
+	IInputStream& Process::stdout() {
 		ASSERT(impl);
 		return impl->stdout;
 	}
 
-	InputStream& Process::stderr() {
+	IInputStream& Process::stderr() {
 		ASSERT(impl);
 		return impl->stderr;
 	}

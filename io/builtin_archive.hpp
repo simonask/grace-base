@@ -18,7 +18,7 @@ namespace grace {
 		~BuiltinArchive();
 		
 		bool contains(ResourceID) const final;
-		UniquePtr<InputStream> open(ResourceID, IAllocator& alloc = default_allocator()) final;
+		UniquePtr<IInputStream> open(ResourceID, IAllocator& alloc = default_allocator()) final;
 		String debug_path(ResourceID) const;
 		
 		struct Impl;

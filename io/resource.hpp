@@ -35,11 +35,11 @@ namespace grace {
 		friend class ResourceManager;
 	};
 	
-	class InputStream;
+	struct IInputStream;
 	
 	class StreamingResource : public Resource {
 	public:
-		virtual InputStream* create_reader(IAllocator& alloc) const;
+		virtual IInputStream* create_reader(IAllocator& alloc) const;
 	};
 	
 	inline void Resource::retain() {

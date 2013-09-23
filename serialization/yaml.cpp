@@ -182,9 +182,9 @@ namespace grace {
 		
 		struct YAMLEmitterState {
 			const Document& document;
-			OutputStream& os;
+			IOutputStream& os;
 			yaml_emitter_t* emitter;
-			YAMLEmitterState(const Document& document, OutputStream& os, yaml_emitter_t* emitter) : document(document), os(os), emitter(emitter) {}
+			YAMLEmitterState(const Document& document, IOutputStream& os, yaml_emitter_t* emitter) : document(document), os(os), emitter(emitter) {}
 			
 			int emit(const byte* buffer, size_t sz) {
 				os.write(buffer, sz);
@@ -269,7 +269,7 @@ namespace grace {
 		int yaml_write_handler_t(void *data, unsigned char *buffer, size_t size);
 	}
 	
-	void YAML::write(OutputStream& os, const Document& doc) {
+	void YAML::write(IOutputStream& os, const Document& doc) {
 		yaml_emitter_t emitter;
 		yaml_emitter_initialize(&emitter);
 		YAMLEmitterState emitter_state(doc, os, &emitter);
@@ -293,7 +293,7 @@ namespace grace {
 		yaml_emitter_delete(&emitter);
 	}
 	
-	size_t YAML::read(Document& doc, InputStream& is, String& out_error) {
+	size_t YAML::read(Document& doc, IInputStream& is, String& out_error) {
 		Array<byte> buffer = read_all<Array<byte>>(is);
 		const byte* begin = buffer.data();
 		const byte* end = begin + buffer.size();

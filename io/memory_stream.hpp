@@ -14,7 +14,7 @@
 #include "base/array_list.hpp"
 
 namespace grace {
-	class MemoryStream : public InputStream {
+	class MemoryStream : public IInputStream {
 	public:
 		MemoryStream(const byte* begin, const byte* end) : begin_(begin), end_(end), current_(begin) {}
 		// MemoryStream is safe to copy, because it doesn't own its data.
@@ -29,9 +29,6 @@ namespace grace {
 			std::copy(current_, current_ + to_copy, buffer);
 			current_ += to_copy;
 			return to_copy;
-		}
-		size_t read_if_available(byte* buffer, size_t max, bool&) override {
-			return read(buffer, max);
 		}
 		size_t tell_read() const { return current_ - begin_; }
 		bool seek_read(size_t position) {
@@ -56,7 +53,7 @@ namespace grace {
 	};
 	
 	
-	class MemoryBufferStream : public InputStream, public OutputStream {
+	class MemoryBufferStream : public IInputStream, public IOutputStream {
 	public:
 		MemoryBufferStream(IAllocator& alloc = default_allocator()) : buffer_(alloc) {
 			read_pos_ = write_pos_ = buffer_.begin();
@@ -79,7 +76,6 @@ namespace grace {
 		// InputStream API
 		bool is_readable() const final;
 		size_t read(byte* buffer, size_t max) final;
-		size_t read_if_available(byte* buffer, size_t max, bool&) final { return read(buffer, max); }
 		size_t tell_read() const final;
 		bool seek_read(size_t pos) final;
 		bool has_length() const final;
@@ -88,7 +84,6 @@ namespace grace {
 		// OutputStream API
 		bool is_writable() const final;
 		size_t write(const byte* buffer, size_t max) final;
-		size_t write_if_available(const byte* buffer, size_t max, bool&) final { return write(buffer, max); }
 		size_t tell_write() const final;
 		bool seek_write(size_t pos) final;
 		void flush() final {}

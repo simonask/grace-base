@@ -11,7 +11,7 @@
 #include "serialization/yaml.hpp"
 
 namespace grace {
-	bool ObjectTemplateLoader::load(ObjectTemplate& resource, InputStream& input) {
+	bool ObjectTemplateLoader::load(ObjectTemplate& resource, IInputStream& input) {
 		String error;
 		// TODO: Get rid of reinterpret_cast!
 		YAML yaml;

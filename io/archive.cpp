@@ -18,7 +18,7 @@ namespace grace {
 		return path_is_file(path);
 	}
 	
-	UniquePtr<InputStream> PathArchive::open(ResourceID rid, IAllocator& alloc) {
+	UniquePtr<IInputStream> PathArchive::open(ResourceID rid, IAllocator& alloc) {
 		ScratchAllocator scratch;
 		StringRef components[] = {path_, rid};
 		auto path = path_join(components, scratch);

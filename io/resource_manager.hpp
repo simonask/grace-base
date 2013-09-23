@@ -39,7 +39,7 @@ namespace grace {
 		
 		static ResourceLoaderBase* get_loader_for_resource_id(ResourceID rid);
 		static String path_for_resource(ResourceID rid);
-		static InputStream* create_reader_for_resource_id(IAllocator& alloc, ResourceID rid);
+		static IInputStream* create_reader_for_resource_id(IAllocator& alloc, ResourceID rid);
 		
 		template <typename ResourceType, typename ResourceLoaderType>
 		static void add_loader() {

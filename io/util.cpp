@@ -18,7 +18,7 @@
 #include <glob.h>
 
 namespace grace {
-	String read_string(InputStream& is, IAllocator& alloc) {
+	String read_string(IInputStream& is, IAllocator& alloc) {
 		StringStream ss(alloc);
 		read_all(is, ss);
 		return ss.string(alloc);

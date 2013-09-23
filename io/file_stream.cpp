@@ -139,21 +139,6 @@ namespace grace {
 		return r;
 	}
 
-	size_t FileStream::read_if_available(byte* buffer, size_t n, bool& out_would_block) {
-		check_valid();
-		size_t r = ::fread(buffer, 1, n, (FILE*)fp_);
-		if (r < n && ::ferror((FILE*)fp_)) {
-			if (errno == EAGAIN) {
-				out_would_block = true;
-			} else {
-				raise<FileError>("fread: {0}", ::strerror(errno));
-			}
-		} else {
-			out_would_block = false;
-		}
-		return r;
-	}
-
 	size_t FileStream::tell_read() const {
 		return tell();
 	}
@@ -181,21 +166,6 @@ namespace grace {
 			raise<FileError>("fwrite: {0}", ::strerror(errno));
 		}
 		if (autoflush_) flush();
-		return r;
-	}
-
-	size_t FileStream::write_if_available(const byte* buffer, size_t n, bool& out_would_block) {
-		check_valid();
-		size_t r = ::fwrite(buffer, 1, n, (FILE*)fp_);
-		if (r < n && ::ferror((FILE*)fp_)) {
-			if (errno == EAGAIN) {
-				out_would_block = true;
-			} else {
-				raise<FileError>("fwrite: {0}", ::strerror(errno));
-			}
-		} else {
-			out_would_block = false;
-		}
 		return r;
 	}
 

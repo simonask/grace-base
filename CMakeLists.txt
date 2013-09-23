@@ -32,6 +32,7 @@ set(SOURCES
 	geometry/vector.cpp
 	io/archive.cpp
 	io/builtin_archive.cpp
+	io/fd.cpp
 	io/file_stream.cpp
 	io/formatted_stream.cpp
 	io/memory_stream.cpp

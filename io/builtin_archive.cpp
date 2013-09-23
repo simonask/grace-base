@@ -35,7 +35,7 @@ namespace grace {
 		return impl->assets.find(rid) != impl->assets.end();
 	}
 	
-	UniquePtr<InputStream> BuiltinArchive::open(ResourceID rid, IAllocator& alloc) {
+	UniquePtr<IInputStream> BuiltinArchive::open(ResourceID rid, IAllocator& alloc) {
 		auto it = impl->assets.find(rid);
 		if (it == impl->assets.end())
 			return nullptr;

@@ -31,7 +31,7 @@ namespace grace {
 		ReadAppendCreate  = FILE_MODE_READ_MASK | FILE_MODE_APPEND_MASK | FILE_MODE_CREATE_MASK,
 	};
 
-	struct FileStream : InputStream, OutputStream {
+	struct FileStream : IInputStream, IOutputStream {
 		static FileStream open(StringRef path, FileMode mode = FileMode::ReadWriteCreate);
 
 		FileStream(FileStream&& other);
@@ -57,7 +57,6 @@ namespace grace {
 		// InputStream
 		bool is_readable() const final;
 		size_t read(byte* buffer, size_t n) final;
-		size_t read_if_available(byte* buffer, size_t n, bool& out_would_block) final;
 		size_t tell_read() const final;
 		bool seek_read(size_t pos) final;
 		bool has_length() const final;
@@ -66,7 +65,6 @@ namespace grace {
 		// OutputStream
 		bool is_writable() const final;
 		size_t write(const byte* buffer, size_t n) final;
-		size_t write_if_available(const byte* buffer, size_t n, bool& out_would_block) final;
 		size_t tell_write() const final;
 		bool seek_write(size_t pos) final;
 		void flush() final;

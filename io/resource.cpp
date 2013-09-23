@@ -10,7 +10,7 @@
 #include "io/resource_manager.hpp"
 
 namespace grace {
-	InputStream* StreamingResource::create_reader(IAllocator& alloc) const {
+	IInputStream* StreamingResource::create_reader(IAllocator& alloc) const {
 		return ResourceManager::create_reader_for_resource_id(alloc, resource_id());
 	}
 }

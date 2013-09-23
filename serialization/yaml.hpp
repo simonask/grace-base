@@ -13,8 +13,8 @@
 
 namespace grace {
 	struct YAML : IDocumentReader, IDocumentWriter {
-		void write(OutputStream& os, const Document& doc) final;
-		size_t read(Document& doc, InputStream& is, String& out_error) final;
+		void write(IOutputStream& os, const Document& doc) final;
+		size_t read(Document& doc, IInputStream& is, String& out_error) final;
 		bool can_parse(const byte* begin, const byte* end) const;
 	};
 }

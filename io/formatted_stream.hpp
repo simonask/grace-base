@@ -19,15 +19,12 @@ namespace grace {
 	class String;
 	struct StringRef;
 	
-	class FormattedStream : public OutputStream {
+	class FormattedStream : public IOutputStream {
 	public:
-		FormattedStream(OutputStream& stream) : stream_(stream) {}
+		FormattedStream(IOutputStream& stream) : stream_(stream) {}
 		
 		bool is_writable() const final { return stream_.is_writable(); }
 		size_t write(const byte* buffer, size_t max) final { return stream_.write(buffer, max); }
-
-		// Always blocks:
-		size_t write_if_available(const byte* buffer, size_t max, bool& out_would_block) { out_would_block = true; return stream_.write(buffer, max); }
 		size_t tell_write() const final { return stream_.tell_write(); }
 		bool seek_write(size_t position) final { return stream_.seek_write(position); }
 		void flush() final { return stream_.flush(); }
@@ -36,7 +33,7 @@ namespace grace {
 		template <typename... Args>
 		FormattedStream& printf(StringRef format, Args&&... args);
 	protected:
-		OutputStream& stream_;
+		IOutputStream& stream_;
 	};
 
 	FormattedStream& operator<<(FormattedStream& stream, const char* cstr);

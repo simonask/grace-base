@@ -18,8 +18,8 @@ namespace grace {
 
 	struct DocumentNode;
 	struct IUniverse;
-	class InputStream;
-	class OutputStream;
+	struct IInputStream;
+	struct IOutputStream;
 
 	struct Document {
 		const DocumentNode& operator[](StringRef key) const;
@@ -44,11 +44,11 @@ namespace grace {
 	};
 	
 	struct IDocumentReader {
-		virtual size_t read(Document& out_doc, InputStream& is, String& out_error) = 0;
+		virtual size_t read(Document& out_doc, IInputStream& is, String& out_error) = 0;
 	};
 	
 	struct IDocumentWriter {
-		virtual void write(OutputStream& os, const Document& doc) = 0;
+		virtual void write(IOutputStream& os, const Document& doc) = 0;
 	};
 }
 

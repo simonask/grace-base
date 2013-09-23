@@ -2,21 +2,21 @@
 
 namespace grace {
 
-void JSON::write(OutputStream& oss, const Document& doc) {
+void JSON::write(IOutputStream& oss, const Document& doc) {
 	FormattedStream os(oss);
 	os << "{ \"root\": ";
 	write_node(doc, os, false, 1);
 	os << "\n}\n";
 }
 
-static void print_indentation(OutputStream& oss, int level) {
+static void print_indentation(IOutputStream& oss, int level) {
 	FormattedStream os(oss);
 	for (int i = 0; i < level; ++i) {
 		os << "  ";
 	}
 }
 
-static void print_string(OutputStream& oss, StringRef str) {
+static void print_string(IOutputStream& oss, StringRef str) {
 	FormattedStream os(oss);
 	// TODO: Escape
 	os << '"';
@@ -24,7 +24,7 @@ static void print_string(OutputStream& oss, StringRef str) {
 	os << '"';
 }
 
-void JSON::write_node(const DocumentNode& n, OutputStream& oss, bool print_inline, int indent) const {
+void JSON::write_node(const DocumentNode& n, IOutputStream& oss, bool print_inline, int indent) const {
 	FormattedStream os(oss);
 	n.when<NothingType>([&](NothingType) {
 		os << "null";
@@ -92,7 +92,7 @@ bool JSON::read_node(DocumentNode& n, const byte *&p, const byte *end, String &o
 	return false;
 }
 	
-size_t JSON::read(Document& doc, InputStream&, String& out_error) {
+size_t JSON::read(Document& doc, IInputStream&, String& out_error) {
 	out_error = "JSONDocument::read not implemented.";
 	return 0;
 }

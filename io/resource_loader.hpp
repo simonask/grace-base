@@ -19,7 +19,7 @@ namespace grace {
 		IAllocator& allocator() const;
 		virtual Resource* allocate() = 0;
 		virtual void free(Resource*) = 0;
-		virtual bool load_resource(Resource* resource, InputStream& input) = 0;
+		virtual bool load_resource(Resource* resource, IInputStream& input) = 0;
 	};
 	
 	template <typename T>
@@ -28,9 +28,9 @@ namespace grace {
 		virtual ~ResourceLoader() {}
 		Resource* allocate() override { return new(allocator()) T(allocator()); }
 		void free(Resource* resource) override { destroy(resource, allocator()); }
-		virtual bool load(T& resource, InputStream& input) = 0;
+		virtual bool load(T& resource, IInputStream& input) = 0;
 	private:
-		bool load_resource(Resource* resource, InputStream& input) override {
+		bool load_resource(Resource* resource, IInputStream& input) override {
 			return load(*(T*)resource, input);
 		}
 	};

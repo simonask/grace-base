@@ -121,7 +121,7 @@ namespace grace {
 		// TODO: Consider derived resources.
 		
 		String archive_debug_path;
-		UniquePtr<InputStream> is;
+		UniquePtr<IInputStream> is;
 		for (auto& archive: impl().archives) {
 			if (archive->contains(rid)) {
 				archive_debug_path = archive->debug_path(rid);
@@ -171,7 +171,7 @@ namespace grace {
 		impl().archives.push_back(move(archive));
 	}
 	
-	InputStream* ResourceManager::create_reader_for_resource_id(IAllocator& alloc, ResourceID rid) {
+	IInputStream* ResourceManager::create_reader_for_resource_id(IAllocator& alloc, ResourceID rid) {
 		// TODO: Consider virtual resources?
 		String path = path_for_resource(rid);
 		FileStream of = FileStream::open(path, FileMode::Read);

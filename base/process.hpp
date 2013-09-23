@@ -8,7 +8,7 @@
 #include "base/maybe.hpp"
 
 namespace grace {
-	class InputStream;
+	struct IInputStream;
 	class FormattedStream;
 
 	class Process {
@@ -34,8 +34,8 @@ namespace grace {
 		void kill(int sig);
 		void kill();
 
-		InputStream& stdout();
-		InputStream& stderr();
+		IInputStream& stdout();
+		IInputStream& stderr();
 		FormattedStream& stdin();
 
 		~Process();

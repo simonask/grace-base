@@ -10,10 +10,10 @@
 
 namespace grace {
 	struct JSON : IDocumentReader, IDocumentWriter {
-		size_t read(Document& doc, InputStream& is, String& out_error) final;
-		void write(OutputStream& os, const Document& doc) final;
+		size_t read(Document& doc, IInputStream& is, String& out_error) final;
+		void write(IOutputStream& os, const Document& doc) final;
 	private:
-		void write_node(const DocumentNode&, OutputStream& os, bool print_inline, int indent) const;
+		void write_node(const DocumentNode&, IOutputStream& os, bool print_inline, int indent) const;
 		bool read_node(DocumentNode&, const byte*& p, const byte* end, String& out_error);
 	};
 }

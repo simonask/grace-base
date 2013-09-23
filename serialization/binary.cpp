@@ -21,12 +21,12 @@ namespace grace {
 			String,
 		};
 	
-		void write_byte(OutputStream& os, byte b) {
+		void write_byte(IOutputStream& os, byte b) {
 			os.write(&b, 1);
 		}
 		
 		template <typename T>
-		void write_bytes(OutputStream& os, const T* value) {
+		void write_bytes(IOutputStream& os, const T* value) {
 			static_assert(std::is_pod<T>::value, "Cannot write bytes of non-POD object to stream.");
 			auto ptr = reinterpret_cast<const byte*>(value);
 			for (auto p = ptr; p < ptr+sizeof(T); ++p) {
@@ -34,7 +34,7 @@ namespace grace {
 			}
 		}
 		
-		void write_bytes(OutputStream& os, const char* begin, size_t len) {
+		void write_bytes(IOutputStream& os, const char* begin, size_t len) {
 			for (auto p = begin; p < begin+len; ++p) {
 				write_byte(os, *p);
 			}
@@ -53,7 +53,7 @@ namespace grace {
 		}
 	}
 	
-	void BinarySerializer::write_node(const DocumentNode& n, OutputStream& os) const {
+	void BinarySerializer::write_node(const DocumentNode& n, IOutputStream& os) const {
 		n.when<DocumentNode::StringType>([&](const DocumentNode::StringType& str) {
 			write_byte(os, (byte)NodeType::String);
 			uint32 string_length = (uint32)str.size();
@@ -175,7 +175,7 @@ namespace grace {
 		}
 	}
 	
-	void BinarySerializer::write(OutputStream &os, const Document& doc) {
+	void BinarySerializer::write(IOutputStream &os, const Document& doc) {
 		StringStream ss;
 		write_node(doc, ss);
 		String data = ss.str();
@@ -184,7 +184,7 @@ namespace grace {
 		FormattedStream(os) << data;
 	}
 	
-	size_t BinarySerializer::read(Document& doc, InputStream& is, grace::String& out_error) {
+	size_t BinarySerializer::read(Document& doc, IInputStream& is, grace::String& out_error) {
 		doc.clear();
 		if (is.has_length()) {
 			size_t stream_length = is.length();

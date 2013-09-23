@@ -16,11 +16,11 @@
 
 namespace grace {
 	struct BinarySerializer : IDocumentReader, IDocumentWriter {
-		size_t read(Document& doc, InputStream& is, String& out_error) final;
-		void write(OutputStream& os, const Document& doc) final;
+		size_t read(Document& doc, IInputStream& is, String& out_error) final;
+		void write(IOutputStream& os, const Document& doc) final;
 		bool can_parse(const byte* begin, const byte* end) const;
 	private:
-		void write_node(const DocumentNode&, OutputStream& os) const;
+		void write_node(const DocumentNode&, IOutputStream& os) const;
 		bool read_node(DocumentNode&, const byte*& ptr, const byte* end, String& out_error);
 	};
 }

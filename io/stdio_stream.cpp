@@ -8,8 +8,12 @@
 
 #include "io/stdio_stream.hpp"
 #include "io/file_stream.hpp"
-#include <stdio.h>
+#include "io/fd.hpp"
 #include "memory/static_allocator.hpp"
+#include "base/raise.hpp"
+
+#include <stdio.h>
+#include <errno.h>
 
 namespace grace {
 	ConsoleStream& ConsoleStream::get() {
@@ -22,8 +26,31 @@ namespace grace {
 			StandardOutputStream() : FileStream(::stdout, "stdout", FileMode::AppendCreate, false) {}
 		};
 
-		struct StandardInputStream : FileStream {
+		struct StandardInputStream : FileStream, IInputStreamNonblocking {
 			StandardInputStream() : FileStream(::stdin, "stdin", FileMode::Read, false) {}
+			
+			size_t read_nonblocking(byte* buffer, size_t max, bool& out_would_block) {
+				int fd = (int)handle();
+				ssize_t n = ::read(fd, buffer, max);
+				if (n < 0) {
+					if (errno == EAGAIN) {
+						out_would_block = true;
+					} else {
+						raise<FileError>("read: {0}", ::strerror(errno));
+					}
+				} else {
+					out_would_block = false;
+				}
+				return (size_t)n;
+			}
+			
+			void set_read_nonblocking(bool b) final {
+				set_nonblocking((int)handle(), b);
+			}
+			
+			bool is_read_nonblocking() const final {
+				return is_nonblocking((int)handle());
+			}
 		};
 
 		struct StandardErrorStream : FileStream {
@@ -89,8 +116,16 @@ namespace grace {
 		return get_stdin_stream().read(buffer, max);
 	}
 
-	size_t ConsoleStream::read_if_available(byte* buffer, size_t max, bool& out_would_block) {
-		return get_stdin_stream().read_if_available(buffer, max, out_would_block);
+	size_t ConsoleStream::read_nonblocking(byte* buffer, size_t max, bool& out_would_block) {
+		return get_stdin_stream().read_nonblocking(buffer, max, out_would_block);
+	}
+
+	bool ConsoleStream::is_read_nonblocking() const {
+		return get_stdin_stream().is_read_nonblocking();
+	}
+
+	void ConsoleStream::set_read_nonblocking(bool b) {
+		get_stdin_stream().set_read_nonblocking(b);
 	}
 
 	size_t ConsoleStream::tell_read() const {

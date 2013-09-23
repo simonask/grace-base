@@ -15,11 +15,11 @@
 #include "memory/unique_ptr.hpp"
 
 namespace grace {
-	class InputStream;
+	struct IInputStream;
 	
 	struct IArchive {
 		virtual bool contains(ResourceID) const = 0;
-		virtual UniquePtr<InputStream> open(ResourceID, IAllocator& alloc = default_allocator()) = 0;
+		virtual UniquePtr<IInputStream> open(ResourceID, IAllocator& alloc = default_allocator()) = 0;
 		virtual String debug_path(ResourceID) const = 0;
 	};
 	
@@ -27,7 +27,7 @@ namespace grace {
 		PathArchive(StringRef path) : path_(path) {}
 		
 		bool contains(ResourceID) const final;
-		UniquePtr<InputStream> open(ResourceID, IAllocator& alloc = default_allocator()) final;
+		UniquePtr<IInputStream> open(ResourceID, IAllocator& alloc = default_allocator()) final;
 		String debug_path(ResourceID) const;
 	private:
 		StringRef path_;

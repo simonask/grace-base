@@ -1,6 +1,7 @@
 #include "io/network_stream.hpp"
 #include "base/raise.hpp"
 #include "memory/unique_ptr.hpp"
+#include "io/fd.hpp"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -41,25 +42,33 @@ namespace grace {
 		uint16 local_port() const final { return local_port_; }
 		uintptr_t handle() const final { return (uintptr_t)fd; }
 
-		// InputStream
+		// IInputStream
 		bool is_readable() const final { return true; }
 		size_t read(byte* buffer, size_t max) final;
-		size_t read_if_available(byte* byffer, size_t max, bool& would_block) final;
 		size_t tell_read() const final { return 0; }
 		bool seek_read(size_t position) final { return false; }
 		bool has_length() const final { return false; }
 		size_t length() const final { return SIZE_T_MAX; }
+		
+		// IInputStreamNonblocking
+		size_t read_nonblocking(byte* buffer, size_t max, bool& would_block) final;
+		bool is_read_nonblocking() const final;
+		void set_read_nonblocking(bool) final;
 
-		// OutputStream
+		// IOutputStream
 		bool is_writable() const final { return true; }
 		size_t write(const byte* buffer, size_t max) final;
-		size_t write_if_available(const byte* buffer, size_t max, bool& would_block) final;
 		size_t tell_write() const final { return 0; }
 		bool seek_write(size_t position) final { return false; }
 		void flush() final {}
+		
+		// IOutputStreamNonblocking
+		size_t write_nonblocking(const byte* buffer, size_t max, bool& would_block) final;
+		bool is_write_nonblocking() const final;
+		void set_write_nonblocking(bool) final;
 	};
 
-	UniquePtr<NetworkStream> NetworkStream::connect(StringRef host, uint16 port, IAllocator& alloc) {
+	UniquePtr<INetworkStream> NetworkStream::connect(StringRef host, uint16 port, IAllocator& alloc) {
 		int fd = ::socket(AF_INET, SOCK_STREAM, 0);
 		if (fd < 0) {
 			raise<NetworkStreamError>("socket: {0}", ::strerror(errno));
@@ -96,7 +105,7 @@ namespace grace {
 		}
 	}
 
-	size_t SocketNetworkStream::read_if_available(byte* buffer, size_t max, bool& would_block) {
+	size_t SocketNetworkStream::read_nonblocking(byte *buffer, size_t max, bool &would_block) {
 		ssize_t n = ::read(fd, buffer, max);
 		if (n < 0) {
 			if (errno == EAGAIN) {
@@ -110,6 +119,14 @@ namespace grace {
 			return (size_t)n;
 		}
 	}
+	
+	bool SocketNetworkStream::is_read_nonblocking() const {
+		return is_nonblocking(fd);
+	}
+	
+	void SocketNetworkStream::set_read_nonblocking(bool b) {
+		set_nonblocking(fd, b);
+	}
 
 	size_t SocketNetworkStream::write(const byte* buffer, size_t max) {
 		ssize_t n = ::write(fd, buffer, max);
@@ -121,18 +138,26 @@ namespace grace {
 		}
 	}
 
-	size_t SocketNetworkStream::write_if_available(const byte* buffer, size_t max, bool& out_would_block) {
+	size_t SocketNetworkStream::write_nonblocking(const byte *buffer, size_t max, bool &would_block) {
 		ssize_t n = ::write(fd, buffer, max);
 		if (n < 0) {
 			if (errno == EAGAIN) {
-				out_would_block = true;
+				would_block = true;
 			} else {
 				raise<NetworkStreamError>("write: {0}", ::strerror(errno));
 			}
 			return 0;
 		} else {
-			out_would_block = false;
+			would_block = false;
 			return (size_t)n;
 		}
+	}
+	
+	bool SocketNetworkStream::is_write_nonblocking() const {
+		return is_nonblocking(fd);
+	}
+	
+	void SocketNetworkStream::set_write_nonblocking(bool b) {
+		set_nonblocking(fd, b);
 	}
 }
