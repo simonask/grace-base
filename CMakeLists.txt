@@ -34,6 +34,7 @@ set(SOURCES
 	io/file_stream.cpp
 	io/formatted_stream.cpp
 	io/memory_stream.cpp
+	io/network_stream.cpp
 	io/process_stream.cpp
 	io/resource.cpp
 	io/resource_loader.cpp
@@ -120,6 +121,7 @@ set(TESTS
 	maxarray_test
 	maybe_test
 	memory_stream_test
+	network_stream_test
 	priority_queue_test
 	regex_test
 	signal_test
