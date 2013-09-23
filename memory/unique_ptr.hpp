@@ -117,6 +117,12 @@ namespace grace {
 	inline bool operator!=(T* a, const UniquePtr<T>& b) {
 		return a != b.get();
 	}
+
+	template <typename OS, typename T>
+	OS& operator<<(OS& os, const UniquePtr<T>& uptr) {
+		os << 'U' << uptr.get();
+		return os;
+	}
 }
 
 #endif
