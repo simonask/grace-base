@@ -192,7 +192,6 @@ namespace grace {
 	
 	void write_time_to_stream(FormattedStream& stream, GameTime time);
 	void write_time_to_stream(FormattedStream& stream, SystemTime time);
-	void write_date_to_stream(FormattedStream& stream, SystemTime time);
 	
 	template <Timeline T>
 	inline FormattedStream& operator<<(FormattedStream& stream, Time<T> time) {

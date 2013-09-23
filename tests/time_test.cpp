@@ -14,7 +14,7 @@
 
 using namespace grace;
 
-// March 3rd 2012, 16:30:01
+// March 3rd 2012, 15:30:01
 static const uint64 TEST_DATE = 1330788601ULL * 1000000ULL;
 
 SUITE(Time) {
@@ -24,7 +24,7 @@ SUITE(Time) {
 		StringStream ss;
 		ss << time;
 		String s = ss.str();
-		TEST(s).should == "15:30:01";
+		TEST(s).should == "2012-03-03 15:30:01 UTC";
 	});
 }
 

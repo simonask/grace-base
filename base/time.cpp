@@ -52,19 +52,17 @@ namespace grace {
 	void write_time_to_stream(FormattedStream& stream, SystemTime time) {
 		struct tm tm;
 		time_t seconds = (time_t)time.seconds_since_epoch();
-		localtime_r(&seconds, &tm);
+		gmtime_r(&seconds, &tm);
+		stream << pad_or_truncate(tm.tm_year+1900, 4, '0', true) << '-';
+		stream << pad_or_truncate(tm.tm_mon+1, 2, '0', true) << '-';
+		stream << pad_or_truncate(tm.tm_mday, 2, '0', true) << ' ';
 		stream << pad_or_truncate(tm.tm_hour, 2, '0', true) << ':';
 		stream << pad_or_truncate(tm.tm_min, 2, '0', true) << ':';
-		stream << pad_or_truncate(tm.tm_sec, 2, '0', true);
-	}
-	
-	void write_date_to_stream(FormattedStream& stream, SystemTime time) {
-		struct tm tm;
-		time_t seconds = (time_t)time.seconds_since_epoch();
-		localtime_r(&seconds, &tm);
-		char buffer[128];
-		strftime(buffer, 128, "%F %T", &tm);
-		stream << buffer;
+		stream << pad_or_truncate(tm.tm_sec, 2, '0', true) << ' ';
+		stream << tm.tm_zone;
+		if (tm.tm_isdst) {
+			stream << " (DST)";
+		}
 	}
 	
 	SystemTime system_now() {
