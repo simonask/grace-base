@@ -252,11 +252,32 @@ namespace grace {
 	}
 	
 	template <typename T>
-	inline void destroy(T* ptr, grace::IAllocator& alloc) {
+	typename std::enable_if<std::is_polymorphic<T>::value, void>::type
+	destroy(T* ptr, grace::IAllocator& alloc) {
+		if (ptr != nullptr) {
+			/*
+			ptr might be a pointer to an interface on a real, larger object.
+			Freeing the interface pointer will cause errors, because the object
+			will be allocated at a different address. The following line is a
+			special case of dynamic_cast that gets the "topmost" object pointer.
+			*/
+			void* largest_object = dynamic_cast<void*>(const_cast<typename std::remove_const<T>::type*>(ptr));
+
+			ptr->~T();
+
+			size_t object_size = sizeof(T); // There is no way to portably know the size of a polymorphic object in C++.
+
+			alloc.free(largest_object, object_size);
+		}
+	}
+
+	template <typename T>
+	typename std::enable_if<!std::is_polymorphic<T>::value, void>::type
+	destroy(T* ptr, grace::IAllocator& alloc) {
 		if (ptr != nullptr) {
 			ptr->~T();
+			alloc.free(ptr, sizeof(T));
 		}
-		alloc.free((void*)ptr, sizeof(T));
 	}
 }
 
