@@ -9,6 +9,7 @@
 #ifndef grace_stack_array_hpp
 #define grace_stack_array_hpp
 
+#include "base/basic.hpp"
 #include "base/array_ref.hpp"
 #include <alloca.h>
 
