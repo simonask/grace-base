@@ -13,6 +13,9 @@
 #include "base/type_info.hpp"
 #include "base/type_traits.hpp"
 
+#include <tuple>
+#include <array>
+
 namespace grace {
 	namespace detail {
 		template <typename EitherType> struct WhenEitherControlFlow;
