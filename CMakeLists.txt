@@ -127,6 +127,7 @@ set(TESTS
 	network_stream_test
 	priority_queue_test
 	process_test
+	reactor_test
 	regex_test
 	signal_test
 	simd_test
