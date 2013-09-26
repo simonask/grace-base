@@ -33,7 +33,7 @@ namespace grace {
 				set_nonblocking((int)handle(), b);
 			}
 			
-			bool is_read_nonblocking() const {
+			bool is_read_nonblocking() const override {
 				return is_nonblocking((int)handle());
 			}
 		};

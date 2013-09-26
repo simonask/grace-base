@@ -130,6 +130,10 @@ namespace grace {
 		return is_open() && (((uint8)mode() & FILE_MODE_READ_MASK) != 0);
 	}
 
+	bool FileStream::is_read_nonblocking() const {
+		return false;
+	}
+
 	Either<size_t, IOEvent> FileStream::read(byte* buffer, size_t n) {
 		check_valid();
 		if (::feof((FILE*)fp_)) {
@@ -166,6 +170,10 @@ namespace grace {
 
 	bool FileStream::is_writable() const {
 		return is_open() && (((uint8)mode() & FILE_MODE_WRITE_MASK) != 0);
+	}
+
+	bool FileStream::is_write_nonblocking() const {
+		return false;
 	}
 
 	Either<size_t, IOEvent> FileStream::write(const byte* buffer, size_t n) {

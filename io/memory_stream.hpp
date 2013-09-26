@@ -24,6 +24,7 @@ namespace grace {
 		
 		// InputStream API
 		bool is_readable() const override { return current_ < end_; }
+		bool is_read_nonblocking() const final { return false; }
 		Either<size_t, IOEvent> read(byte* buffer, size_t max) override {
 			if (data_available() == 0) return IOEvent::EndOfStream;
 			size_t to_copy = data_available() < max ? data_available() : max;
@@ -76,6 +77,7 @@ namespace grace {
 		
 		// InputStream API
 		bool is_readable() const final;
+		bool is_read_nonblocking() const final { return false; }
 		Either<size_t, IOEvent> read(byte* buffer, size_t max) final;
 		size_t tell_read() const final;
 		bool seek_read(size_t pos) final;
@@ -84,6 +86,7 @@ namespace grace {
 		
 		// OutputStream API
 		bool is_writable() const final;
+		bool is_write_nonblocking() const final { return false; }
 		Either<size_t, IOEvent> write(const byte* buffer, size_t max) final;
 		size_t tell_write() const final;
 		bool seek_write(size_t pos) final;

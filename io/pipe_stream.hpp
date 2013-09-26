@@ -35,6 +35,7 @@ namespace grace {
 
 		// IInputStream
 		bool is_readable() const final { return is_open(); }
+		bool is_read_nonblocking() const final { return is_nonblocking(); }
 		Either<size_t, IOEvent> read(byte* buffer, size_t max) final;
 		size_t tell_read() const final { return position; }
 		bool seek_read(size_t) final { return false; }
@@ -51,6 +52,7 @@ namespace grace {
 
 		// IOutputStream
 		bool is_writable() const final { return is_open(); }
+		bool is_write_nonblocking() const final { return is_nonblocking(); }
 		Either<size_t, IOEvent> write(const byte* buffer, size_t max) final;
 		size_t tell_write() const final { return position; }
 		bool seek_write(size_t) final { return false; }

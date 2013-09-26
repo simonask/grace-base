@@ -15,6 +15,7 @@
 namespace grace {
 	struct IOutputStream {
 		virtual bool is_writable() const = 0;
+		virtual bool is_write_nonblocking() const = 0;
 		virtual Either<size_t, IOEvent> write(const byte* buffer, size_t max) = 0;
 		virtual size_t tell_write() const = 0;
 		virtual bool seek_write(size_t position) = 0;
