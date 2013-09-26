@@ -10,6 +10,7 @@
 #define grace_util_hpp
 
 #include "io/input_stream.hpp"
+#include "io/output_stream.hpp"
 #include "base/array.hpp"
 #include "base/time.hpp"
 
@@ -38,6 +39,8 @@ namespace grace {
 		read_all(is, buffer);
 		return move(buffer);
 	}
+
+	std::tuple<size_t, IOEvent> read_until_event(IInputStream& is, IOutputStream& output);
 
 	String read_string(IInputStream& is, IAllocator& alloc = default_allocator());
 	

@@ -10,6 +10,7 @@
 #include "base/string.hpp"
 #include "base/stack_array.hpp"
 #include "io/string_stream.hpp"
+#include "base/raise.hpp"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -22,6 +23,39 @@ namespace grace {
 		StringStream ss(alloc);
 		read_all(is, ss);
 		return ss.string(alloc);
+	}
+
+	std::tuple<size_t, IOEvent> read_until_event(IInputStream& is, IOutputStream& os) {
+		if (os.is_write_nonblocking()) {
+			raise<IOError>("read_until_event will lose data if writing to non-blocking socket. Use a buffered approach instead.");
+		}
+		bool reading = true;
+		size_t total_read = 0;
+		size_t total_written = 0;
+		IOEvent reason;
+		byte buffer[1024];
+		while (reading) {
+			auto r = is.read(buffer, 1024);
+			either_switch(r,
+				[&](size_t n) {
+					total_written += n;
+					either_switch(os.write(buffer, n),
+						[&](size_t written) {
+							total_written += written;
+						},
+						[&](IOEvent wev) {
+							reason = wev;
+							reading = false;
+						}
+					);
+				},
+				[&](IOEvent event) {
+					reason = event;
+					reading = false;
+				}
+			);
+		}
+		return {total_written, reason};
 	}
 
 	bool path_is_directory(StringRef path) {
