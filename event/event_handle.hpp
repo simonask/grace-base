@@ -11,6 +11,7 @@
 
 namespace grace {
 	struct IEventHandle {
+		virtual ~IEventHandle() {}
 		virtual bool is_repeating() const = 0;
 		virtual bool is_active() const = 0;
 		virtual void activate() = 0;
