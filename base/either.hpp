@@ -14,6 +14,10 @@
 #include "base/type_traits.hpp"
 
 namespace grace {
+	namespace detail {
+		template <typename EitherType> struct WhenEitherControlFlow;
+	}
+
 	template <typename... Types> // max 255 types!
 	class Either {
 	public:
@@ -26,14 +30,14 @@ namespace grace {
 		static const bool IsMoveAssignable = AreallMoveAssignable<Types...>::Value;
 		
 		template <typename T, typename = typename std::enable_if<IndexOfType<T, Types...>::Value < sizeof...(Types)>::type>
-		explicit Either(const T& value) {
+		Either(const T& value) {
 			static const auto I = IndexOfType<T, Types...>::Value;
 			static_assert(I < sizeof...(Types), "T is not a valid type for this Either.");
 			construct_copy(value);
 		}
 		
 		template <typename T, typename = typename std::enable_if<IndexOfType<T, Types...>::Value < sizeof...(Types)>::type>
-		explicit Either(T&& value) {
+		Either(T&& value) {
 			static const auto I = IndexOfType<T, Types...>::Value;
 			static_assert(I < sizeof...(Types), "T is not a valid type for this Either.");
 			construct_move(move(value));
@@ -80,6 +84,18 @@ namespace grace {
 		is_a() const {
 			return type_index_ == IndexOfType<T, Types...>::Value;
 		}
+
+		template <typename T>
+		const T& get() const {
+			ASSERT(is_a<T>());
+			return *reinterpret_cast<const T*>(memory());
+		}
+
+		template <typename T>
+		T& get() {
+			ASSERT(is_a<T>());
+			return *reinterpret_cast<T*>(memory());
+		}
 		
 		bool is_same_type_as(const Self& other) const {
 			return type_index_ == other.type_index_;
@@ -99,40 +115,11 @@ namespace grace {
 		explicit operator bool() const {
 			return !is_a<T>();
 		}
-		
-		template <bool IsConst>
-		struct WhenControlFlow {
-			using Self = typename std::conditional<IsConst, const Either<Types...>, Either<Types...>>::type;
-			WhenControlFlow(Self& either) : either_(either) {}
-			Self& either_;
-			bool handled_ = false;
-			
-			template <typename T, typename F>
-			WhenControlFlow<IsConst>& when(F f) {
-				using ValueType = typename std::conditional<IsConst, const T, T>::type;
-				if (either_.template is_a<T>()) {
-					handled_ = true;
-					f(*reinterpret_cast<ValueType*>(&either_.memory_));
-				}
-				return *this;
-			}
-			
-			template <typename F>
-			void otherwise(F f) {
-				if (!handled_) {
-					f();
-				}
-			}
-		};
-		
+
 		template <typename T, typename F>
-		WhenControlFlow<false> when(F f) {
-			return WhenControlFlow<false>(*this).template when<T>(move(f));
-		}
+		detail::WhenEitherControlFlow<Self> when(F&& f);
 		template <typename T, typename F>
-		WhenControlFlow<true> when(F f) const {
-			return WhenControlFlow<true>(*this).template when<T>(move(f));
-		}
+		detail::WhenEitherControlFlow<const Self> when(F&& f) const;
 		
 		template <typename Visitor>
 		void visit(Visitor& visitor);
@@ -148,6 +135,9 @@ namespace grace {
 		
 		byte* memory() { return reinterpret_cast<byte*>(&memory_); }
 		const byte* memory() const { return reinterpret_cast<const byte*>(&memory_); }
+
+		uint8 type_index() const { return type_index_; }
+		uint8 which() const { return type_index(); }
 	private:
 		// Unconstructed contents -- must be constructed with construct_move/construct_copy before destructor is called!
 		Either() {}
@@ -299,6 +289,47 @@ namespace grace {
 		type_index_ = IndexOfType<T, Types...>::Value;
 		new(memory()) T(value);
 	}
+
+	namespace detail {
+		template <typename EitherType>
+		struct WhenEitherControlFlow {
+			EitherType& either_;
+			bool handled_ = false;
+			explicit WhenEitherControlFlow(EitherType& either) : either_(either) {}
+			WhenEitherControlFlow(WhenEitherControlFlow<EitherType>&& other) = default;
+			WhenEitherControlFlow(const WhenEitherControlFlow<EitherType>& other) = default;
+
+			template <typename T, typename F>
+			WhenEitherControlFlow<EitherType>& when(F function) {
+				using InnerType = typename std::conditional<std::is_const<EitherType>::value, const T, T>::type;
+				if (either_.template is_a<T>()) {
+					InnerType* memory = reinterpret_cast<InnerType*>(either_.memory());
+					function(*memory);
+					handled_ = true;
+				}
+				return *this;
+			}
+
+			template <typename F>
+			void otherwise(F function) {
+				if (!handled_) {
+					function();
+				}
+			}
+		};
+	}
+
+	template <typename... Types>
+	template <typename T, typename F>
+	detail::WhenEitherControlFlow<Either<Types...>> Either<Types...>::when(F&& function) {
+		return detail::WhenEitherControlFlow<Self>(*this).template when<T>(std::forward<F>(function));
+	}
+
+	template <typename... Types>
+	template <typename T, typename F>
+	detail::WhenEitherControlFlow<const Either<Types...>> Either<Types...>::when(F&& function) const {
+		return detail::WhenEitherControlFlow<const Self>(*this).template when<T>(std::forward<F>(function));
+	}
 	
 	namespace detail {
 		template <typename EitherClass, typename... RemainingTypes> struct VisitorCaller;
@@ -333,6 +364,46 @@ namespace grace {
 	template <typename Visitor>
 	void Either<Types...>::visit(Visitor& visitor) const {
 		detail::VisitorCaller<Self, Types...>(*this).visit(visitor);
+	}
+
+	namespace detail {
+		struct IEitherSwitchCaller {
+			virtual void call() = 0;
+		};
+
+		template <typename T, typename F, typename EitherType>
+		struct EitherSwitchCaller : IEitherSwitchCaller {
+			EitherSwitchCaller(F& f, EitherType& e) : function(f), either(e) {}
+			F& function;
+			EitherType& either;
+			void call() final {
+				function(either.template get<T>());
+			}
+		};
+
+		template <typename EitherType, typename CallersTuple, size_t... I>
+		void either_switch_impl(EitherType& either, CallersTuple& callers_impls, Indices<I...>) {
+			std::array<IEitherSwitchCaller*, sizeof...(I)> callers {{&std::get<I>(callers_impls)...}};
+			if (either.which() < callers.size()) {
+				callers[either.which()]->call();
+			}
+		}
+	}
+
+	template <typename... Types, typename... Functions>
+	void either_switch(Either<Types...>& either, Functions... functions) {
+		using Indices = typename MakeIndices<sizeof...(Functions)>::Type;
+		using EitherType = Either<Types...>;
+		auto caller_impls = std::make_tuple(detail::EitherSwitchCaller<Types, Functions, EitherType>(functions, either)...);
+		detail::either_switch_impl(either, caller_impls, Indices());
+	}
+
+	template <typename... Types, typename... Functions>
+	void either_switch(const Either<Types...>& either, Functions... functions) {
+		using Indices = typename MakeIndices<sizeof...(Functions)>::Type;
+		using EitherType = const Either<Types...>;
+		auto caller_impls = std::make_tuple(detail::EitherSwitchCaller<Types, Functions, EitherType>(functions, either)...);
+		detail::either_switch_impl(either, caller_impls, Indices());
 	}
 }
 
