@@ -150,6 +150,10 @@ struct IsMoveAssignableNonRef {
 	// Use with decltype to infer the type of members with get_member_type(&T::foo)
 	template <typename M, typename T> M get_member_type(M T::*);
 
+	template <typename Interface, typename... Capabilities> struct InterfaceWithCapabilities;
+	template <typename Interface> struct InterfaceWithCapabilities<Interface> : Interface {};
+	template <typename Interface, typename Capability, typename... Rest> struct InterfaceWithCapabilities<Interface, Capability, Rest...> : Capability, InterfaceWithCapabilities<Interface, Rest...> {};
+
 template <typename T>
 void destruct(byte* ptr) {
 	reinterpret_cast<T*>(ptr)->~T();
