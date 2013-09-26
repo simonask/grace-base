@@ -130,12 +130,21 @@ namespace grace {
 		return is_open() && (((uint8)mode() & FILE_MODE_READ_MASK) != 0);
 	}
 
-	size_t FileStream::read(byte* buffer, size_t n) {
+	Either<size_t, IOEvent> FileStream::read(byte* buffer, size_t n) {
 		check_valid();
+		if (::feof((FILE*)fp_)) {
+			return IOEvent::EndOfStream;
+		}
+
 		size_t r = ::fread(buffer, 1, n, (FILE*)fp_);
-		if (r < n && ::ferror((FILE*)fp_)) {
+
+		if (::ferror((FILE*)fp_)) {
+			if (errno == EAGAIN) {
+				return IOEvent::WouldBlock;
+			}
 			raise<FileError>("fread: {0}", ::strerror(errno));
 		}
+
 		return r;
 	}
 
@@ -159,10 +168,18 @@ namespace grace {
 		return is_open() && (((uint8)mode() & FILE_MODE_WRITE_MASK) != 0);
 	}
 
-	size_t FileStream::write(const byte* buffer, size_t n) {
+	Either<size_t, IOEvent> FileStream::write(const byte* buffer, size_t n) {
 		check_valid();
+		if (::feof((FILE*)fp_)) {
+			return IOEvent::EndOfStream;
+		}
+
 		size_t r = ::fwrite(buffer, 1, n, (FILE*)fp_);
-		if (r < n) {
+
+		if (::ferror((FILE*)fp_)) {
+			if (errno == EAGAIN) {
+				return IOEvent::WouldBlock;
+			}
 			raise<FileError>("fwrite: {0}", ::strerror(errno));
 		}
 		if (autoflush_) flush();

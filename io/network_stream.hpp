@@ -10,7 +10,7 @@
 namespace grace {
 	struct NetworkStreamError : ErrorBase<NetworkStreamError> {};
 
-	struct INetworkStream : IInputStream, IInputStreamNonblocking, IOutputStream, IOutputStreamNonblocking {
+	struct INetworkStream : IInputStream, IOutputStream {
 		virtual ~INetworkStream() {}
 		virtual uintptr_t handle() const = 0; // sockfd
 		virtual bool is_open() const = 0;
@@ -19,6 +19,10 @@ namespace grace {
 		virtual StringRef address() const = 0;
 		virtual uint16 port() const = 0;
 		virtual uint16 local_port() const = 0;
+		virtual bool is_write_nonblocking() const = 0;
+		virtual bool is_read_nonblocking() const = 0;
+		virtual void set_write_nonblocking(bool) = 0;
+		virtual void set_read_nonblocking(bool) = 0;
 	};
 	
 	struct NetworkStream : INetworkStream {

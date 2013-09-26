@@ -18,12 +18,21 @@ SUITE(NetworkStream) {
 		StringStream ss;
 		byte buffer[256];
 		size_t len;
-		while ((len = stream->read(buffer, 256)) > 0) {
-			ss << StringRef((char*)buffer, len);
+		bool running = true;
+		while (running) {
+			either_switch(stream->read(buffer, 256),
+				[&](size_t n) {
+					ss << StringRef((char*)buffer, n);
+				},
+				[&](IOEvent ev) {
+					running = false;
+				}
+			);
 		}
 
 		String response = ss.string();
 		Regex r("HTTP/1.0");
+
 		TEST(r.match(response)).should == true;
 	});
 }

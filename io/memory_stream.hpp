@@ -24,7 +24,8 @@ namespace grace {
 		
 		// InputStream API
 		bool is_readable() const override { return current_ < end_; }
-		size_t read(byte* buffer, size_t max) override {
+		Either<size_t, IOEvent> read(byte* buffer, size_t max) override {
+			if (data_available() == 0) return IOEvent::EndOfStream;
 			size_t to_copy = data_available() < max ? data_available() : max;
 			std::copy(current_, current_ + to_copy, buffer);
 			current_ += to_copy;
@@ -75,7 +76,7 @@ namespace grace {
 		
 		// InputStream API
 		bool is_readable() const final;
-		size_t read(byte* buffer, size_t max) final;
+		Either<size_t, IOEvent> read(byte* buffer, size_t max) final;
 		size_t tell_read() const final;
 		bool seek_read(size_t pos) final;
 		bool has_length() const final;
@@ -83,7 +84,7 @@ namespace grace {
 		
 		// OutputStream API
 		bool is_writable() const final;
-		size_t write(const byte* buffer, size_t max) final;
+		Either<size_t, IOEvent> write(const byte* buffer, size_t max) final;
 		size_t tell_write() const final;
 		bool seek_write(size_t pos) final;
 		void flush() final {}
@@ -125,7 +126,8 @@ namespace grace {
 		return read_pos_ != buffer_.end();
 	}
 	
-	inline size_t MemoryBufferStream::read(byte* buffer, size_t max) {
+	inline Either<size_t, IOEvent> MemoryBufferStream::read(byte* buffer, size_t max) {
+		if (read_pos_ == buffer_.end()) return IOEvent::EndOfStream;
 		size_t n = 0;
 		for (auto it = read_pos_; it != buffer_.end() && n < max; ++it, ++n) {
 			buffer[n] = *it;
@@ -158,7 +160,7 @@ namespace grace {
 		return true;
 	}
 	
-	inline size_t MemoryBufferStream::write(const byte* buffer, size_t n) {
+	inline Either<size_t, IOEvent> MemoryBufferStream::write(const byte* buffer, size_t n) {
 		size_t bytes_until_end = buffer_.end() - write_pos_;
 		ssize_t enlarge_by = (ssize_t)n - (ssize_t)bytes_until_end;
 		if (enlarge_by > 0) {

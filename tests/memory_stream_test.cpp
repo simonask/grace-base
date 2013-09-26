@@ -20,12 +20,18 @@ SUITE(MemoryStream) {
 		
 		MemoryStream stream(buffer, buffer + 128);
 		byte u = 0;
-		while (stream.is_readable()) {
+		bool eof = false;
+		while (!eof) {
 			byte one;
-			size_t n = stream.read(&one, 1);
-			TEST(n).should == 1;
-			TEST(one).should == u;
-			++u;
+			auto m = stream.read(&one, 1);
+			m.template when<size_t>([&](size_t n) {
+				TEST(n).should == 1;
+				TEST(one).should == u;
+				++u;
+			}).template when<IOEvent>([&](IOEvent ev) {
+				eof = true;
+			});
+			
 		}
 		TEST(u).should == 128;
 	});
@@ -37,10 +43,12 @@ SUITE(MemoryStream) {
 		}
 		
 		MemoryBufferStream stream;
-		size_t n = stream.write(buffer, 128);
-		TEST(n).should == 128;
-		auto tw = stream.tell_write();
-		TEST(n).should == tw;
+		auto m = stream.write(buffer, 128);
+		m.template when<size_t>([&](size_t n) {
+			TEST(n).should == 128;
+			auto tw = stream.tell_write();
+			TEST(n).should == tw;	
+		});
 		
 		byte obuffer[128];
 		stream.read(obuffer, 128);

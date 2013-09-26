@@ -56,7 +56,7 @@ namespace grace {
 
 		// InputStream
 		bool is_readable() const final;
-		size_t read(byte* buffer, size_t n) final;
+		Either<size_t, IOEvent> read(byte* buffer, size_t n) final;
 		size_t tell_read() const final;
 		bool seek_read(size_t pos) final;
 		bool has_length() const final;
@@ -64,7 +64,7 @@ namespace grace {
 
 		// OutputStream
 		bool is_writable() const final;
-		size_t write(const byte* buffer, size_t n) final;
+		Either<size_t, IOEvent> write(const byte* buffer, size_t n) final;
 		size_t tell_write() const final;
 		bool seek_write(size_t pos) final;
 		void flush() final;

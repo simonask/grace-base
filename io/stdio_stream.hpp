@@ -13,7 +13,7 @@
 #include "io/input_stream.hpp"
 
 namespace grace {
-	struct ConsoleStream : IInputStream, IInputStreamNonblocking, FormattedStream {
+	struct ConsoleStream : IInputStream, FormattedStream {
 		ConsoleStream(const ConsoleStream&) = delete;
 		ConsoleStream(ConsoleStream&&) = delete;
 		ConsoleStream& operator=(const ConsoleStream&) = delete;
@@ -22,19 +22,16 @@ namespace grace {
 		
 		bool autoflush() const;
 		void set_autoflush(bool b);
+		bool is_read_nonblocking() const;
+		void set_read_nonblocking(bool);
 
 		// InputStream (stdin)
 		bool is_readable() const final;
-		size_t read(byte* buffer, size_t max) final;
+		Either<size_t, IOEvent> read(byte* buffer, size_t max) final;
 		size_t tell_read() const final;
 		bool seek_read(size_t position) final;
 		bool has_length() const final;
 		size_t length() const final;
-
-		// IInputStreamNonblocking (stdin)
-		size_t read_nonblocking(byte* buffer, size_t max, bool& out_would_block) final;
-		bool is_read_nonblocking() const final;
-		void set_read_nonblocking(bool) final;
 
 		FormattedStream& stderr();
 		

@@ -26,29 +26,14 @@ namespace grace {
 			StandardOutputStream() : FileStream(::stdout, "stdout", FileMode::AppendCreate, false) {}
 		};
 
-		struct StandardInputStream : FileStream, IInputStreamNonblocking {
+		struct StandardInputStream : FileStream {
 			StandardInputStream() : FileStream(::stdin, "stdin", FileMode::Read, false) {}
 			
-			size_t read_nonblocking(byte* buffer, size_t max, bool& out_would_block) {
-				int fd = (int)handle();
-				ssize_t n = ::read(fd, buffer, max);
-				if (n < 0) {
-					if (errno == EAGAIN) {
-						out_would_block = true;
-					} else {
-						raise<FileError>("read: {0}", ::strerror(errno));
-					}
-				} else {
-					out_would_block = false;
-				}
-				return (size_t)n;
-			}
-			
-			void set_read_nonblocking(bool b) final {
+			void set_read_nonblocking(bool b) {
 				set_nonblocking((int)handle(), b);
 			}
 			
-			bool is_read_nonblocking() const final {
+			bool is_read_nonblocking() const {
 				return is_nonblocking((int)handle());
 			}
 		};
@@ -112,12 +97,8 @@ namespace grace {
 		return get_stdin_stream().is_readable();
 	}
 
-	size_t ConsoleStream::read(byte* buffer, size_t max) {
+	Either<size_t, IOEvent> ConsoleStream::read(byte* buffer, size_t max) {
 		return get_stdin_stream().read(buffer, max);
-	}
-
-	size_t ConsoleStream::read_nonblocking(byte* buffer, size_t max, bool& out_would_block) {
-		return get_stdin_stream().read_nonblocking(buffer, max, out_would_block);
 	}
 
 	bool ConsoleStream::is_read_nonblocking() const {

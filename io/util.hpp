@@ -22,8 +22,12 @@ namespace grace {
 		size_t n;
 		do {
 			byte b[1024];
-			n = is.read(b, 1024);
-			buffer.insert(b, b + n);
+			auto r = is.read(b, 1024);
+			r.template when<size_t>([&](size_t n) {
+				buffer.insert(b, b + n);
+			}).template when<IOEvent>([&](IOEvent ev) {
+				n = 0;
+			});
 		} while (n > 0);
 		return buffer.size();
 	}

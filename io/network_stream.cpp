@@ -44,26 +44,22 @@ namespace grace {
 
 		// IInputStream
 		bool is_readable() const final { return true; }
-		size_t read(byte* buffer, size_t max) final;
+		Either<size_t, IOEvent> read(byte* buffer, size_t max) final;
 		size_t tell_read() const final { return 0; }
 		bool seek_read(size_t position) final { return false; }
 		bool has_length() const final { return false; }
 		size_t length() const final { return SIZE_T_MAX; }
 		
-		// IInputStreamNonblocking
-		size_t read_nonblocking(byte* buffer, size_t max, bool& would_block) final;
 		bool is_read_nonblocking() const final;
 		void set_read_nonblocking(bool) final;
 
 		// IOutputStream
 		bool is_writable() const final { return true; }
-		size_t write(const byte* buffer, size_t max) final;
+		Either<size_t, IOEvent> write(const byte* buffer, size_t max) final;
 		size_t tell_write() const final { return 0; }
 		bool seek_write(size_t position) final { return false; }
 		void flush() final {}
 		
-		// IOutputStreamNonblocking
-		size_t write_nonblocking(const byte* buffer, size_t max, bool& would_block) final;
 		bool is_write_nonblocking() const final;
 		void set_write_nonblocking(bool) final;
 	};
@@ -95,29 +91,18 @@ namespace grace {
 		return move(stream);
 	}
 
-	size_t SocketNetworkStream::read(byte* buffer, size_t max) {
-		ssize_t n = ::read(fd, buffer, max);
-		if (n >= 0) {
-			return n;
-		} else {
-			raise<NetworkStreamError>("read: {0}", ::strerror(errno));
-			return 0;
-		}
-	}
-
-	size_t SocketNetworkStream::read_nonblocking(byte *buffer, size_t max, bool &would_block) {
+	Either<size_t, IOEvent> SocketNetworkStream::read(byte *buffer, size_t max) {
 		ssize_t n = ::read(fd, buffer, max);
 		if (n < 0) {
-			if (errno == EAGAIN) {
-				would_block = true;
+			if (errno == EWOULDBLOCK) {
+				return IOEvent::WouldBlock;
 			} else {
 				raise<NetworkStreamError>("read: {0}", ::strerror(errno));
 			}
-			return 0;
-		} else {
-			would_block = false;
-			return (size_t)n;
+		} else if (n == 0 && max != 0) {
+			return IOEvent::EndOfStream;
 		}
+		return (size_t)n;
 	}
 	
 	bool SocketNetworkStream::is_read_nonblocking() const {
@@ -128,29 +113,18 @@ namespace grace {
 		set_nonblocking(fd, b);
 	}
 
-	size_t SocketNetworkStream::write(const byte* buffer, size_t max) {
-		ssize_t n = ::write(fd, buffer, max);
-		if (n >= 0) {
-			return n;
-		} else {
-			raise<NetworkStreamError>("write: {0}", ::strerror(errno));
-			return 0;
-		}
-	}
-
-	size_t SocketNetworkStream::write_nonblocking(const byte *buffer, size_t max, bool &would_block) {
+	Either<size_t, IOEvent> SocketNetworkStream::write(const byte* buffer, size_t max) {
 		ssize_t n = ::write(fd, buffer, max);
 		if (n < 0) {
-			if (errno == EAGAIN) {
-				would_block = true;
+			if (errno == EWOULDBLOCK) {
+				return IOEvent::WouldBlock;
 			} else {
 				raise<NetworkStreamError>("write: {0}", ::strerror(errno));
 			}
-			return 0;
-		} else {
-			would_block = false;
-			return (size_t)n;
+		} else if (n == 0 && max != 0) {
+			return IOEvent::EndOfStream;
 		}
+		return (size_t)n;
 	}
 	
 	bool SocketNetworkStream::is_write_nonblocking() const {
