@@ -10,6 +10,7 @@
 
 #include "io/stdio_stream.hpp"
 #include "io/fd.hpp"
+#include "io/pipe_stream.hpp"
 
 #include <stdio.h>
 #include <unistd.h> // execvp()
@@ -18,146 +19,6 @@
 #include <errno.h>
 
 namespace grace {
-	struct PipeError : ErrorBase<PipeError> {};
-
-	struct PipeStreamBase {
-		PipeStreamBase() {}
-		PipeStreamBase(PipeStreamBase&& other) : fd(other.fd), position(other.position) {
-			other.fd = -1;
-			other.position = 0;
-		}
-		PipeStreamBase(int fd) : fd(fd) {}
-		~PipeStreamBase() {
-			close();
-		}
-
-		PipeStreamBase& operator=(PipeStreamBase&& other) {
-			close();
-			fd = other.fd;
-			position = other.position;
-			other.fd = -1;
-			other.position = 0;
-			return *this;
-		}
-
-		int fd = -1;
-		size_t position = 0;
-
-		void close() {
-			if (fd >= 0) {
-				::close(fd);
-				fd = -1;
-			}
-		}
-		
-		bool is_nonblocking() const {
-			return grace::is_nonblocking(fd);
-		}
-		
-		void set_nonblocking(bool b) {
-			grace::set_nonblocking(fd, b);
-		}
-	};
-
-	struct InputPipeStream : PipeStreamBase, IInputStream, IInputStreamNonblocking {
-		InputPipeStream(int fd) : PipeStreamBase(fd) {}
-		InputPipeStream() = default;
-		InputPipeStream(InputPipeStream&& other) = default;
-		InputPipeStream& operator=(InputPipeStream&& other) = default;
-
-		bool is_readable() const final { return true; }
-
-		size_t read(byte* buffer, size_t max) final {
-			ssize_t n = ::read(fd, buffer, max);
-			if (n < 0) {
-				raise<PipeError>("read: {0}", ::strerror(errno));
-			} else {
-				position += n;
-			}
-			return (size_t)n;
-		}
-
-		size_t read_nonblocking(byte* buffer, size_t max, bool& out_would_block) final {
-			ssize_t n = ::read(fd, buffer, max);
-			if (n < 0) {
-				if (errno == EAGAIN) {
-					out_would_block = true;
-				} else {
-					raise<PipeError>("read: {0}", ::strerror(errno));
-				}
-			} else {
-				out_would_block = false;
-				position += n;
-			}
-			return (size_t)n;
-		}
-		
-		bool is_read_nonblocking() const final {
-			return is_nonblocking();
-		}
-		
-		void set_read_nonblocking(bool b) final {
-			return set_nonblocking(b);
-		}
-
-		size_t tell_read() const final {
-			return position;
-		}
-
-		bool seek_read(size_t) final { return false; }
-		bool has_length() const final { return false; }
-		size_t length() const final { return SIZE_T_MAX; }
-	};
-
-	struct OutputPipeStream : PipeStreamBase, IOutputStream, IOutputStreamNonblocking {
-		OutputPipeStream(int fd) : PipeStreamBase(fd) {}
-		OutputPipeStream() = default;
-		OutputPipeStream(OutputPipeStream&& other) = default;
-		OutputPipeStream& operator=(OutputPipeStream&& other) = default;
-
-		bool is_writable() const final { return true; }
-
-		size_t write(const byte* buffer, size_t max) final {
-			ssize_t n = ::write(fd, buffer, max);
-			if (n < 0) {
-				raise<PipeError>("write: {0}", ::strerror(errno));
-			} else {
-				position += n;
-			}
-			return (size_t)n;
-		}
-
-		size_t write_nonblocking(const byte* buffer, size_t max, bool& out_would_block) final {
-			ssize_t n = ::write(fd, buffer, max);
-			if (n < 0) {
-				if (errno == EAGAIN) {
-					out_would_block = true;
-				} else {
-					raise<PipeError>("write: {0}", ::strerror(errno));
-				}
-			} else {
-				out_would_block = false;
-				position += n;
-			}
-			return (size_t)n;
-		}
-		
-		bool is_write_nonblocking() const final {
-			return is_nonblocking();
-		}
-		
-		void set_write_nonblocking(bool b) final {
-			set_nonblocking(b);
-		}
-
-		size_t tell_write() const final {
-			return position;
-		}
-
-		bool seek_write(size_t) final { return false; }
-		void flush() {}
-	};
-
 	struct Process::Impl {
 		int pid = -1;
 		Process::Status status;
@@ -223,7 +84,7 @@ namespace grace {
 			::perror("execvp");
 			exit(1);
 		} else {
-			// error!
+			raise<PipeError>("fork: {0}", ::strerror(errno));
 		}
 
 		return std::move(p);
@@ -260,7 +121,6 @@ namespace grace {
 		if (!hang)
 			options |= WNOHANG;
 		int rc = ::wait4(impl->pid, &status, options, nullptr);
-		ASSERT(rc >= 0);
 
 		if (WIFEXITED(status)) {
 			impl->status = Status::Exited;
@@ -326,12 +186,12 @@ namespace grace {
 		kill(9);
 	}
 
-	IInputStream& Process::stdout() {
+	InputPipeStream& Process::stdout() {
 		ASSERT(impl);
 		return impl->stdout;
 	}
 
-	IInputStream& Process::stderr() {
+	InputPipeStream& Process::stderr() {
 		ASSERT(impl);
 		return impl->stderr;
 	}
@@ -339,5 +199,17 @@ namespace grace {
 	FormattedStream& Process::stdin() {
 		ASSERT(impl);
 		return impl->stdin;
+	}
+
+	FileDescriptor Process::stdout_fd() const {
+		return impl->stdout.descriptor();
+	}
+
+	FileDescriptor Process::stderr_fd() const {
+		return impl->stderr.descriptor();
+	}
+
+	FileDescriptor Process::stdin_fd() const {
+		return impl->stdin_raw.descriptor();
 	}
 }

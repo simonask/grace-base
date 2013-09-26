@@ -6,6 +6,8 @@
 #include "base/array_ref.hpp"
 #include "memory/unique_ptr.hpp"
 #include "base/maybe.hpp"
+#include "io/fd.hpp"
+#include "io/pipe_stream.hpp"
 
 namespace grace {
 	struct IInputStream;
@@ -34,9 +36,13 @@ namespace grace {
 		void kill(int sig);
 		void kill();
 
-		IInputStream& stdout();
-		IInputStream& stderr();
+		InputPipeStream& stdout();
+		InputPipeStream& stderr();
 		FormattedStream& stdin();
+
+		FileDescriptor stdout_fd() const;
+		FileDescriptor stderr_fd() const;
+		FileDescriptor stdin_fd() const;
 
 		~Process();
 		Process(Process&& other);
