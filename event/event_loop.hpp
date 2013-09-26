@@ -12,11 +12,8 @@
 #include "base/basic.hpp"
 #include "memory/unique_ptr.hpp"
 #include "base/time.hpp"
-#include "base/string.hpp"
 #include "event/event_handle.hpp"
 #include "base/function.hpp"
-#include "event/events.hpp"
-#include "memory/unique_ptr.hpp"
 
 namespace grace {
 	struct IAsyncInputStream;
@@ -24,35 +21,15 @@ namespace grace {
 	struct IEventedSocket;
 	struct IInputManager;
 
-	enum class StreamEvent : uint8 {
-		Read   = 1,
-		Write  = 1 << 1,
-		Error  = 1 << 2,
-		Closed = 1 << 3,
-		Ready  = 1 << 4,
-		Accept = 1 << 5,
-		Any    = 0xff
-	};
-	ENUM_IS_FLAGS(StreamEvent);
-
-	// Different stream types that event loops must support:
-	struct FileStream;
-	struct NetworkStream;
-	struct ServerStream;
-	struct PipeStream;
-	struct ConsoleStream;
+	struct IInputStreamNonblocking;
+	struct IOutputStreamNonblocking;
 
 	struct IEventLoop {
+		virtual ~IEventLoop() {}
+
 		// Timer API
 		virtual UniquePtr<IEventHandle> schedule(Function<void()>, SystemTimeDelta delay, IAllocator& = default_allocator()) = 0;
 		virtual UniquePtr<IEventHandle> call_repeatedly(Function<void()>, SystemTimeDelta interval, IAllocator& = default_allocator()) = 0;
-
-		// Async I/O API
-		virtual UniquePtr<IEventHandle> add(FileStream& stream,    uint8 events, Function<void(StreamEvent, FileStream& stream)> handler) = 0;
-		virtual UniquePtr<IEventHandle> add(ServerStream& stream,  uint8 events, Function<void(StreamEvent, ServerStream& stream)> handler) = 0;
-		virtual UniquePtr<IEventHandle> add(PipeStream& stream,    uint8 events, Function<void(StreamEvent, PipeStream& stream)> handler) = 0;
-		virtual UniquePtr<IEventHandle> add(NetworkStream& stream, uint8 events, Function<void(StreamEvent, NetworkStream& stream)> handler) = 0;
-		virtual UniquePtr<IEventHandle> add(ConsoleStream& stream, uint8 events, Function<void(StreamEvent, ConsoleStream& stream)> handler) = 0;
 		
 		// Main
 		virtual void quit() = 0;
@@ -60,7 +37,7 @@ namespace grace {
 	};
 
 	// This creates a suitable event loop for the current platform:
-	UniquePtr<IEventLoop> create_event_loop();
+	UniquePtr<IEventLoop> create_event_loop(IAllocator& = default_allocator());
 }
 
 #endif

@@ -38,6 +38,7 @@ set(SOURCES
 	io/memory_stream.cpp
 	io/network_stream.cpp
 	io/pipe_stream.cpp
+	io/reactor.cpp
 	io/resource.cpp
 	io/resource_loader.cpp
 	io/resource_manager.cpp
@@ -82,6 +83,8 @@ set(SOURCES
 	grace_base.cpp
 )
 
+list(APPEND SOURCES platform/libevent_util.cpp platform/event_loop_libevent.cpp platform/event_loop_generic.cpp)
+
 set(FINAL_SOURCES)
 foreach(f ${SOURCES})
 	list(APPEND FINAL_SOURCES ${SRCPATH}/${f})
@@ -92,8 +95,6 @@ find_package(event REQUIRED)
 
 include_directories(${YAML_INCLUDE_DIRS})
 include_directories(${EVENT_INCLUDE_DIRS})
-
-list(APPEND SOURCES platform/libevent_util.cpp platform/event_loop_libevent.cpp)
 
 add_library(grace-base SHARED ${FINAL_SOURCES})
 

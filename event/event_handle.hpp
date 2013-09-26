@@ -9,6 +9,8 @@
 #ifndef grace_event_handle_hpp
 #define grace_event_handle_hpp
 
+#include "base/time.hpp"
+
 namespace grace {
 	struct IEventHandle {
 		virtual ~IEventHandle() {}
@@ -16,6 +18,7 @@ namespace grace {
 		virtual bool is_active() const = 0;
 		virtual void activate() = 0;
 		virtual void cancel() = 0; // Implementations should also cancel themselves in their destructors
+		virtual void set_timeout(SystemTimeDelta) = 0;
 	};
 }
 

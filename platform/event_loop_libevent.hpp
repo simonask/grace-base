@@ -1,8 +1,14 @@
 #include "event/event_loop.hpp"
+#include "event/capabilities.hpp"
 #include <event2/event.h>
 
 namespace grace {
-	struct EventLoop_libevent : IEventLoop {
+	struct EventLoop_libevent : public InterfaceWithCapabilities<IEventLoop,
+		capability::POpen,
+		capability::Connect,
+		capability::Listen,
+		capability::StdIn
+	> {
 		EventLoop_libevent();
 		virtual ~EventLoop_libevent();
 
@@ -10,21 +16,17 @@ namespace grace {
 		UniquePtr<IEventHandle> schedule(Function<void()>, SystemTimeDelta delay, IAllocator& = default_allocator()) final;
 		UniquePtr<IEventHandle> call_repeatedly(Function<void()>, SystemTimeDelta interval, IAllocator& = default_allocator()) final;
 
-		// Async I/O API
-		UniquePtr<IEventHandle> add(InputFileStream& stream,  Function<void(StreamEvent, InputFileStream& stream)> handler) final;
-		UniquePtr<IEventHandle> add(OutputFileStream& stream, Function<void(StreamEvent, OutputFileStream& stream)> handler) final;
-		UniquePtr<IEventHandle> add(NetworkStream& stream,    Function<void(StreamEvent, NetworkStream& stream)> handler) final;
-		UniquePtr<IEventHandle> add(ServerStream& stream,     Function<void(StreamEvent, ServerStream& stream)> handler) final;
-		UniquePtr<IEventHandle> add(PipeStream& stream,       Function<void(StreamEvent, PipeStream& stream)> handler) final;
-
-		// Network API
-		UniquePtr<NetworkStream> connect(StringRef host, uint16 port, Function<void(StreamEvent, NetworkStream&)> callback) final;
-		UniquePtr<ServerStream>  listen(uint16 port, Function<void(StreamEvent, ServerStream&)> callback) final;
+		// Capabilities
+		UniquePtr<IEventHandle> connect(StringRef host, uint16 port, Function<void(NetworkConnectionEvent, INetworkStream&)> callback, SystemTimeDelta timeout) final;
+		UniquePtr<IEventHandle> listen(uint16 port, Function<void(ServerEvent, Server&)> callback) final;
+		UniquePtr<IEventHandle> popen(StringRef command, ArrayRef<StringRef> arguments, Function<void(ProcessEvent, Process&)> callback, SystemTimeDelta timeout) final;
+		UniquePtr<IEventHandle> stdin(Function<void(StdInEvent, ConsoleStream&)> callback, SystemTimeDelta timeout) final;
 		
 		// Main
 		void quit();
 		void run();
 	private:
-		event_base_t* base_;
+		event_base* base_;
+		bool is_running_ = true;
 	};
 }
