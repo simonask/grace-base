@@ -71,21 +71,22 @@ namespace grace {
 		ErrorBase(ErrorBase<T>&& other) : ErrorBaseImpl(std::move(other)) {}
 	};
 
-	template <typename T = void> struct E;
+	template <typename T = void, typename ErrorType = IError> struct E;
 
-	template <typename T>
+	template <typename T, typename ErrorType>
 	struct E {
+		using ErrorPtr = UniquePtr<const ErrorType>;
 		E(T x) : data_(std::move(x)) {}
-		E(IErrorPtr error) : data_(std::move(error)) {}
+		E(ErrorPtr error) : data_(std::move(error)) {}
 		E(E<T>&& other) = default;
 		E<T>& operator=(T x) { data_ = Container(std::move(x)); return *this; }
-		E<T>& operator=(IErrorPtr x) { data_ = Container(std::move(x)); return *this; }
+		E<T>& operator=(ErrorPtr x) { data_ = Container(std::move(x)); return *this; }
 
-		bool is_error() const { return data_.template is_a<IErrorPtr>(); }
+		bool is_error() const { return data_.template is_a<ErrorPtr>(); }
 
-		const IError* error() const {
-			const IErrorPtr* err = nullptr;
-			data_.template when<IErrorPtr>([&](const IErrorPtr& ptr) {
+		const ErrorType* error() const {
+			const ErrorPtr* err = nullptr;
+			data_.template when<ErrorPtr>([&](const ErrorPtr& ptr) {
 				err = &ptr;
 			});
 			if (err) return err->get();
@@ -102,35 +103,36 @@ namespace grace {
 		}
 		template <typename F>
 		void when_error(F function) const {
-			data_.template when<IErrorPtr>([&](const IErrorPtr& ptr) {
+			data_.template when<ErrorPtr>([&](const IErrorPtr& ptr) {
 				function(*ptr);
 			});
 		}
 
 		IErrorPtr* error_ptr_ptr() {
 			IErrorPtr* ptr = nullptr;
-			data_.template when<IErrorPtr>([&](IErrorPtr& p) {
+			data_.template when<ErrorPtr>([&](IErrorPtr& p) {
 				ptr = &p;
 			});
 			return ptr;
 		}
 	private:
-		using Container = Either<T, IErrorPtr>;
+		using Container = Either<T, ErrorPtr>;
 		Container data_;
 	};
 
-	template <>
-	struct E<void> {
+	template <typename ErrorType>
+	struct E<void, ErrorType> {
 		using ResultType = NothingType;
+		using ErrorPtr = UniquePtr<const ErrorType>;
 		E() {}
-		E(IErrorPtr error) : ptr_(std::move(error)) {}
+		E(ErrorPtr error) : ptr_(std::move(error)) {}
 		E(E<void>&& other) = default;
-		E<void>& operator=(IErrorPtr x) { ptr_ = std::move(x); return *this; }
+		E<void>& operator=(ErrorPtr x) { ptr_ = std::move(x); return *this; }
 		E<void>& operator=(NothingType) { ptr_ = nullptr; return *this; }
 
 		bool is_error() const { return ptr_ != nullptr; }
 
-		const IError* error() const {
+		const ErrorType* error() const {
 			return ptr_.get();
 		}
 
@@ -141,12 +143,12 @@ namespace grace {
 			}
 		}
 
-		IErrorPtr* error_ptr_ptr() {
+		ErrorPtr* error_ptr_ptr() {
 			if (ptr_) return &ptr_;
 			return nullptr;
 		}
 	private:
-		IErrorPtr ptr_;
+		ErrorPtr ptr_;
 	};
 
 	template <typename R> struct CatchingErrors;
