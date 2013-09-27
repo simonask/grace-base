@@ -12,7 +12,6 @@
 #include "base/string.hpp"
 #include "base/basic.hpp"
 #include "base/array.hpp"
-#include "io/formatted_stream.hpp"
 #include "base/function.hpp"
 
 namespace grace {
@@ -23,11 +22,11 @@ namespace grace {
 	};
 	
 	struct Regex {
-		Regex(IAllocator& alloc = default_allocator()) : pattern_(alloc) {}
-		Regex(const char* utf8, IAllocator& alloc = default_allocator());
+		explicit Regex(IAllocator& alloc = default_allocator()) : pattern_(alloc) {}
+		explicit Regex(const char* utf8, IAllocator& alloc = default_allocator());
 		Regex(const char* utf8, const char* options, IAllocator& alloc = default_allocator());
 		Regex(const char* utf8, uint32 options, IAllocator& alloc = default_allocator());
-		Regex(StringRef pattern, IAllocator& alloc = default_allocator());
+		explicit Regex(StringRef pattern, IAllocator& alloc = default_allocator());
 		Regex(StringRef pattern, const char* options, IAllocator& alloc = default_allocator());
 		Regex(StringRef pattern, uint32 options, IAllocator& alloc = default_allocator());
 		Regex(Regex&& other);
@@ -92,8 +91,8 @@ namespace grace {
 			return (options_ & RegexOptions::NewlineSensitive) != 0;
 		}
 	
-	class FormattedStream;
-	inline FormattedStream& operator<<(FormattedStream& os, const Regex& rx) {
+	template <typename OS>
+	OS& operator<<(OS& os, const Regex& rx) {
 		os << '/';
 		os << rx.pattern();
 		os << '/';

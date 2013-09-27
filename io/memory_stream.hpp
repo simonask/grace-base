@@ -12,6 +12,8 @@
 #include "io/input_stream.hpp"
 #include "io/output_stream.hpp"
 #include "base/array_list.hpp"
+#include "base/either.hpp"
+#include "io/ioevent.hpp"
 
 namespace grace {
 	class MemoryStream : public IInputStream {

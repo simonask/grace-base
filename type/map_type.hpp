@@ -10,6 +10,7 @@
 #define grace_map_type_hpp
 
 #include "type/type.hpp"
+#include "type/string_type.hpp" // MapType has specializations for String keys.
 #include "base/map.hpp"
 
 namespace grace {

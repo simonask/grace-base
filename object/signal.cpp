@@ -2,21 +2,15 @@
 #include "object/signal_type.hpp"
 #include "object/object_type.hpp"
 #include "base/log.hpp"
-#include "io/string_stream.hpp"
+#include "base/string.hpp"
 
 namespace grace {
 
 String SignalTypeBase::build_signal_name(ArrayRef<const IType*> signature) {
-	StringStream ss;
-	ss << "Signal<";
-	for (size_t i = 0; i < signature.size(); ++i) {
-		ss << signature[i]->name();
-		if (i+1 != signature.size()) {
-			ss << ", ";
-		}
-	}
-	ss << ">";
-	return ss.str();
+	Array<StringRef> names;
+	names.resize(signature.size());
+	std::transform(signature.begin(), signature.end(), names.begin(), std::bind(&IType::name, std::placeholders::_1));
+	return encapsulate_join(names.ref(), ", ", "Signal<", ">");
 }
 	
 	void nonexistent_slot_warning(ObjectPtr<> receiver, StringRef slot_name) {

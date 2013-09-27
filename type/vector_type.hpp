@@ -46,21 +46,17 @@ namespace grace {
 			node[VectorComponentNames[i]] << vector[i];
 		}
 	}
+
+	namespace detail {
+		String build_vector_type_name(const SimpleType* element_type, size_t n, IAllocator& alloc);
+	}
 	
 	template <typename T, size_t N>
 	struct BuildTypeInfo<TVector<T,N>> {
 		static const VectorTypeImpl<T,N>* build_vector_type() {
-			ScratchAllocator scratch;
-			StringStream ss(scratch);
-			if (!IsFloatingPoint<T>::Value) {
-				if (IsSigned<T>::Value) {
-					ss << 'i';
-				} else {
-					ss << 'u';
-				}
-			}
-			ss << "vec" << N;
-			return new_static VectorTypeImpl<T,N>(static_allocator(), ss.string(static_allocator()));
+			const SimpleType* element_type = get_type<T>();
+			String type_name = detail::build_vector_type_name(element_type, N, static_allocator());
+			return new_static VectorTypeImpl<T,N>(static_allocator(), std::move(type_name));
 		}
 		
 		static const VectorTypeImpl<T,N>* build() {

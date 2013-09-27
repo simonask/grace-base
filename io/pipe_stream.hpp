@@ -5,6 +5,7 @@
 #include "io/fd.hpp"
 #include "io/input_stream.hpp"
 #include "io/output_stream.hpp"
+#include "io/ioevent.hpp"
 
 namespace grace {
 	struct PipeError : ErrorBase<PipeError> {};

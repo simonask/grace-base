@@ -58,6 +58,7 @@ SUITE(Error) {
 		}
 		catch (const IError& error) {
 			TEST(error.description()).should == "Hello, World!";
+			StdErr << error << '\n';
 		}
 	});
 }

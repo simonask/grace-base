@@ -4,12 +4,11 @@
 
 #include "base/basic.hpp"
 #include "base/array.hpp"
-#include "geometry/vector.hpp"
 #include "memory/static_allocator.hpp"
 #include "base/string.hpp"
-#include "io/string_stream.hpp"
 #include "base/type_info.hpp"
 #include <algorithm>
+#include <functional>
 #include <limits.h>
 
 
@@ -107,6 +106,7 @@ struct SimpleType : Type {
 	size_t alignment() const override { return width_; }
 	size_t num_components() const { return width_ / component_width_; }
 	bool is_signed() const { return is_signed_; }
+	bool is_float() const { return is_float_; }
 protected:
 	String name_;
 	size_t width_;
@@ -159,22 +159,6 @@ struct FloatType : SimpleType {
 	void* cast(const SimpleType* to, void* o) const;
 };
 
-struct StringType : TypeFor<String> {
-	static const StringType* get();
-	
-	void deserialize(String& place, const DocumentNode&, IUniverse&) const final;
-	void serialize(const String& place, DocumentNode&, IUniverse&) const final;
-	
-	StringRef name() const final;
-};
-	
-struct StringRefType : TypeFor<StringRef> {
-	static const StringRefType* get();
-	void deserialize(StringRef& place, const DocumentNode&, IUniverse&) const final;
-	void serialize(const StringRef& place, DocumentNode&, IUniverse&) const final;
-	StringRef name() const final;
-};
-
 struct DerivedType : Type {
 	DerivedType(const TypeInfo& ti) : Type(ti) {}
 };
@@ -197,13 +181,6 @@ template <> struct BuildTypeInfo<void> {
 	static const VoidType* build() { return VoidType::get(); }
 };
 
-template <> struct BuildTypeInfo<String> {
-	static const StringType* build() { return StringType::get(); }
-};
-	
-template <> struct BuildTypeInfo<StringRef> {
-	static const StringRefType* build() { return StringRefType::get(); }
-};
 
 template <typename T>
 auto build_type_info()
@@ -254,40 +231,12 @@ struct CheckHasGetType {
 template <typename T>
 struct CanGetType : public HasMember<T, CheckHasGetType> {};
 
-
-
-template <typename Last = void>
-void append_type_names(FormattedStream& os) {
-	const IType* t = get_type<Last>();
-	os << t->name();
-}
-
-template <typename Head, typename Next, typename... Rest>
-void append_type_names(FormattedStream& os) {
-	const IType* t = get_type<Head>();
-	os << t->name();
-	os << ", ";
-	append_type_names<Next, Rest...>(os);
-}
-
 template <typename... Args>
 String get_signature_description(IAllocator& alloc) {
-	StringStream ss(alloc);
-	ss << '(';
-	append_type_names<Args...>(ss);
-	ss << ')';
-	return ss.string(alloc);
-}
-
-
-template <typename Head = void>
-void build_signature(Array<const IType*>& signature) {
-	signature.push_back(get_type<Head>());
-}
-template <typename Head, typename Next, typename... Rest>
-void build_signature(Array<const IType*>& signature) {
-	signature.push_back(get_type<Head>());
-	build_signature<Next, Rest...>(signature);
+	std::array<const IType*, sizeof...(Args)> types {{get_type<Args>()...}};
+	std::array<StringRef, sizeof...(Args)> names;
+	std::transform(types.begin(), types.end(), names.begin(), std::bind(&IType::name, std::placeholders::_1));
+	return encapsulate_join(ArrayRef<const StringRef>(names.data(), names.data() + names.size()), "(", ")", ", ", alloc);
 }
 
 }

@@ -77,9 +77,11 @@ set(SOURCES
 	type/maybe_type.cpp
 	type/pointer_type.cpp
 	type/reference_type.cpp
+	type/string_type.cpp
 	type/structured_type.cpp
 	type/type.cpp
 	type/type_registry.cpp
+	type/vector_type.cpp
 	grace_base.cpp
 )
 

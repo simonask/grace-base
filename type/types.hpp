@@ -17,6 +17,7 @@
 #include "type/vector_type.hpp"
 #include "type/matrix_type.hpp"
 #include "type/reference_type.hpp"
+#include "type/string_type.hpp"
 #include "io/resource_ptr_type.hpp"
 #include "object/object_type.hpp"
 #include "object/signal_type.hpp"

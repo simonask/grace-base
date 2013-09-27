@@ -10,10 +10,11 @@
 #define grace_stream_hpp
 
 #include "base/basic.hpp"
-#include "base/either.hpp"
-#include "io/ioevent.hpp"
 
 namespace grace {
+	template <typename...> class Either;
+	enum class IOEvent;
+
 	struct IInputStream {
 		virtual bool is_readable() const = 0;
 		virtual bool is_read_nonblocking() const = 0;

@@ -32,7 +32,8 @@ namespace grace {
 		void serialize(const Signal<Args...>& place, DocumentNode&, IUniverse&) const;
 		
 		SignalType() {
-			build_signature<Args...>(this->signature_);
+			std::array<const IType*, sizeof...(Args)> arg_types{{get_type<Args>()...}};
+			this->signature_ = Array<const IType*>{{get_type<Args>()...}};
 			this->name_ = SignalTypeBase::build_signal_name(this->signature_);
 		}
 	};

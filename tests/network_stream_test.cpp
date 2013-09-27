@@ -1,6 +1,7 @@
 #include "io/network_stream.hpp"
 #include "tests/test.hpp"
 #include "base/either_switch.hpp"
+#include "io/util.hpp"
 
 using namespace grace;
 
@@ -17,19 +18,7 @@ SUITE(NetworkStream) {
 		fs.printf("GET / HTTP/1.0\nUser-Agent: {0}\n\n", "grace-network-test");
 
 		StringStream ss;
-		byte buffer[256];
-		size_t len;
-		bool running = true;
-		while (running) {
-			either_switch(stream->read(buffer, 256),
-				[&](size_t n) {
-					ss << StringRef((char*)buffer, n);
-				},
-				[&](IOEvent ev) {
-					running = false;
-				}
-			);
-		}
+		read_until_event(*stream, ss);
 
 		String response = ss.string();
 		Regex r("HTTP/1.0");

@@ -49,12 +49,12 @@ namespace grace {
 		Function<R(Args...)>& operator=(T function_object) { assign(move(function_object)); return *this; }
 		
 		template <typename... A>
-		ALWAYS_INLINE R invoke(A&&... args) const {
+		inline R invoke(A&&... args) const {
 			return (this->*invoke_)(std::forward<A>(args)...);
 		}
 		
 		template <typename... A>
-		ALWAYS_INLINE R operator()(A&&... args) const {
+		inline R operator()(A&&... args) const {
 			return invoke(std::forward<A>(args)...);
 		}
 		
@@ -81,7 +81,7 @@ namespace grace {
 			T object;
 			Caller(const T& object, IAllocator& alloc) : CallerBase(alloc), object(object) {}
 			Caller(T&& object, IAllocator& alloc) : CallerBase(alloc), object(move(object)) {}
-			ALWAYS_INLINE R invoke(Args&&... args) final {
+			inline R invoke(Args&&... args) final {
 				return object(std::forward<Args>(args)...);
 			}
 			CallerBase* duplicate(IAllocator& alloc) const {

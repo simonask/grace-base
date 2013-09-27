@@ -1,4 +1,5 @@
 #include "serialization/json.hpp"
+#include "io/formatted_stream.hpp"
 
 namespace grace {
 

@@ -69,9 +69,7 @@ namespace grace {
 		{}
 		
 		Array<const IType*> signature(IAllocator& alloc) const {
-			Array<const IType*> s(alloc);
-			s.reserve(sizeof...(Args));
-			build_signature<Args...>(s);
+			Array<const IType*> s({get_type<Args>()...}, alloc);
 			return move(s);
 		}
 		

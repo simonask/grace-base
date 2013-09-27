@@ -9,10 +9,12 @@
 #ifndef grace_output_stream_hpp
 #define grace_output_stream_hpp
 
-#include "io/ioevent.hpp"
-#include "base/either.hpp"
+#include "base/basic.hpp"
 
 namespace grace {
+	template <typename...> class Either;
+	enum class IOEvent;
+
 	struct IOutputStream {
 		virtual bool is_writable() const = 0;
 		virtual bool is_write_nonblocking() const = 0;

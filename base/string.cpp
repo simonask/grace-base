@@ -124,4 +124,30 @@ namespace grace {
 	StringRef strip(StringRef input, char c) {
 		return rstrip(lstrip(input, c), c);
 	}
+
+	String join(ArrayRef<const StringRef> strings, StringRef delimiter, IAllocator& alloc) {
+		ScratchAllocator scratch;
+		StringStream ss;
+		for (size_t i = 0; i < strings.size(); ++i) {
+			ss << strings[i];
+			if (i + 1 != strings.size()) {
+				ss << delimiter;
+			}
+		}
+		return ss.string(alloc);
+	}
+
+	String encapsulate_join(ArrayRef<const StringRef> strings, StringRef begin, StringRef end, StringRef delimiter, IAllocator& alloc) {
+		ScratchAllocator scratch;
+		StringStream ss;
+		ss << begin;
+		for (size_t i = 0; i < strings.size(); ++i) {
+			ss << strings[i];
+			if (i + 1 != strings.size()) {
+				ss << delimiter;
+			}
+		}
+		ss << end;
+		return ss.string(alloc);
+	}
 }

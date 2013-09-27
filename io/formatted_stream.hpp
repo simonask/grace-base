@@ -11,6 +11,8 @@
 
 #include "base/basic.hpp"
 #include "io/output_stream.hpp"
+#include "base/either.hpp"
+#include "io/ioevent.hpp"
 #include "geometry/vector.hpp"
 #include <stdio.h>
 

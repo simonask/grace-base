@@ -1,4 +1,5 @@
 #include "type/maybe_type.hpp"
+#include "io/string_stream.hpp"
 
 namespace grace {
 	

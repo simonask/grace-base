@@ -107,6 +107,8 @@ namespace grace {
 	String replace(String&& str, String::iterator pos, char new_letter);
 	String replace(const String& str, String::iterator pos, char new_letter);
 	String replace(String&& str, String::iterator pos, StringRef new_substring);
+	String join(ArrayRef<const StringRef>, StringRef delimiter = ", ", IAllocator& alloc = default_allocator());
+	String encapsulate_join(ArrayRef<const StringRef>, StringRef begin, StringRef end, StringRef delimiter = ", ", IAllocator& alloc = default_allocator());
 	
 	inline String::String(const char* utf8, IAllocator& alloc) : allocator_(alloc) {
 		assign(utf8);
