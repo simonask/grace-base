@@ -11,6 +11,7 @@
 
 #include "io/input_stream.hpp"
 #include "io/output_stream.hpp"
+#include "base/either.hpp"
 #include "base/array.hpp"
 #include "base/time.hpp"
 

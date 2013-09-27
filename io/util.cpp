@@ -11,6 +11,7 @@
 #include "base/stack_array.hpp"
 #include "io/string_stream.hpp"
 #include "base/raise.hpp"
+#include "base/either_switch.hpp"
 
 #include <sys/types.h>
 #include <sys/stat.h>
