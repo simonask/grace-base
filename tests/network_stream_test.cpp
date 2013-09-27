@@ -1,6 +1,5 @@
 #include "io/network_stream.hpp"
 #include "tests/test.hpp"
-#include "base/either_switch.hpp"
 #include "io/util.hpp"
 
 using namespace grace;
