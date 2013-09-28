@@ -400,6 +400,15 @@ namespace grace {
 		static_assert(!(sizeof...(Types) > sizeof...(Functions)), "Unhandled case in either_switch.");
 		detail::either_switch_static_impl<0, Types...>(either, std::forward<Functions>(functions)...);
 	}
+
+	template <typename... Types, typename T>
+	bool operator>>(const Either<Types...>& either, T& object) {
+		if (either.template is_a<T>()) {
+			object = either.template get<T>();
+			return true;
+		}
+		return false;
+	}
 }
 
 #endif

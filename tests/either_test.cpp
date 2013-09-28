@@ -171,6 +171,37 @@ SUITE(Either) {
 		TEST(f_was_int).should == true;
 		TEST(f_was_string).should == false;
 	});
+
+	feature("operator>>", []() {
+		Either<int, StringRef> e {StringRef("Hello, World!")};
+		Either<int, StringRef> f {123};
+
+		int n;
+		StringRef s;
+
+		bool e_was_int = false;
+		bool e_was_string = false;
+		bool f_was_int = false;
+		bool f_was_string = false;
+
+		if (e >> n) {
+			e_was_int = true;
+		} else if (e >> s) {
+			e_was_string = true;
+		}
+
+		if (f >> n) {
+			f_was_int = true;
+		} else if (f >> s) {
+			f_was_string = true;
+		}
+
+		TEST(e_was_int).should == false;
+		TEST(e_was_string).should == true;
+
+		TEST(f_was_int).should == true;
+		TEST(f_was_string).should == false;
+	});
 }
 
 #endif
