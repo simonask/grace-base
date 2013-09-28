@@ -8,13 +8,6 @@
 #include "base/iterators.hpp"
 #include "base/array_utils.hpp"
 
-#if defined(USE_STD_VECTOR)
-#include <vector>
-namespace grace {
-template <typename T> using Array = std::vector<T>;
-}
-#else
-
 namespace grace {
 
 	namespace detail {
@@ -409,7 +402,5 @@ typename Array<T>::iterator Array<T>::erase(Array<T>::iterator it) {
 }
 
 }
-
-#endif // if defined(USE_STD_VECTOR)
 
 #endif /* end of include guard: ARRAY_HPP_6MM1YKSV */
