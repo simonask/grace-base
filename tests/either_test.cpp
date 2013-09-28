@@ -140,6 +140,37 @@ SUITE(Either) {
 		TEST(v.float32_called).should == true;
 		TEST(v.stringref_called).should == true;
 	});
+
+	feature("either_switch", []() {
+		Either<int, StringRef> e {StringRef("Hello, World!")};
+		Either<int, StringRef> f {123};
+
+		bool e_was_int = false;
+		bool e_was_string = false;
+		either_switch(e,
+			[&](int n) {
+				e_was_int = true;
+			},
+			[&](StringRef s) {
+				e_was_string = true;
+			}
+		);
+		TEST(e_was_int).should == false;
+		TEST(e_was_string).should == true;
+
+		bool f_was_int = false;
+		bool f_was_string = false;
+		either_switch(f,
+			[&](int n) {
+				f_was_int = true;
+			},
+			[&](StringRef s) {
+				f_was_string = true;
+			}
+		);
+		TEST(f_was_int).should == true;
+		TEST(f_was_string).should == false;
+	});
 }
 
 #endif
