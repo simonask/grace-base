@@ -137,7 +137,6 @@ set(TESTS
 	time_test
 	type_info_test
 	vector_test
-	work_queue_test
 )
 
 add_custom_target(test)
