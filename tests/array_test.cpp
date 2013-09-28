@@ -10,6 +10,7 @@
 #define grace_array_test_hpp
 
 #include "tests/test.hpp"
+#include "memory/stl_allocator.hpp"
 #include <vector>
 
 using namespace grace;
@@ -140,7 +141,7 @@ SUITE(Array) {
 			}
 		};
 		auto build_vector = []() {
-			std::vector<int> v;
+			std::vector<int, grace::STLAllocator<int>> v;
 			for (int i = 0; i < 1000; ++i) {
 				v.push_back(i);
 			}
