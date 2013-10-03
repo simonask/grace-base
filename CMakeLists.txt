@@ -148,3 +148,5 @@ foreach(t ${TESTS})
 	add_dependencies(run_${t} .tests/${t})
 	add_dependencies(test run_${t})
 endforeach()
+
+add_custom_target(documentation COMMAND doxygen)

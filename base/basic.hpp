@@ -42,14 +42,21 @@ typedef uint8 byte;
 #define SIZE_T_MAX ((size_t)-1)
 #endif
 
+/// Global static variable representing Nothing.
 static const struct NothingType { NothingType() {} } Nothing;
+
+/// Struct representic the empty set.
 struct Empty {};
+
 using NullPtr = std::nullptr_t;
 
 using std::move;
 using std::begin;
 using std::end;
 
+/// Convenience metaprogramming facility for use with std::enable_if.
+///
+/// See CheckHasBuildTypeInfo for an example of how to declare checkers.
 template <typename T, typename NameGetter>
 struct HasMember {
 	typedef char MatchedReturnType;
@@ -68,7 +75,7 @@ struct CheckHasBuildTypeInfo {
 	template <typename T, const typename T::TypeInfoType*(*)() = T::build_type_info__>
 	struct Check {};
 };
-	
+
 template <typename T>
 struct HasReflection : HasMember<T, CheckHasBuildTypeInfo> {};
 
@@ -159,6 +166,7 @@ void destruct(byte* ptr) {
 	reinterpret_cast<T*>(ptr)->~T();
 }
 	
+	/// Call placement new on each element in range.
 	template <typename T, typename... Args>
 	inline void construct_range(T* begin, T* end, Args&&... args) {
 		for (T* p = begin; p != end; ++p) {
@@ -166,6 +174,7 @@ void destruct(byte* ptr) {
 		}
 	}
 	
+	/// Call destructor on each element in range.
 	template <typename T>
 	inline void destruct_range(T* begin, T* end) {
 		for (T* p = begin; p != end; ++p) {
@@ -173,6 +182,7 @@ void destruct(byte* ptr) {
 		}
 	}
 
+/// Call find(key) on container, and if the result is container.end(), return default_value.
 template <typename Container, typename Key, typename DefaultValue>
 auto find_or(Container& container, const Key& key, const DefaultValue& default_value)
 -> typename std::common_type<typename Container::mapped_type, DefaultValue>::type {
@@ -181,6 +191,7 @@ auto find_or(Container& container, const Key& key, const DefaultValue& default_v
 	return default_value;
 }
 
+/// Do linear search of the container.
 template <typename Container, typename ComparableValue>
 auto linear_search(Container& container, const ComparableValue& value)
 -> decltype(container.begin())
@@ -193,13 +204,17 @@ auto linear_search(Container& container, const ComparableValue& value)
 	return container.end();
 }
 
-
+	/// :nodoc:
 	template <size_t...> struct Indices {};
+	/// :nodoc:
 	template <size_t N, size_t... S> struct MakeIndices : MakeIndices<N-1, N-1, S...> {};
+	/// Helper class to generate a sequence of numbers, which is useful when dealing with conversions
+	/// between template packs and runtime types.
 	template <size_t... S> struct MakeIndices<0, S...> {
 		typedef Indices<S...> Type;
 	};
-		
+	
+	/// :nodoc:
 	template <typename T, typename FunctionType, typename... Args, size_t... I>
 	auto apply_tuple_to_member_impl(T* object, FunctionType function, std::tuple<Args...> args, Indices<I...> i)
 	-> decltype((object->*function)(std::get<I>(args)...))
@@ -207,6 +222,7 @@ auto linear_search(Container& container, const ComparableValue& value)
 		return (object->*function)(std::get<I>(args)...);
 	}
 	
+	/// Call object->function with the contents of the tuple as arguments.
 	template <typename T, typename FunctionType, typename... Args>
 	auto apply_tuple_to_member(T* object, FunctionType function, std::tuple<Args...> args)
 	-> decltype(apply_tuple_to_member_impl(object, function, std::move(args), typename MakeIndices<sizeof...(Args)>::Type()))
@@ -215,6 +231,7 @@ auto linear_search(Container& container, const ComparableValue& value)
 		return apply_tuple_to_member_impl(object, function, std::move(args), Indices());
 	}
 
+	/// :nodoc:
 	template <typename FunctionType, typename... Args, size_t... I>
 	auto apply_tuple_to_function_impl(FunctionType function, std::tuple<Args...> args, Indices<I...> i)
 	-> decltype(function(std::get<I>(args)...))
@@ -222,6 +239,7 @@ auto linear_search(Container& container, const ComparableValue& value)
 		return function(std::get<I>(args)...);
 	}
 	
+	/// Call function with the contents of the tuple as arguments.
 	template <typename FunctionType, typename... Args>
 	auto apply_tuple_to_function(FunctionType function, std::tuple<Args...> args)
 	-> decltype(apply_tuple_to_function_impl(function, std::move(args), typename MakeIndices<sizeof...(Args)>::Type()))
@@ -231,57 +249,65 @@ auto linear_search(Container& container, const ComparableValue& value)
 	}
 	
 	
+	/// :nodoc:
 	template <typename T>
 	constexpr T round_up_impl(T val, T boundary, T rest) {
 		return rest != 0 ? val + (boundary - rest) : val;
 	}
 	
+	/// Constexpr round up.
 	template <typename T>
 	constexpr T round_up(T val, T boundary) {
 		return round_up_impl(val, boundary, val % boundary);
 	}
 	
-	template <typename T, bool Move>
-	struct MoveOrCopyImpl;
-	template <typename T> struct MoveOrCopyImpl<T, true> {
-		static void move_or_copy(T& dst, T& src) {
-			dst = std::move(src);
-		}
-	};
-	template <typename T> struct MoveOrCopyImpl<T, false> {
-		static void move_or_copy(T& dst, const T& src) {
-			dst = src;
-		}
-	};
+	namespace detail {
+		template <typename T, bool Move>
+		struct MoveOrCopyImpl;
+		template <typename T> struct MoveOrCopyImpl<T, true> {
+			static void move_or_copy(T& dst, T& src) {
+				dst = std::move(src);
+			}
+		};
+		template <typename T> struct MoveOrCopyImpl<T, false> {
+			static void move_or_copy(T& dst, const T& src) {
+				dst = src;
+			}
+		};
+
+		template <typename T, bool Move>
+		struct MoveOrCopyConstructImpl;
+		template <typename T> struct MoveOrCopyConstructImpl<T, true> {
+			static void move_or_copy(void* dst, T& src) {
+				new(dst) T(std::move(src));
+			}
+		};
+		template <typename T> struct MoveOrCopyConstructImpl<T, false> {
+			static void move_or_copy(void* dst, const T& src) {
+				new(dst) T(src);
+			}
+		};
+	}
+	
 	template <bool Move, typename T>
 	void move_or_copy(T& dst, T& src) {
-		MoveOrCopyImpl<T, Move>::move_or_copy(dst, src);
+		detail::MoveOrCopyImpl<T, Move>::move_or_copy(dst, src);
 	}
 	template <bool Move, typename T>
 	void move_or_copy(T& dst, const T& src) {
-		MoveOrCopyImpl<T, false>::move_or_copy(dst, src);
+		detail::MoveOrCopyImpl<T, false>::move_or_copy(dst, src);
 	}
-	template <typename T, bool Move>
-	struct MoveOrCopyConstructImpl;
-	template <typename T> struct MoveOrCopyConstructImpl<T, true> {
-		static void move_or_copy(void* dst, T& src) {
-			new(dst) T(std::move(src));
-		}
-	};
-	template <typename T> struct MoveOrCopyConstructImpl<T, false> {
-		static void move_or_copy(void* dst, const T& src) {
-			new(dst) T(src);
-		}
-	};
+	
 	template <bool Move, typename T>
 	void move_or_copy_construct(void* dst, T& src) {
-		MoveOrCopyConstructImpl<T, Move>::move_or_copy(dst, src);
+		detail::MoveOrCopyConstructImpl<T, Move>::move_or_copy(dst, src);
 	}
 	template <bool Move, typename T>
 	void move_or_copy_construct(void* dst, const T& src) {
-		MoveOrCopyConstructImpl<T, false>::move_or_copy(dst, src);
+		detail::MoveOrCopyConstructImpl<T, false>::move_or_copy(dst, src);
 	}
 	
+	/// Less-than comparison struct. Equivalent to std::less.
 	struct Less {
 		template <typename A, typename B>
 		bool operator()(const A& a, const B& b) const {

@@ -13,3 +13,4 @@ CMakeScripts
 *.xcodeproj
 Debug
 *~.*
+documentation/html
